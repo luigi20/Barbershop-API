@@ -1,7 +1,8 @@
 import { Identity } from '@modules/auth/identity/shared/models/identity';
+import { Prisma } from '@prisma/client';
 
 abstract class IIdentityRepository {
-  abstract create(data: Identity): Promise<void>;
+  abstract create(data: Identity, tx?: Prisma.TransactionClient): Promise<void>;
   abstract update_password(entity_id: string, new_hash: string): Promise<void>;
 
   abstract update_last_login_at(

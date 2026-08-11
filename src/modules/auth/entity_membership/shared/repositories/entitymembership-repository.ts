@@ -3,6 +3,7 @@ import { IEntityMembershipRepository } from './abstract_class/ientitymembership-
 import { PrismaService } from 'infra/database/prisma/prisma.service';
 import { Entity_Membership } from '../models/entity_membership';
 import { EntityMembershipMapper } from 'infra/database/mappers/EntityMembership';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 class EntityMembershipRepository implements IEntityMembershipRepository {
@@ -38,9 +39,13 @@ class EntityMembershipRepository implements IEntityMembershipRepository {
     });
   }
 
-  async create(data: Entity_Membership): Promise<void> {
+  async create(
+    data: Entity_Membership,
+    tx?: Prisma.TransactionClient,
+  ): Promise<void> {
     const raw = EntityMembershipMapper.toPrisma(data);
-    await this.prisma.getPrismaClient().entityMembership.create({
+    const client = tx ?? this.prisma;
+    await client.entityMembership.create({
       data: raw,
     });
   }

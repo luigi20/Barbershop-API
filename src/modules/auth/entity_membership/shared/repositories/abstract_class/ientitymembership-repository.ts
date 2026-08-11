@@ -1,7 +1,11 @@
+import { Prisma } from '@prisma/client';
 import { Entity_Membership } from '../../models/entity_membership';
 
 abstract class IEntityMembershipRepository {
-  abstract create(data: Entity_Membership): Promise<void>;
+  abstract create(
+    data: Entity_Membership,
+    tx?: Prisma.TransactionClient,
+  ): Promise<void>;
   abstract update(data: Entity_Membership): Promise<void>;
   abstract find_list_entity_id(entity_id: string): Promise<Entity_Membership[]>;
 

@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Entity } from '../models/entity';
-import { DynamoDBEntityMapper } from '@modules/utils/mappers/dynamoDBEntityMapper';
 import { IEntityRepository } from './abstract_class/ientity-repository';
-import { PrismaClient } from '@prisma/client';
 import { PrismaService } from 'infra/database/prisma/prisma.service';
 import { EntityMapper } from 'infra/database/mappers/EntityMapper';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 class EntityRepository implements IEntityRepository {
@@ -50,9 +49,10 @@ class EntityRepository implements IEntityRepository {
     return EntityMapper.toDomain(entity);
   }
 
-  async create(data: Entity): Promise<void> {
+  async create(data: Entity, tx?: Prisma.TransactionClient): Promise<void> {
     const raw = EntityMapper.toPrisma(data);
-    await this.prisma.getPrismaClient().entity.create({
+    const client = tx ?? this.prisma;
+    await client.entity.create({
       data: raw,
     });
   }

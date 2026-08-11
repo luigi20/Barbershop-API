@@ -32,29 +32,4 @@ export class EntityMapper {
       raw.id,
     );
   }
-  /*
-  static EntityDomainType(type: string): EntityType {
-    switch (type) {
-      case 'BARBEARIA':
-        return EntityType.BARBEARIA;
-      case 'STUDIO':
-        return EntityType.STUDIO;
-
-      default:
-        throw new Error(`Tipo inválido: ${type}`);
-    }
-  }
-
-  private static EntityStatusDomainType(type: string): EntityStatus {
-    switch (type) {
-      case 'ATIVO':
-        return EntityStatus.ATIVO;
-      case 'BLOQUEADO':
-        return EntityStatus.BLOQUEADO;
-      case 'INATIVO':
-        return EntityStatus.INATIVO;
-      default:
-        throw new AppError(`Tipo inválido: ${type}`);
-    }
-  }*/
 }

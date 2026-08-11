@@ -3,16 +3,26 @@ import { Profile } from '../models/profile';
 import { IProfileRepository } from './abstract_class/iprofile-repository';
 import { PrismaService } from 'infra/database/prisma/prisma.service';
 import { ProfileMapper } from 'infra/database/mappers/ProfileMapper';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 class ProfileRepository implements IProfileRepository {
   constructor(private prisma: PrismaService) {}
 
-  async update(data: Profile): Promise<void> {}
-
-  async create(data: Profile): Promise<void> {
+  async update(data: Profile): Promise<void> {
     const raw = ProfileMapper.toPrisma(data);
-    await this.prisma.getPrismaClient().profile.create({
+    await this.prisma.getPrismaClient().profile.update({
+      where: {
+        id: data.id,
+      },
+      data: raw,
+    });
+  }
+
+  async create(data: Profile, tx?: Prisma.TransactionClient): Promise<void> {
+    const raw = ProfileMapper.toPrisma(data);
+    const client = tx ?? this.prisma;
+    await client.profile.create({
       data: raw,
     });
   }

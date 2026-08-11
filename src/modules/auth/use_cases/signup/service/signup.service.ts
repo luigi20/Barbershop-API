@@ -11,8 +11,6 @@ import { EntityStatus, IdentityStatus, MemberRole } from '@modules/utils/enum';
 import { userPasswordValidator } from '@modules/utils/functions';
 import { Injectable } from '@nestjs/common';
 import argon2 from 'argon2';
-import { EntityMapper } from 'infra/database/mappers/EntityMapper';
-import { IdentityMapper } from 'infra/database/mappers/IdentityMapper';
 
 interface ISignUpRequest {
   name: string;
@@ -23,10 +21,14 @@ interface ISignUpRequest {
   photo: string;
   entity_name: string;
   entity_type: string;
+  document: string;
 }
+import { PrismaService } from 'infra/database/prisma/prisma.service';
+
 @Injectable()
 export class SignUpService {
   constructor(
+    private readonly prisma: PrismaService,
     private readonly entity_repository: IEntityRepository,
     private readonly identity_repository: IIdentityRepository,
     private readonly profile_repository: IProfileRepository,
@@ -42,29 +44,27 @@ export class SignUpService {
     photo,
     birth_date,
     entity_type,
+    document,
   }: ISignUpRequest): Promise<string> {
+    // 1. Validações e regras de negócio prévias (Fora da transação)
     const password_validator = userPasswordValidator();
-    const errors = password_validator.validate(password, {
-      list: true,
-    });
+    const errors = password_validator.validate(password, { list: true });
     if (Array.isArray(errors) && errors.length > 0)
       throw new AppError('Senha inválida', 400);
     const identity_exists = await this.identity_repository.find_by_email(email);
     if (identity_exists)
       throw new AppError('Usuário já cadastrado no sistema', 400);
     const password_hash = await argon2.hash(password);
-    /*
-     * 1. Cria o Tenant/Entity
-     */
+    // 2. Instanciação dos objetos de Domínio (Fora da transação)
     const entity = new Entity({
       name: entity_name,
       type: entity_type,
       status: EntityStatus.ATIVO,
+      document,
+      email,
+      phone,
+      photo,
     });
-    await this.entity_repository.create(entity);
-    /*
-     * 2. Cria a Identity
-     */
     const identity = new Identity({
       email,
       password_hash,
@@ -72,29 +72,32 @@ export class SignUpService {
       provider: 'local',
       status: IdentityStatus.ATIVO,
     });
-    await this.identity_repository.create(identity);
-    /*
-     * 3. Cria o Profile
-     */
     const profile = new Profile({
       identity_id: identity.id,
-      name: name,
-      birth_date: birth_date,
-      phone: phone ? phone : null,
-      photo: photo ? photo : null,
+      name,
+      birth_date,
+      phone: phone,
+      photo: photo,
     });
-    await this.profile_repository.create(profile);
-
-    /*
-     * 4. Vincula o usuário ao Tenant
-     */
     const membership = new Entity_Membership({
       entity_id: entity._id,
       profile_id: profile.id,
       role: MemberRole.DONO,
       status: 'ATIVO',
     });
-    await this.membership_repository.create(membership);
+    try {
+      await this.prisma.$transaction(async (tx) => {
+        await this.entity_repository.create(entity, tx);
+        await this.identity_repository.create(identity, tx);
+        await this.profile_repository.create(profile, tx);
+        await this.membership_repository.create(membership, tx);
+      });
+    } catch (error) {
+      throw new AppError(
+        'Não foi possível concluir o cadastro. Tente novamente.',
+        500,
+      );
+    }
     return 'Usuário cadastrado com sucesso';
   }
 }

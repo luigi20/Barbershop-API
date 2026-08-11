@@ -1,7 +1,8 @@
 import { Entity } from '@modules/auth/entity/shared/models/entity';
+import { Prisma } from '@prisma/client';
 
 abstract class IEntityRepository {
-  abstract create(data: Entity): Promise<void>;
+  abstract create(data: Entity, tx?: Prisma.TransactionClient): Promise<void>;
   abstract findByEmail(email: string): Promise<Entity | null>;
   abstract findById(id: string): Promise<Entity | null>;
   abstract findByIdAndEmail(
