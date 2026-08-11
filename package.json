@@ -21,7 +21,8 @@
     "lint:prettier:check": "prettier --check .",
     "lint:eslint:check": "next lint",
     "lint:prettier:fix": "prettier --write .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "commit": "cz"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
