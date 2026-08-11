@@ -34,9 +34,12 @@ jobs:
       - run: corepack enable
       - run: yarn install --frozen-lockfile
 
-      - run: yarn lint:eslint:check
+      # Gera o client do Prisma para o TypeScript conseguir validar os tipos
+      - run: yarn prisma generate
         env:
           DATABASE_URL: 'postgresql://postgres:password@localhost:5432/dummy_db'
+
+      - run: yarn lint:eslint:check
 
   commitlint:
     name: Commitlint

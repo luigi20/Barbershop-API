@@ -9,9 +9,9 @@ export interface Identity_Props {
   updated_at: Date;
   email: string;
   password_hash: string;
-  provider: AuthProvider;
+  provider: string;
   provider_id: string;
-  status: IdentityStatus;
+  status: string;
   last_login_at: Date;
   profile: Profile;
 }
@@ -96,11 +96,11 @@ export class Identity {
     this.props.last_login_at = last_login_at;
   }
 
-  public get status(): IdentityStatus {
+  public get status(): string {
     return this.props.status;
   }
 
-  public set status(status: IdentityStatus) {
+  public set status(status: string) {
     this.props.status = status;
   }
 
@@ -112,11 +112,11 @@ export class Identity {
     this.props.provider_id = provider_id;
   }
 
-  public get provider(): AuthProvider {
+  public get provider(): string {
     return this.props.provider;
   }
 
-  public set provider(provider: AuthProvider) {
+  public set provider(provider: string) {
     this.props.provider = provider;
   }
 
