@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { IPasswordResetTokensRepository } from './abstract_class/ipassword-reset-tokens-repository';
-import { DynamoDBPasswordResetTokensMapper } from '@modules/utils/mappers/dynamoDBPasswordResetTokensMapper';
 import { Password_Reset_Tokens } from '../models/password-reset-tokens';
 import { PrismaService } from 'infra/database/prisma/prisma.service';
 import { PasswordResetTokensMapper } from 'infra/database/mappers/PasswordResetTokensMapper';
@@ -27,7 +26,7 @@ class PasswordResetTokensRepository implements IPasswordResetTokensRepository {
           identity_id: identity_id,
           used_at: used,
           expires_at: {
-            gt: new Date(),
+            gt: now,
           },
         },
       });

@@ -3,7 +3,6 @@ import { InMemoryIdentityRepository } from '@modules/auth/identity/shared/reposi
 import { AppError } from '@modules/utils/app_error';
 import { InMemoryPasswordResetTokensRepository } from '@modules/auth/password_reset_tokens/shared/repositories/test/in-memory-password-reset-tokens-repository';
 import { PasswordResetService } from '../service/password_reset.service';
-import { makeEntity } from '@modules/auth/entity/shared/models/test/entity-factory';
 import { makePasswordResetTokens } from '@modules/auth/password_reset_tokens/shared/models/test/password-reset-tokens-factory';
 import * as argon2 from 'argon2';
 import { makeIdentity } from '@modules/auth/identity/shared/models/test/identity-factory';
@@ -26,7 +25,6 @@ describe('Test in route password reset', () => {
 
   it('should not password reset, because password is invalid', async () => {
     const password_reset_tokens_service = new PasswordResetService(
-      entity_repository,
       identity_repository,
       password_reset_tokens_repository,
     );
@@ -35,14 +33,11 @@ describe('Test in route password reset', () => {
         email: 'luisfoco@gmail.com',
         token: '123',
         new_password: '1234',
-        context_id: 'academia',
       }),
     ).rejects.toThrow(new AppError('Senha inválida', 400));
   });
-
-  it('should not password reset, because entity not exists', async () => {
+  it('should not password reset, because email not exists', async () => {
     const password_reset_tokens_service = new PasswordResetService(
-      entity_repository,
       identity_repository,
       password_reset_tokens_repository,
     );
@@ -51,15 +46,19 @@ describe('Test in route password reset', () => {
         email: 'luisfoco@gmail.com',
         token: '123',
         new_password: 'ccbdKCDCDUD"!!&1234',
-        context_id: 'academia',
       }),
-    ).rejects.toThrow(new AppError('Token inválido ou expirado', 400));
+    ).rejects.toThrow(new AppError('Email não encontrado', 400));
   });
 
-  it('should not password reset, because token not exists', async () => {
-    entity_repository.list_entity.push(makeEntity());
+  it('should not password reset, because token not exists or expired', async () => {
+    identity_repository.list_identity.push(
+      makeIdentity({
+        props: {
+          email: 'luisfoco@gmail.com',
+        },
+      }),
+    );
     const password_reset_tokens_service = new PasswordResetService(
-      entity_repository,
       identity_repository,
       password_reset_tokens_repository,
     );
@@ -68,24 +67,28 @@ describe('Test in route password reset', () => {
         email: 'luisfoco@gmail.com',
         token: '123',
         new_password: 'ccbdKCDCDUD"!!&1234',
-        context_id: 'academia',
       }),
     ).rejects.toThrow(new AppError('Token inválido ou expirado', 400));
   });
 
   it('should not password reset, because token is invalid', async () => {
-    entity_repository.list_entity.push(makeEntity());
+    identity_repository.list_identity.push(
+      makeIdentity({
+        props: {
+          email: 'luisfoco@gmail.com',
+        },
+      }),
+    );
     password_reset_tokens_repository.list_password_reset_tokens.push(
       makePasswordResetTokens({
         props: {
-          entity_id: entity_repository.list_entity[0]._id,
-          used: false,
+          identity_id: identity_repository.list_identity[0].id,
+          used_at: false,
         },
       }),
     );
     (argon2.verify as jest.Mock).mockResolvedValue(false);
     const password_reset_tokens_service = new PasswordResetService(
-      entity_repository,
       identity_repository,
       password_reset_tokens_repository,
     );
@@ -94,31 +97,28 @@ describe('Test in route password reset', () => {
         email: 'luisfoco@gmail.com',
         token: '123',
         new_password: 'ccbdKCDCDUD"!!&1234',
-        context_id: 'academia',
       }),
-    ).rejects.toThrow(new AppError('Token inválido ou expirado', 400));
+    ).rejects.toThrow(new AppError('Token inválido', 400));
   });
 
   it('should password reset', async () => {
-    entity_repository.list_entity.push(makeEntity());
     identity_repository.list_identity.push(
       makeIdentity({
         props: {
-          entity_id: entity_repository.list_entity[0]._id,
+          email: 'luisfoco@gmail.com',
         },
       }),
     );
     password_reset_tokens_repository.list_password_reset_tokens.push(
       makePasswordResetTokens({
         props: {
-          entity_id: entity_repository.list_entity[0]._id,
-          used: false,
+          identity_id: identity_repository.list_identity[0].id,
+          used_at: false,
         },
       }),
     );
     (argon2.verify as jest.Mock).mockResolvedValue(true);
     const password_reset_tokens_service = new PasswordResetService(
-      entity_repository,
       identity_repository,
       password_reset_tokens_repository,
     );
@@ -126,35 +126,8 @@ describe('Test in route password reset', () => {
       email: 'luisfoco@gmail.com',
       token: '123',
       new_password: 'ccbdKCDCDUD"!!&1234',
-      context_id: 'academia',
     });
     expect(result).toBe('Senha atualizada com sucesso');
-    expect(entity_repository.list_entity).toHaveLength(1);
-  });
-
-  it('should not password reset, because identity not exists', async () => {
-    entity_repository.list_entity.push(makeEntity());
-    password_reset_tokens_repository.list_password_reset_tokens.push(
-      makePasswordResetTokens({
-        props: {
-          used: false,
-          entity_id: entity_repository.list_entity[0]._id,
-        },
-      }),
-    );
-    (argon2.verify as jest.Mock).mockResolvedValue(true);
-    const password_reset_tokens_service = new PasswordResetService(
-      entity_repository,
-      identity_repository,
-      password_reset_tokens_repository,
-    );
-    expect(
-      password_reset_tokens_service.execute({
-        email: 'luisfoco@gmail.com',
-        token: '123',
-        new_password: 'ccbdKCDCDUD"!!&1234',
-        context_id: 'academia',
-      }),
-    ).rejects.toThrow(new AppError('Token inválido ou expirado', 400));
+    expect(identity_repository.list_identity).toHaveLength(1);
   });
 });
