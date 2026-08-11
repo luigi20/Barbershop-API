@@ -8,7 +8,7 @@ import { Profile } from '@modules/auth/profile/shared/models/profile';
 import { IProfileRepository } from '@modules/auth/profile/shared/repositories/abstract_class/iprofile-repository';
 import { AppError } from '@modules/utils/app_error';
 import { EntityStatus, IdentityStatus, MemberRole } from '@modules/utils/enum';
-import { user_password_validator } from '@modules/utils/functions';
+import { userPasswordValidator } from '@modules/utils/functions';
 import { Injectable } from '@nestjs/common';
 import argon2 from 'argon2';
 import { EntityMapper } from 'infra/database/mappers/EntityMapper';
@@ -43,7 +43,7 @@ export class SignUpService {
     birth_date,
     entity_type,
   }: ISignUpRequest): Promise<string> {
-    const password_validator = await user_password_validator();
+    const password_validator = userPasswordValidator();
     const errors = password_validator.validate(password, {
       list: true,
     });
@@ -58,7 +58,7 @@ export class SignUpService {
      */
     const entity = new Entity({
       name: entity_name,
-      type: EntityMapper.EntityDomainType(entity_type),
+      type: entity_type,
       status: EntityStatus.ATIVO,
     });
     await this.entity_repository.create(entity);
@@ -69,7 +69,7 @@ export class SignUpService {
       email,
       password_hash,
       mfa_required: false,
-      provider: IdentityMapper.IdentityAuthProvider('LOCAL'),
+      provider: 'local',
       status: IdentityStatus.ATIVO,
     });
     await this.identity_repository.create(identity);
