@@ -98,7 +98,7 @@
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
     }
-  },
+  },a
   "jest": {
     "moduleFileExtensions": [
       "js",
