@@ -9,7 +9,4 @@ export class PasswordResetDTO {
 
   @IsString()
   new_password: string;
-
-  @IsString()
-  context_id: string;
 }

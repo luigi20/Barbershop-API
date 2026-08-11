@@ -12,7 +12,6 @@ export class PasswordResetController {
       email: data.email,
       new_password: data.new_password,
       token: data.token,
-      context_id: data.context_id,
     });
     return result;
   }
