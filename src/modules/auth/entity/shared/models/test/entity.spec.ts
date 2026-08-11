@@ -6,8 +6,8 @@ describe('Create Entity', () => {
     const entity = new Entity({
       email: 'luisfoco@gmail.com',
       name: 'brutal',
-      status: EntityStatus.ATIVO,
-      type: EntityType.CLIENTE,
+      status: EntityStatus.PENDENTE,
+      type: EntityType.BARBEARIA,
     });
     expect(entity).toBeTruthy();
   });

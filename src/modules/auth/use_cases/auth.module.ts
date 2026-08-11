@@ -46,6 +46,10 @@ import { ChangeProfileController } from './change_profile/controller/change_prof
 import { MeProfileController } from './me_profile/controller/me_profile.controller';
 import { MeProfileService } from './me_profile/service/me_profile.service';
 import { ChangeProfileService } from './change_profile/service/change_profile.service';
+import { IEntityMembershipRepository } from '../entity_membership/shared/repositories/abstract_class/ientitymembership-repository';
+import { EntityMembershipRepository } from '../entity_membership/shared/repositories/entitymembership-repository';
+import { IEntityCustomerRepository } from '../entity_customer/shared/repositories/abstract_class/ientitycustomer-repository';
+import { EntityCustomerRepository } from '../entity_customer/shared/repositories/entitymembership-repository';
 
 @Module({
   imports: [
@@ -83,6 +87,14 @@ import { ChangeProfileService } from './change_profile/service/change_profile.se
     {
       provide: IEntityRepository,
       useClass: EntityRepository,
+    },
+    {
+      provide: IEntityMembershipRepository,
+      useClass: EntityMembershipRepository,
+    },
+    {
+      provide: IEntityCustomerRepository,
+      useClass: EntityCustomerRepository,
     },
     {
       provide: IIdentityRepository,

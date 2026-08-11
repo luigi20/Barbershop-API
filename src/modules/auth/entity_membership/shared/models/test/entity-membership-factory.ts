@@ -10,16 +10,13 @@ type FactoryParams = {
   props?: Override;
 };
 export function makeEntityMembership({ id, props }: FactoryParams = {}) {
-  return new Entity_Membership(
-    {
-      entity_id: randomUUID(),
-      profile_id: randomUUID(),
-      created_at: new Date(),
-      role: 'role',
-      status: 'ativo',
-      updated_at: new Date(),
-      ...props,
-    },
-    id,
-  );
+  return new Entity_Membership({
+    entity_id: randomUUID(),
+    profile_id: randomUUID(),
+    created_at: new Date(),
+    role: 'role',
+    status: 'ativo',
+    updated_at: new Date(),
+    ...props,
+  });
 }

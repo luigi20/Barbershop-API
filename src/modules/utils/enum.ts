@@ -7,6 +7,7 @@ export enum EntityStatus {
   ATIVO = 'ATIVO',
   INATIVO = 'INATIVO',
   BLOQUEADO = 'BLOQUEADO',
+  PENDENTE = 'PENDENTE',
 }
 
 export enum CustomerStatus {
