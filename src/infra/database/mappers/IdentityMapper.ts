@@ -32,31 +32,4 @@ export class IdentityMapper {
       raw.id,
     );
   }
-  /*
-  static IdentityStatusDomainType(type: string): IdentityStatus {
-    switch (type) {
-      case 'ATIVO':
-        return IdentityStatus.ATIVO;
-      case 'BLOQUEADO':
-        return IdentityStatus.BLOQUEADO;
-      case 'INATIVO':
-        return IdentityStatus.INATIVO;
-      default:
-        throw new AppError(`Tipo inválido: ${type}`);
-    }
-  }
-
-   static IdentityAuthProvider(type: string): AuthProvider {
-    switch (type) {
-      case 'APPLE':
-        return AuthProvider.APPLE;
-      case 'GOOGLE':
-        return AuthProvider.GOOGLE;
-      case 'LOCAL':
-        return AuthProvider.LOCAL;
-
-      default:
-        throw new Error(`Tipo inválido: ${type}`);
-    }
-  }*/
 }

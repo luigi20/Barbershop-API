@@ -4,6 +4,7 @@ import { Identity } from '../models/identity';
 
 import { PrismaService } from 'infra/database/prisma/prisma.service';
 import { IdentityMapper } from 'infra/database/mappers/IdentityMapper';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 class IdentityRepository implements IIdentityRepository {
@@ -31,9 +32,10 @@ class IdentityRepository implements IIdentityRepository {
     return IdentityMapper.toDomain(identity);
   }
 
-  async create(data: Identity): Promise<void> {
+  async create(data: Identity, tx?: Prisma.TransactionClient): Promise<void> {
     const raw = IdentityMapper.toPrisma(data);
-    await this.prisma.getPrismaClient().identity.create({
+    const client = tx ?? this.prisma;
+    await client.identity.create({
       data: raw,
     });
   }
