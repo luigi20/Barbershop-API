@@ -1,4 +1,4 @@
-import { Entity } from "@modules/auth/entity/shared/models/entity";
+import { Entity } from '@modules/auth/entity/shared/models/entity';
 
 export class DynamoDBEntityMapper {
   static toDynamo(entity: Entity) {

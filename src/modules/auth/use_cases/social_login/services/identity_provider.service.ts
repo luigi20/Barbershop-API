@@ -16,7 +16,7 @@ export interface SocialProfile {
 export class IdentityProviderService {
   constructor(
     private readonly googleProvider: GoogleProviderService,
-   // private readonly microsoftProvider: MicrosoftProviderService,
+    // private readonly microsoftProvider: MicrosoftProviderService,
   ) {}
 
   async validate(provider: string, token: string): Promise<SocialProfile> {

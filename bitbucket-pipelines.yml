@@ -16,6 +16,6 @@ pipelines:
           caches:
             - node
           script:
-              - npm install --legacy-peer-deps
-              - npm run build   # 👈 AQUI
-              - npx serverless@3 deploy --stage dev
+            - npm install --legacy-peer-deps
+            - npm run build # 👈 AQUI
+            - npx serverless@3 deploy --stage dev

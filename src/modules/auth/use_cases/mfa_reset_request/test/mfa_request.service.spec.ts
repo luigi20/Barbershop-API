@@ -54,12 +54,12 @@ describe('Test in route mfa request', () => {
   it('should mfa request', async () => {
     entity_repository.list_entity.push(makeEntity());
     identity_repository.list_identity.push(
-          makeIdentity({
-            props: {
-              entity_id: entity_repository.list_entity[0]._id,
-            },
-          }),
-        );
+      makeIdentity({
+        props: {
+          entity_id: entity_repository.list_entity[0]._id,
+        },
+      }),
+    );
     const mfa_request_service = new MFARequestService(
       entity_repository,
       mfa_code_repository,
