@@ -18,19 +18,18 @@ describe('Test in route Members', () => {
     profile_repository = new InMemoryProfileRepository();
   });
 
-
-    it('should not get members, because count members equal 0', async () => {
-      const membersService = new MembersService(
-        profile_repository,
-        identity_repository,
-      );
-        const result = await membersService.execute({
-          tenant_id: 'default',
-          context_id: 'academia',
-        });
-        expect(result.length).toBe(0);
+  it('should not get members, because count members equal 0', async () => {
+    const membersService = new MembersService(
+      profile_repository,
+      identity_repository,
+    );
+    const result = await membersService.execute({
+      tenant_id: 'default',
+      context_id: 'academia',
     });
-  
+    expect(result.length).toBe(0);
+  });
+
   it('should list members', async () => {
     entity_repository.list_entity.push(makeEntity());
     identity_repository.list_identity.push(
@@ -40,15 +39,13 @@ describe('Test in route Members', () => {
         },
       }),
     );
-    profile_repository.list_profile.push(
-      makeProfile(),
-    );
+    profile_repository.list_profile.push(makeProfile());
     const members_service = new MembersService(
       profile_repository,
       identity_repository,
     );
     const result = await members_service.execute({
-      tenant_id:'default',
+      tenant_id: 'default',
       context_id: 'academia',
     });
     expect(result.length).toBe(1);

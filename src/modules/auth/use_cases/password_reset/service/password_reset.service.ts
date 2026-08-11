@@ -50,7 +50,10 @@ export class PasswordResetService {
         context_id,
       );
     if (!identity_exists) throw new AppError('Token inválido ou expirado');
-    await this.identity_repository.update_password(identity_exists.id, new_hash);
+    await this.identity_repository.update_password(
+      identity_exists.id,
+      new_hash,
+    );
     await this.password_reset_tokens_repository.update_used(token_record.id);
     return 'Senha atualizada com sucesso';
   }

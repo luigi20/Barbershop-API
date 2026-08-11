@@ -84,38 +84,38 @@ describe('Test in route MFA confirm', () => {
     ).rejects.toThrow(new AppError('MFA inválido ou já usado', 404));
   });
 
-    it('should not mfa confirm, because MFA is invalid', async () => {
-      entity_repository.list_entity.push(makeEntity());
-      identity_repository.list_identity.push(
-        makeIdentity({
-          props: {
-            entity_id: entity_repository.list_entity[0]._id,
-          },
-        }),
-      );
-      mfa_code_repository.list_MFA_Code.push(
-        makeMFACode({
-          props: {
-            entity_id: entity_repository.list_entity[0]._id,
-            used: false,
-          },
-        }),
-      );
-      const mfaConfirmService = new MFAConfirmService(
-        entity_repository,
-        identity_repository,
-        mfa_code_repository,
-      );
-      expect(
-        mfaConfirmService.execute({
-          email: 'luisfoco@gmail.com',
-          mfa_code: '123',
-          mfa_required: 'enabled',
-          context_id: 'academia',
-        }),
-      ).rejects.toThrow(new AppError('Código do MFA inválido'));
-    });
-  
+  it('should not mfa confirm, because MFA is invalid', async () => {
+    entity_repository.list_entity.push(makeEntity());
+    identity_repository.list_identity.push(
+      makeIdentity({
+        props: {
+          entity_id: entity_repository.list_entity[0]._id,
+        },
+      }),
+    );
+    mfa_code_repository.list_MFA_Code.push(
+      makeMFACode({
+        props: {
+          entity_id: entity_repository.list_entity[0]._id,
+          used: false,
+        },
+      }),
+    );
+    const mfaConfirmService = new MFAConfirmService(
+      entity_repository,
+      identity_repository,
+      mfa_code_repository,
+    );
+    expect(
+      mfaConfirmService.execute({
+        email: 'luisfoco@gmail.com',
+        mfa_code: '123',
+        mfa_required: 'enabled',
+        context_id: 'academia',
+      }),
+    ).rejects.toThrow(new AppError('Código do MFA inválido'));
+  });
+
   it('should mfa confirm', async () => {
     entity_repository.list_entity.push(makeEntity());
     identity_repository.list_identity.push(

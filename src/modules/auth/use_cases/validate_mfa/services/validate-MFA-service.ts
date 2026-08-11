@@ -27,12 +27,7 @@ export class ValidateMFAService {
     private readonly profile_repository: IProfileRepository,
   ) {}
 
-  async execute({
-    entity_id,
-    context_id,
-    code,
-    mfa_token,
-  }: IRequest): Promise<{
+  async execute({ entity_id, context_id, code, mfa_token }: IRequest): Promise<{
     access_token: string;
     mfa_required: boolean;
     refresh_token: string;

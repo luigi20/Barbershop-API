@@ -75,4 +75,4 @@ describe('Test in route generate mfa', () => {
     expect(entity_repository.list_entity).toHaveLength(1);
     expect(identity_repository.list_identity).toHaveLength(1);
   });
- });
+});

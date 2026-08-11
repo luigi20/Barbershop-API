@@ -20,7 +20,10 @@ describe('Test in route Me Profile', () => {
   });
 
   it('should not get profile, because identity not exists', async () => {
-    const me_profile_service = new MeProfileService(profile_repository, identity_repository);
+    const me_profile_service = new MeProfileService(
+      profile_repository,
+      identity_repository,
+    );
     expect(
       me_profile_service.execute({
         context_id: 'academia',
@@ -30,27 +33,27 @@ describe('Test in route Me Profile', () => {
   });
 
   it('should not get profile, because profile not exists', async () => {
-        entity_repository.list_entity.push(makeEntity());
-        identity_repository.list_identity.push(
-          makeIdentity({
-            props: {
-              entity_id: entity_repository.list_entity[0]._id,
-              password: await argon2.hash('123LLv!!@32mjnvhfh'),
-              mfa_required: true,
-            },
-          }),
-        );
-      const me_profile_service = new MeProfileService(
-        profile_repository,
-        identity_repository,
-      );
-      expect(
-        me_profile_service.execute({
-          context_id: 'academia',
+    entity_repository.list_entity.push(makeEntity());
+    identity_repository.list_identity.push(
+      makeIdentity({
+        props: {
           entity_id: entity_repository.list_entity[0]._id,
-        }),
-      ).rejects.toThrow(new AppError('Perfil não existe', 404));
-    });
+          password: await argon2.hash('123LLv!!@32mjnvhfh'),
+          mfa_required: true,
+        },
+      }),
+    );
+    const me_profile_service = new MeProfileService(
+      profile_repository,
+      identity_repository,
+    );
+    expect(
+      me_profile_service.execute({
+        context_id: 'academia',
+        entity_id: entity_repository.list_entity[0]._id,
+      }),
+    ).rejects.toThrow(new AppError('Perfil não existe', 404));
+  });
 
   it('should get profile', async () => {
     entity_repository.list_entity.push(makeEntity());

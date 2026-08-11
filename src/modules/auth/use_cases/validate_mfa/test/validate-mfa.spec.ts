@@ -271,7 +271,9 @@ describe('Test in route validate mfa', () => {
         entity_id: '12',
         mfa_token: 'mdkdnvdvhdvjh fv',
       }),
-    ).rejects.toThrow(new AppError('Perfil não encontrado para este tenant',404));
+    ).rejects.toThrow(
+      new AppError('Perfil não encontrado para este tenant', 404),
+    );
   });
 
   it('should validate MFA', async () => {

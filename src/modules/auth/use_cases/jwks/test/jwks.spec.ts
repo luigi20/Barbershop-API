@@ -10,19 +10,18 @@ jest.mock('node-forge', () => {
 });
 
 describe('Test in route jwks', () => {
-
   beforeEach(() => {
     // Populando os repositórios com dados iniciais
- (forge.pki.publicKeyFromPem as jest.Mock).mockReturnValue({
-   n: {
-     toByteArray: () => [1, 2, 3, 4],
-   },
-   e: {
-     toByteArray: () => [1, 0, 1],
-   },
- });
+    (forge.pki.publicKeyFromPem as jest.Mock).mockReturnValue({
+      n: {
+        toByteArray: () => [1, 2, 3, 4],
+      },
+      e: {
+        toByteArray: () => [1, 0, 1],
+      },
+    });
 
- process.env.JWT_PUBLIC_KEY = 'fake-key';
+    process.env.JWT_PUBLIC_KEY = 'fake-key';
   });
 
   it('should return jwks', async () => {

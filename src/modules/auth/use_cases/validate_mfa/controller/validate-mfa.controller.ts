@@ -13,7 +13,6 @@ export class ValidateMFAController {
       code: data.code,
       entity_id: data.entity_id,
       mfa_token: data.token,
-      
     });
     return result;
   }

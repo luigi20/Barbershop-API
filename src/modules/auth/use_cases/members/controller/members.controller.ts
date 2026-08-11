@@ -1,4 +1,4 @@
-import {  Controller, Get, Req } from '@nestjs/common';
+import { Controller, Get, Req } from '@nestjs/common';
 import { MembersService } from '../services/members.service';
 import { Profile_View_Model } from '@modules/auth/profile/shared/view-models/profile-view-model';
 import { AuthRequest } from '@modules/utils/types/types';
