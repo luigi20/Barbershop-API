@@ -1,0 +1,8 @@
+import { Profile } from '../../models/profile';
+
+abstract class IProfileRepository {
+  abstract create(data: Profile): Promise<void>;
+  abstract update(data: Profile): Promise<void>;
+  abstract find_identity_id(identity_id: string): Promise<Profile | null>;
+}
+export { IProfileRepository };

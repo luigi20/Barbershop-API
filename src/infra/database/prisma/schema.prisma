@@ -1,0 +1,157 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // Mude para o seu banco (mysql, sqlite, etc)
+}
+
+model Entity {
+  id                String             @id @db.Uuid()
+  type              String             @db.VarChar()
+  name              String             @db.VarChar()
+  document          String?            @db.VarChar()
+  email             String?            @db.VarChar()
+  phone             String?            @db.VarChar()
+  photo             String?            @db.VarChar()
+  status            String             @db.VarChar()
+  created_at        DateTime
+  updated_at        DateTime
+  entityMemberships EntityMembership[]
+  entityCustomers   EntityCustomer[]
+  subscriptions     Subscription[]
+}
+
+model Identity {
+  id                  String               @id @db.Uuid()
+  email               String               @unique @db.VarChar()
+  password_hash       String               @db.VarChar()
+  mfa_required        Boolean
+  provider            String               @db.VarChar()
+  provider_id         String?              @db.Uuid()
+  status              String               @db.VarChar()
+  last_login_at       DateTime?
+  created_at          DateTime
+  updated_at          DateTime
+  profile             Profile?
+  mfaCodes            MfaCode[]
+  passwordResetTokens PasswordResetToken[]
+  refreshTokens       RefreshToken[]
+
+  @@unique([provider, provider_id])
+}
+
+model Profile {
+  id          String   @id @db.Uuid()
+  identity_id String   @unique @db.Uuid()
+  identity    Identity @relation(fields: [identity_id], references: [id])
+  name        String   @db.VarChar()
+  phone       String   @db.VarChar()
+  photo       String?  @db.VarChar()
+  birth_date  DateTime
+  created_at  DateTime
+  updated_at  DateTime
+
+  entityMemberships EntityMembership[]
+  entityCustomers   EntityCustomer[]
+}
+
+model MfaCode {
+  id          String   @id @db.Uuid
+  identity_id String   @db.Uuid
+  code_hash   String   @db.VarChar(255)
+  type        String   @db.VarChar(255)
+  expires_at  DateTime
+  used_at     Boolean
+  attempts    Int
+  created_at  DateTime
+  updated_at  DateTime
+  identity    Identity @relation(fields: [identity_id], references: [id], onDelete: Cascade)
+
+  @@index([identity_id])
+}
+
+model PasswordResetToken {
+  id          String   @id @db.Uuid
+  identity_id String   @db.Uuid
+  token_hash  String   @db.VarChar(255)
+  expires_at  DateTime
+  used_at     Boolean
+  created_at  DateTime
+  updated_at  DateTime
+  identity    Identity @relation(fields: [identity_id], references: [id], onDelete: Cascade)
+
+  @@index([identity_id])
+}
+
+model RefreshToken {
+  id          String   @id @db.Uuid
+  identity_id String   @db.Uuid
+  token_hash  String   @db.VarChar(255)
+  revoked_at  Boolean
+  expires_at  DateTime
+  created_at  DateTime
+  updated_at  DateTime
+  identity    Identity @relation(fields: [identity_id], references: [id], onDelete: Cascade)
+
+  @@index([identity_id])
+  @@index([expires_at])
+}
+
+model EntityMembership {
+  entity_id  String   @db.Uuid
+  profile_id String   @db.Uuid
+  role       String   @db.VarChar()
+  status     String   @db.VarChar()
+  created_at DateTime
+  updated_at DateTime
+  entity     Entity   @relation(fields: [entity_id], references: [id], onDelete: Cascade)
+  profile    Profile  @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+
+  @@unique([entity_id, profile_id])
+}
+
+model EntityCustomer {
+  entity_id  String   @db.Uuid
+  profile_id String   @db.Uuid
+  status     String   @db.VarChar()
+  notes      String?  @db.VarChar()
+  created_at DateTime
+  updated_at DateTime
+  entity     Entity   @relation(fields: [entity_id], references: [id], onDelete: Cascade)
+  profile    Profile  @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+
+  @@unique([entity_id, profile_id])
+}
+
+model Subscription {
+  id         String    @id @default(uuid()) @db.Uuid
+  entity_id  String    @db.Uuid
+  plan_id    String    @db.Uuid
+  status     String    @db.VarChar(255)
+  started_at DateTime
+  ended_at   DateTime?
+  created_at DateTime
+  updated_at DateTime  @updatedAt
+
+  entity Entity @relation(fields: [entity_id], references: [id], onDelete: Cascade)
+  plan   Plan   @relation(fields: [plan_id], references: id)
+
+  @@index([entity_id])
+  @@index([plan_id])
+}
+
+model Plan {
+  id               String   @id @db.Uuid
+  name             String   @db.VarChar(100)
+  description      String?  @db.VarChar(255)
+  price            Decimal  @db.Decimal(10, 2)
+  max_members      Int?
+  max_customers    Int?
+  max_appointments Int?
+  active           Boolean
+  created_at       DateTime
+  updated_at       DateTime
+
+  subscriptions Subscription[]
+}
