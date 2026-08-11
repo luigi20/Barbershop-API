@@ -3,25 +3,26 @@ import { InMemoryEntityRepository } from '@modules/auth/entity/shared/repositori
 import { InMemoryPasswordResetTokensRepository } from '@modules/auth/password_reset_tokens/shared/repositories/test/in-memory-password-reset-tokens-repository';
 import { AppError } from '@modules/utils/app_error';
 import { PasswordResetRequestService } from '../service/password_reset_request.service';
+import { InMemoryIdentityRepository } from '@modules/auth/identity/shared/repositories/test/in-memory-identity-repository';
+import { makeIdentity } from '@modules/auth/identity/shared/models/test/identity-factory';
 
 describe('Test in route password reset request', () => {
-  let entity_repository: InMemoryEntityRepository;
+  let identity_repository: InMemoryIdentityRepository;
   let password_reset_tokens_repository: InMemoryPasswordResetTokensRepository;
   const email_service = {
     send: jest.fn().mockReturnValue('fake-jwt-token'),
   };
   beforeEach(() => {
     // Populando os repositórios com dados iniciais
-    entity_repository = new InMemoryEntityRepository();
+    identity_repository = new InMemoryIdentityRepository();
     password_reset_tokens_repository =
       new InMemoryPasswordResetTokensRepository();
   });
 
-  it('should not passsword reset request, because entity not exists', async () => {
+  it('should not passsword reset request, because identity not exists', async () => {
     const password_reset_tokens_service = new PasswordResetRequestService(
-      entity_repository,
+      identity_repository,
       password_reset_tokens_repository,
-      email_service,
     );
     expect(
       password_reset_tokens_service.execute({
@@ -31,16 +32,21 @@ describe('Test in route password reset request', () => {
   });
 
   it('should reset request', async () => {
-    entity_repository.list_entity.push(makeEntity());
+    identity_repository.list_identity.push(
+      makeIdentity({
+        props: {
+          email: 'luisfoco@gmail.com',
+        },
+      }),
+    );
     const password_reset_tokens_service = new PasswordResetRequestService(
-      entity_repository,
+      identity_repository,
       password_reset_tokens_repository,
-      email_service,
     );
     const result = await password_reset_tokens_service.execute({
       email: 'luisfoco@gmail.com',
     });
     expect(result).toBe('Email foi enviado');
-    expect(entity_repository.list_entity).toHaveLength(1);
+    expect(identity_repository.list_identity).toHaveLength(1);
   });
 });
