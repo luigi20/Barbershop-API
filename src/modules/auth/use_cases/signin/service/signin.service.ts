@@ -1,3 +1,4 @@
+import { IEntityRepository } from '@modules/auth/entity/shared/repositories/abstract_class/ientity-repository';
 import { IEntityCustomerRepository } from '@modules/auth/entity_customer/shared/repositories/abstract_class/ientitycustomer-repository';
 import { IEntityMembershipRepository } from '@modules/auth/entity_membership/shared/repositories/abstract_class/ientitymembership-repository';
 import { IIdentityRepository } from '@modules/auth/identity/shared/repositories/abstract_class/iidentity-repository';
@@ -5,7 +6,7 @@ import { IProfileRepository } from '@modules/auth/profile/shared/repositories/ab
 import { Refresh_Tokens } from '@modules/auth/refresh_token/shared/models/refresh-tokens';
 import { IRefreshTokensRepository } from '@modules/auth/refresh_token/shared/repositories/abstract_class/irefresh-tokens-repository';
 import { AppError } from '@modules/utils/app_error';
-import { Generate_Hash } from '@modules/utils/functions';
+import { generateHash } from '@modules/utils/functions';
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import argon2 from 'argon2';
@@ -24,6 +25,7 @@ export class SignInService {
     private readonly refresh_token_repository: IRefreshTokensRepository,
     private readonly profile_repository: IProfileRepository,
     private readonly entity_membership_repository: IEntityMembershipRepository,
+    private readonly entity_repository: IEntityRepository,
     private readonly jwt_service: JwtService,
   ) {}
 
@@ -36,6 +38,8 @@ export class SignInService {
     mfa_required: boolean;
     refresh_token: string;
   }> {
+    const entity = await this.entity_repository.findById(entity_id);
+    if (!entity) throw new AppError('Empresa não encontrada', 404);
     const normalizedEmail = email.toLowerCase().trim();
     // 1. Localiza a conta de autenticação
     const identity =
@@ -112,7 +116,7 @@ export class SignInService {
       },
     );
     // 8. Armazena apenas o hash do refresh token
-    const token_hash = await Generate_Hash(refresh_token);
+    const token_hash = generateHash(refresh_token);
     const refreshToken = new Refresh_Tokens({
       identity_id: identity.id,
       token_hash,

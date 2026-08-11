@@ -4,13 +4,16 @@ import { makeIdentity } from '@modules/auth/identity/shared/models/test/identity
 import { InMemoryIdentityRepository } from '@modules/auth/identity/shared/repositories/test/in-memory-identity-repository';
 import { AppError } from '@modules/utils/app_error';
 import { SignInService } from '../service/signin.service';
-import argon2 from 'argon2';
 import { InMemoryRefreshTokensRepository } from '@modules/auth/refresh_token/shared/repositories/test/in-memory-refresh-tokens-repository';
 import { InMemoryProfileRepository } from '@modules/auth/profile/shared/repositories/test/in-memory-profile-repository';
 import { makeProfile } from '@modules/auth/profile/shared/models/test/profile-factory';
 import { InMemoryEntityMembershipRepository } from '@modules/auth/entity_membership/shared/repositories/test/in-memory-entitymembership-repository';
 import { InMemoryEntityCustomerRepository } from '@modules/auth/entity_customer/shared/repositories/test/in-memory-entitycustomer-repository';
+import * as argon2 from 'argon2';
+import { makeEntityMembership } from '@modules/auth/entity_membership/shared/models/test/entity-membership-factory';
+import { makeEntityMembershipCustomer } from '@modules/auth/entity_customer/shared/models/test/entity-customer-factory';
 
+jest.mock('argon2');
 describe('Test in route signup', () => {
   let entity_repository: InMemoryEntityRepository;
   let identity_repository: InMemoryIdentityRepository;
@@ -22,11 +25,14 @@ describe('Test in route signup', () => {
     sign: jest.fn().mockReturnValue('fake-jwt-token'),
   };
   beforeEach(() => {
+    jest.clearAllMocks();
     // Populando os repositórios com dados iniciais
     entity_repository = new InMemoryEntityRepository();
     identity_repository = new InMemoryIdentityRepository();
     refresh_token_repository = new InMemoryRefreshTokensRepository();
     profile_repository = new InMemoryProfileRepository();
+    entity_membership_repository = new InMemoryEntityMembershipRepository();
+    entity_membercustomer_repository = new InMemoryEntityCustomerRepository();
   });
 
   it('should not signin, because entity not exists', async () => {
@@ -36,6 +42,7 @@ describe('Test in route signup', () => {
       refresh_token_repository,
       profile_repository,
       entity_membership_repository,
+      entity_repository,
       jwt_service as any,
     );
     expect(
@@ -44,17 +51,28 @@ describe('Test in route signup', () => {
         email: 'luisfoco@gmail.com',
         password: '1',
       }),
-    ).rejects.toThrow(new AppError('Credenciais inválidas'));
+    ).rejects.toThrow(new AppError('Empresa não encontrada', 404));
   });
 
   it('should not signin, because identity not exists', async () => {
-    entity_repository.list_entity.push(makeEntity());
+    entity_repository.list_entity.push(
+      makeEntity({
+        id: 'academia',
+      }),
+    );
+    identity_repository.list_identity.push(
+      makeIdentity({
+        id: '123',
+        props: {},
+      }),
+    );
     const signInService = new SignInService(
       entity_membercustomer_repository,
       identity_repository,
       refresh_token_repository,
       profile_repository,
       entity_membership_repository,
+      entity_repository,
       jwt_service as any,
     );
     expect(
@@ -67,12 +85,17 @@ describe('Test in route signup', () => {
   });
 
   it('should not signin, because password is invalid', async () => {
-    entity_repository.list_entity.push(makeEntity());
+    entity_repository.list_entity.push(
+      makeEntity({
+        id: 'academia',
+      }),
+    );
+    (argon2.verify as jest.Mock).mockResolvedValue(false);
     identity_repository.list_identity.push(
       makeIdentity({
         props: {
-          email: identity_repository.list_identity[0].email,
-          password_hash: identity_repository.list_identity[0].password_hash,
+          email: 'luisfoco@gmail.com',
+          password_hash: '154trghtht',
         },
       }),
     );
@@ -82,6 +105,7 @@ describe('Test in route signup', () => {
       refresh_token_repository,
       profile_repository,
       entity_membership_repository,
+      entity_repository,
       jwt_service as any,
     );
     expect(
@@ -90,16 +114,21 @@ describe('Test in route signup', () => {
         email: 'luisfoco@gmail.com',
         password: '123gghghhy6y6',
       }),
-    ).rejects.toThrow(new AppError('Credenciais inválidas'));
+    ).rejects.toThrow(new AppError('Senha inválida'));
   });
 
   it('should not signin, because profile not exists', async () => {
-    entity_repository.list_entity.push(makeEntity());
+    (argon2.verify as jest.Mock).mockResolvedValue(true);
+    entity_repository.list_entity.push(
+      makeEntity({
+        id: 'academia',
+      }),
+    );
     identity_repository.list_identity.push(
       makeIdentity({
         props: {
-          email: identity_repository.list_identity[0].email,
-          password_hash: await argon2.hash('123LLv!!@32mjnvhfh'),
+          email: 'luisfoco@gmail.com',
+          password_hash: '123LLv!!@32mjnvhfh',
         },
       }),
     );
@@ -110,6 +139,7 @@ describe('Test in route signup', () => {
       refresh_token_repository,
       profile_repository,
       entity_membership_repository,
+      entity_repository,
       jwt_service as any,
     );
     expect(
@@ -118,17 +148,19 @@ describe('Test in route signup', () => {
         email: 'luisfoco@gmail.com',
         password: '123LLv!!@32mjnvhfh',
       }),
-    ).rejects.toThrow(
-      new AppError('Perfil não encontrado para este tenant', 404),
-    );
+    ).rejects.toThrow(new AppError('Perfil não encontrado', 404));
   });
 
-  it('should signin without mfa required', async () => {
-    entity_repository.list_entity.push(makeEntity());
+  it('should not signin, because user not exists in organization', async () => {
+    entity_repository.list_entity.push(
+      makeEntity({
+        id: 'academia',
+      }),
+    );
     identity_repository.list_identity.push(
       makeIdentity({
         props: {
-          email: identity_repository.list_identity[0].email,
+          email: 'luisfoco@gmail.com',
           password_hash: await argon2.hash('123LLv!!@32mjnvhfh'),
         },
       }),
@@ -146,6 +178,56 @@ describe('Test in route signup', () => {
       refresh_token_repository,
       profile_repository,
       entity_membership_repository,
+      entity_repository,
+      jwt_service as any,
+    );
+    expect(
+      signInService.execute({
+        entity_id: 'academia',
+        email: 'luisfoco@gmail.com',
+        password: '123LLv!!@32mjnvhfh',
+      }),
+    ).rejects.toThrow(
+      new AppError('Usuário não pertence a esta organização', 404),
+    );
+  });
+
+  it('should signin without mfa required, being membership', async () => {
+    entity_repository.list_entity.push(
+      makeEntity({
+        id: 'academia',
+      }),
+    );
+    identity_repository.list_identity.push(
+      makeIdentity({
+        props: {
+          email: 'luisfoco@gmail.com',
+          password_hash: await argon2.hash('123LLv!!@32mjnvhfh'),
+        },
+      }),
+    );
+    profile_repository.list_profile.push(
+      makeProfile({
+        props: {
+          identity_id: identity_repository.list_identity[0].id,
+        },
+      }),
+    );
+    entity_membership_repository.list_membership.push(
+      makeEntityMembership({
+        props: {
+          entity_id: entity_repository.list_entity[0]._id,
+          profile_id: profile_repository.list_profile[0].id,
+        },
+      }),
+    );
+    const signInService = new SignInService(
+      entity_membercustomer_repository,
+      identity_repository,
+      refresh_token_repository,
+      profile_repository,
+      entity_membership_repository,
+      entity_repository,
       jwt_service as any,
     );
     const result = await signInService.execute({
@@ -158,11 +240,16 @@ describe('Test in route signup', () => {
     expect(identity_repository.list_identity).toHaveLength(1);
   });
 
-  it('should signin with mfa required', async () => {
-    entity_repository.list_entity.push(makeEntity());
+  it('should signin with mfa required, being membership', async () => {
+    entity_repository.list_entity.push(
+      makeEntity({
+        id: 'academia',
+      }),
+    );
     identity_repository.list_identity.push(
       makeIdentity({
         props: {
+          email: 'luisfoco@gmail.com',
           password_hash: await argon2.hash('123LLv!!@32mjnvhfh'),
           mfa_required: true,
         },
@@ -175,12 +262,118 @@ describe('Test in route signup', () => {
         },
       }),
     );
+    entity_membership_repository.list_membership.push(
+      makeEntityMembership({
+        props: {
+          entity_id: entity_repository.list_entity[0]._id,
+          profile_id: profile_repository.list_profile[0].id,
+        },
+      }),
+    );
     const signInService = new SignInService(
       entity_membercustomer_repository,
       identity_repository,
       refresh_token_repository,
       profile_repository,
       entity_membership_repository,
+      entity_repository,
+      jwt_service as any,
+    );
+    const result = await signInService.execute({
+      entity_id: 'academia',
+      email: 'luisfoco@gmail.com',
+      password: '123LLv!!@32mjnvhfh',
+    });
+    expect(result.mfa_required).toBe(true);
+    expect(entity_repository.list_entity).toHaveLength(1);
+    expect(identity_repository.list_identity).toHaveLength(1);
+  });
+
+  it('should signin without mfa required, being membercustomer', async () => {
+    entity_repository.list_entity.push(
+      makeEntity({
+        id: 'academia',
+      }),
+    );
+    identity_repository.list_identity.push(
+      makeIdentity({
+        props: {
+          email: 'luisfoco@gmail.com',
+          password_hash: await argon2.hash('123LLv!!@32mjnvhfh'),
+        },
+      }),
+    );
+    profile_repository.list_profile.push(
+      makeProfile({
+        props: {
+          identity_id: identity_repository.list_identity[0].id,
+        },
+      }),
+    );
+    entity_membercustomer_repository.list_customer.push(
+      makeEntityMembershipCustomer({
+        props: {
+          entity_id: entity_repository.list_entity[0]._id,
+          profile_id: profile_repository.list_profile[0].id,
+        },
+      }),
+    );
+    const signInService = new SignInService(
+      entity_membercustomer_repository,
+      identity_repository,
+      refresh_token_repository,
+      profile_repository,
+      entity_membership_repository,
+      entity_repository,
+      jwt_service as any,
+    );
+    const result = await signInService.execute({
+      entity_id: 'academia',
+      email: 'luisfoco@gmail.com',
+      password: '123LLv!!@32mjnvhfh',
+    });
+    expect(result.mfa_required).toBe(false);
+    expect(entity_repository.list_entity).toHaveLength(1);
+    expect(identity_repository.list_identity).toHaveLength(1);
+  });
+
+  it('should signin with mfa required, being membership', async () => {
+    entity_repository.list_entity.push(
+      makeEntity({
+        id: 'academia',
+      }),
+    );
+    identity_repository.list_identity.push(
+      makeIdentity({
+        props: {
+          email: 'luisfoco@gmail.com',
+          password_hash: await argon2.hash('123LLv!!@32mjnvhfh'),
+          mfa_required: true,
+        },
+      }),
+    );
+    profile_repository.list_profile.push(
+      makeProfile({
+        props: {
+          identity_id: identity_repository.list_identity[0].id,
+        },
+      }),
+    );
+    entity_membercustomer_repository.list_customer.push(
+      makeEntityMembershipCustomer({
+        props: {
+          entity_id: entity_repository.list_entity[0]._id,
+          profile_id: profile_repository.list_profile[0].id,
+        },
+      }),
+    );
+    const signInService = new SignInService(
+      entity_membercustomer_repository,
+      identity_repository,
+      refresh_token_repository,
+      profile_repository,
+      entity_membership_repository,
+      entity_repository,
       jwt_service as any,
     );
     const result = await signInService.execute({

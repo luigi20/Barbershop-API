@@ -9,7 +9,9 @@ import { makeMFACode } from '@modules/auth/mfa/shared/models/test/mfa-code-facto
 import { InMemoryRefreshTokensRepository } from '@modules/auth/refresh_token/shared/repositories/test/in-memory-refresh-tokens-repository';
 import { InMemoryProfileRepository } from '@modules/auth/profile/shared/repositories/test/in-memory-profile-repository';
 import { makeProfile } from '@modules/auth/profile/shared/models/test/profile-factory';
+import * as argon2 from 'argon2';
 
+jest.mock('argon2');
 describe('Test in route validate mfa', () => {
   let entity_repository: InMemoryEntityRepository;
   let identity_repository: InMemoryIdentityRepository;
@@ -35,6 +37,7 @@ describe('Test in route validate mfa', () => {
   });
 
   it('should not validate MFA, because entity not exists', async () => {
+    (argon2.verify as jest.Mock).mockResolvedValue(false);
     const validateMFAService = new ValidateMFAService(
       entity_repository,
       mfa_code_repository,

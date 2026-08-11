@@ -59,7 +59,7 @@ export class SignUpService {
     const entity = new Entity({
       name: entity_name,
       type: entity_type,
-      status: EntityStatus.ATIVO,
+      status: EntityStatus.PENDENTE,
       document,
       email,
       phone,
