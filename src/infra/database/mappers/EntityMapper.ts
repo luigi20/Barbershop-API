@@ -1,6 +1,4 @@
 import { Entity } from '@modules/auth/entity/shared/models/entity';
-import { AppError } from '@modules/utils/app_error';
-import { EntityStatus, EntityType } from '@modules/utils/enum';
 import { Entity as PrismaEntity } from '@prisma/client';
 export class EntityMapper {
   static toPrisma(entity: Entity) {
@@ -24,27 +22,23 @@ export class EntityMapper {
         email: raw.email,
         created_at: raw.created_at,
         updated_at: raw.updated_at,
-        type: EntityMapper.EntityDomainType(raw.type),
+        type: raw.type,
         name: raw.name,
         document: raw.document,
         phone: raw.phone,
         photo: raw.photo,
-        status: EntityMapper.EntityStatusDomainType(raw.status),
+        status: raw.status,
       },
       raw.id,
     );
   }
-
+  /*
   static EntityDomainType(type: string): EntityType {
     switch (type) {
       case 'BARBEARIA':
         return EntityType.BARBEARIA;
-      case 'CLIENTE':
-        return EntityType.CLIENTE;
-      case 'BARBEIRO':
-        return EntityType.BARBEIRO;
-      case 'RECEPCIONISTA':
-        return EntityType.RECEPCIONISTA;
+      case 'STUDIO':
+        return EntityType.STUDIO;
 
       default:
         throw new Error(`Tipo inválido: ${type}`);
@@ -62,5 +56,5 @@ export class EntityMapper {
       default:
         throw new AppError(`Tipo inválido: ${type}`);
     }
-  }
+  }*/
 }

@@ -2,8 +2,9 @@ import { createHash } from 'crypto';
 import PasswordValidator from 'password-validator';
 import * as generator from 'generate-password';
 
-export async function user_password_validator(): Promise<PasswordValidator> {
+export function userPasswordValidator(): PasswordValidator {
   const passwordSchema = new PasswordValidator();
+
   passwordSchema
     .is()
     .min(10)
@@ -20,27 +21,26 @@ export async function user_password_validator(): Promise<PasswordValidator> {
     .has()
     .not()
     .spaces();
+
   return passwordSchema;
 }
 
-export async function Generate_Code(): Promise<string> {
+export function generateCode(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-export async function generateValidRandomPassword(): Promise<string> {
-  const password = generator.generate({
-    length: 16, // Atende a regra min(10) e max(100)
-    numbers: true, // Atende a regra has().digits()
-    symbols: true, // Atende a regra has().symbols()
-    lowercase: true, // Atende a regra has().lowercase()
-    uppercase: true, // Atende a regra has().uppercase()
-    exclude: ' ', // Atende a regra not().spaces()
-    strict: true, // GARANTE que tenha pelo menos um de cada acima
+export function generateValidRandomPassword(): string {
+  return generator.generate({
+    length: 16,
+    numbers: true,
+    symbols: true,
+    lowercase: true,
+    uppercase: true,
+    exclude: ' ',
+    strict: true,
   });
-
-  return password;
 }
 
-export async function Generate_Hash(value: string): Promise<string> {
+export function generateHash(value: string): string {
   return createHash('sha256').update(value).digest('hex');
 }

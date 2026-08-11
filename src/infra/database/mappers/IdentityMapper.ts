@@ -1,10 +1,4 @@
 import { Identity } from '@modules/auth/identity/shared/models/identity';
-import { AppError } from '@modules/utils/app_error';
-import {
-  AuthProvider,
-  EntityStatus,
-  IdentityStatus,
-} from '@modules/utils/enum';
 import { Identity as PrismaIdentity } from '@prisma/client';
 export class IdentityMapper {
   static toPrisma(identity: Identity) {
@@ -26,11 +20,11 @@ export class IdentityMapper {
     return new Identity(
       {
         provider_id: raw.provider_id,
-        provider: IdentityMapper.IdentityAuthProvider(raw.provider),
+        provider: raw.provider,
         email: raw.email,
         password_hash: raw.password_hash,
         mfa_required: raw.mfa_required,
-        status: IdentityMapper.IdentityStatusDomainType(raw.status),
+        status: raw.status,
         last_login_at: raw.last_login_at,
         created_at: raw.created_at,
         updated_at: raw.updated_at,
@@ -38,7 +32,7 @@ export class IdentityMapper {
       raw.id,
     );
   }
-
+  /*
   static IdentityStatusDomainType(type: string): IdentityStatus {
     switch (type) {
       case 'ATIVO':
@@ -52,7 +46,7 @@ export class IdentityMapper {
     }
   }
 
-  static IdentityAuthProvider(type: string): AuthProvider {
+   static IdentityAuthProvider(type: string): AuthProvider {
     switch (type) {
       case 'APPLE':
         return AuthProvider.APPLE;
@@ -64,5 +58,5 @@ export class IdentityMapper {
       default:
         throw new Error(`Tipo inválido: ${type}`);
     }
-  }
+  }*/
 }

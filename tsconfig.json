@@ -28,6 +28,13 @@
       "@utils/*": ["modules/utils/*"]
     }
   },
-  "include": ["src/**/*.ts", "test/**/*.ts", "prisma/*.ts"],
+  "include": [
+    "src/**/*.ts",
+    "test/**/*.ts",
+    "prisma/*.ts",
+    "src/**/*",
+    "commitlint.config.js",
+    "prisma.config.ts"
+  ],
   "exclude": ["node_modules"]
 }

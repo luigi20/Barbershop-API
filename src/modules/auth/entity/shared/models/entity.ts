@@ -6,12 +6,12 @@ export interface Entity_Props {
   email: string;
   created_at: Date;
   updated_at: Date;
-  type: EntityType;
+  type: string;
   name: string;
   document: string;
   phone: string;
   photo: string;
-  status: EntityStatus;
+  status: string;
 }
 
 export class Entity {
@@ -104,19 +104,19 @@ export class Entity {
     this.props.name = name;
   }
 
-  public get type(): EntityType {
+  public get type(): string {
     return this.props.type;
   }
 
-  public set type(type: EntityType) {
+  public set type(type: string) {
     this.props.type = type;
   }
 
-  public get status(): EntityStatus {
+  public get status(): string {
     return this.props.status;
   }
 
-  public set status(status: EntityStatus) {
+  public set status(status: string) {
     this.props.status = status;
   }
 }
