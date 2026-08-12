@@ -2,6 +2,7 @@ import { Replace } from '@modules/utils/helper';
 
 export interface Entity_Customer_Props {
   entity_id: string;
+  name: string;
   profile_id: string;
   notes: string;
   status: string;
@@ -19,6 +20,7 @@ export class Entity_Customer {
         created_at?: Date;
         updated_at?: Date;
         notes?: string;
+        name?: string;
       }
     >,
     id?: string,
@@ -28,6 +30,7 @@ export class Entity_Customer {
       created_at: props.created_at ?? new Date(),
       updated_at: props.updated_at ?? new Date(),
       notes: props.notes ?? null,
+      name: props.name ?? null,
     };
   }
 
@@ -45,6 +48,10 @@ export class Entity_Customer {
 
   public set profile_id(profile_id: string) {
     this.props.profile_id = profile_id;
+  }
+
+  public get name(): string {
+    return this.props.name;
   }
 
   public get notes(): string {

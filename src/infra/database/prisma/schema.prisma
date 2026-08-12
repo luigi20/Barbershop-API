@@ -20,6 +20,7 @@ model Entity {
   entityMemberships EntityMembership[]
   entityCustomers   EntityCustomer[]
   subscriptions     Subscription[]
+  mfaCodes          MfaCode[]
 }
 
 model Identity {
@@ -67,6 +68,8 @@ model MfaCode {
   created_at  DateTime
   updated_at  DateTime
   identity    Identity @relation(fields: [identity_id], references: [id], onDelete: Cascade)
+  entity      Entity?  @relation(fields: [entityId], references: [id])
+  entityId    String?  @db.Uuid()
 
   @@index([identity_id])
 }

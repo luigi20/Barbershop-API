@@ -3,6 +3,7 @@ import { Replace } from '@modules/utils/helper';
 export interface Entity_Membership_Props {
   entity_id: string;
   profile_id: string;
+  name: string;
   role: string;
   status: string;
   created_at: Date;
@@ -18,6 +19,7 @@ export class Entity_Membership {
       {
         created_at?: Date;
         updated_at?: Date;
+        name?: string;
       }
     >,
     id?: string,
@@ -26,6 +28,7 @@ export class Entity_Membership {
       ...props,
       created_at: props.created_at ?? new Date(),
       updated_at: props.updated_at ?? new Date(),
+      name: props.name ?? null,
     };
   }
 
@@ -35,6 +38,14 @@ export class Entity_Membership {
 
   public set entity_id(entity_id: string) {
     this.props.entity_id = entity_id;
+  }
+
+  public get name(): string {
+    return this.props.name;
+  }
+
+  public set name(name: string) {
+    this.props.name = name;
   }
 
   public get profile_id(): string {

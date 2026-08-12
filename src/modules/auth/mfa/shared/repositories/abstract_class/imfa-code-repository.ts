@@ -9,5 +9,10 @@ abstract class IMFACodeRepository {
     used: boolean,
     now: Date,
   ): Promise<MFA_Code | null>;
+  abstract find_one_code_and_expires_at(
+    code: string,
+    used: boolean,
+    now: Date,
+  ): Promise<MFA_Code | null>;
 }
 export { IMFACodeRepository };

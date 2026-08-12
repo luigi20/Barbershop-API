@@ -10,6 +10,7 @@ abstract class IIdentityRepository {
     last_login_at: Date,
   ): Promise<void>;
   abstract find_by_email(email: string): Promise<Identity | null>;
+  abstract find_by_id(id: string): Promise<Identity | null>;
   abstract set_update_mfa_required(
     entity_id: string,
     mfa_required: boolean,

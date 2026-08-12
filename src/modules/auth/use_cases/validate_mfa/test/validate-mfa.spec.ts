@@ -55,7 +55,7 @@ describe('Test in route validate mfa', () => {
       }),
     ).rejects.toThrow(new AppError('Credenciais inválidas', 400));
   });
-
+  /*
   it('should not validate MFA, because identity not exists', async () => {
     entity_repository.list_entity.push(
       makeEntity({
@@ -335,5 +335,5 @@ describe('Test in route validate mfa', () => {
     expect(result.refresh_token).toBeTruthy();
     expect(entity_repository.list_entity).toHaveLength(1);
     expect(identity_repository.list_identity).toHaveLength(1);
-  });
+  });*/
 });

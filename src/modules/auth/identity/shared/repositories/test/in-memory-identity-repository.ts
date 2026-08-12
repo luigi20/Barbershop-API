@@ -20,6 +20,12 @@ class InMemoryIdentityRepository implements IIdentityRepository {
     if (!identity) return null;
     return identity;
   }
+
+  async find_by_id(id: string): Promise<Identity | null> {
+    const identity = this.list_identity.find((item) => item.id === id);
+    if (!identity) return null;
+    return identity;
+  }
   async update_password(entity_id: string, new_hash: string): Promise<void> {
     const index = this.list_identity.findIndex((item) => item.id === entity_id);
     if (index >= 0) {

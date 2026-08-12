@@ -7,6 +7,25 @@ import { EntityCustomerMapper } from 'infra/database/mappers/EntityCustomer';
 @Injectable()
 class EntityCustomerRepository implements IEntityCustomerRepository {
   constructor(private prisma: PrismaService) {}
+  async find_list_profile_id(profile_id: string): Promise<Entity_Customer[]> {
+    const list_entity_customer = await this.prisma
+      .getPrismaClient()
+      .entityCustomer.findMany({
+        where: {
+          profile_id: profile_id,
+        },
+        include: {
+          entity: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      });
+    return list_entity_customer.map(
+      EntityCustomerMapper.toDomainCustomerWithName,
+    );
+  }
   async find_one(
     entity_id: string,
     profile_id: string,

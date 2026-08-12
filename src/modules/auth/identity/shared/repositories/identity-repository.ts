@@ -32,6 +32,15 @@ class IdentityRepository implements IIdentityRepository {
     return IdentityMapper.toDomain(identity);
   }
 
+  async find_by_id(id: string): Promise<Identity | null> {
+    const identity = await this.prisma.getPrismaClient().identity.findUnique({
+      where: {
+        id: id,
+      },
+    });
+    if (!identity) return null;
+    return IdentityMapper.toDomain(identity);
+  }
   async create(data: Identity, tx?: Prisma.TransactionClient): Promise<void> {
     const raw = IdentityMapper.toPrisma(data);
     const client = tx ?? this.prisma;
