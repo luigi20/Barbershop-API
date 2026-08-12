@@ -8,6 +8,7 @@ export class Profile_View_Model {
       name: profile.name,
       photo: profile.photo,
       phone: profile.phone,
+      roles: profile.roles,
       created_at: profile.created_at,
       updated_at: profile.updated_at,
     };

@@ -8,6 +8,7 @@ export interface Profile_Props {
   name: string;
   phone: string;
   photo: string;
+  roles: string[];
   birth_date: Date;
   created_at: Date;
   updated_at: Date;
@@ -25,6 +26,7 @@ export class Profile {
         updated_at?: Date;
         photo?: string;
         identity?: Identity;
+        roles?: string[];
       }
     >,
     id?: string,
@@ -36,6 +38,7 @@ export class Profile {
       updated_at: props.updated_at ?? new Date(),
       photo: props.photo ?? null,
       identity: props.identity ?? null,
+      roles: props.roles ?? [],
     };
   }
 
@@ -105,5 +108,12 @@ export class Profile {
 
   public set updated_at(updated_at: Date) {
     this.props.updated_at = updated_at;
+  }
+
+  public get roles(): string[] {
+    return this.props.roles;
+  }
+  public set roles(roles: string[]) {
+    this.props.roles = roles;
   }
 }
