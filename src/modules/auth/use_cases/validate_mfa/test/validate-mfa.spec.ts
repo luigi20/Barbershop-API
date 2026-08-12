@@ -10,10 +10,16 @@ import { InMemoryRefreshTokensRepository } from '@modules/auth/refresh_token/sha
 import { InMemoryProfileRepository } from '@modules/auth/profile/shared/repositories/test/in-memory-profile-repository';
 import { makeProfile } from '@modules/auth/profile/shared/models/test/profile-factory';
 import * as argon2 from 'argon2';
+import { InMemoryEntityMembershipRepository } from '@modules/auth/entity_membership/shared/repositories/test/in-memory-entitymembership-repository';
+import { InMemoryEntityCustomerRepository } from '@modules/auth/entity_customer/shared/repositories/test/in-memory-entitycustomer-repository';
+import { makeEntityMembership } from '@modules/auth/entity_membership/shared/models/test/entity-membership-factory';
+import { makeEntityMembershipCustomer } from '@modules/auth/entity_customer/shared/models/test/entity-customer-factory';
 
 jest.mock('argon2');
 describe('Test in route validate mfa', () => {
   let entity_repository: InMemoryEntityRepository;
+  let entity_membership_repository: InMemoryEntityMembershipRepository;
+  let entity_customer_repository: InMemoryEntityCustomerRepository;
   let identity_repository: InMemoryIdentityRepository;
   let mfa_code_repository: InMemoryMFACodeRepository;
   let refresh_token_repository: InMemoryRefreshTokensRepository;
@@ -34,12 +40,18 @@ describe('Test in route validate mfa', () => {
     mfa_code_repository = new InMemoryMFACodeRepository();
     refresh_token_repository = new InMemoryRefreshTokensRepository();
     profile_repository = new InMemoryProfileRepository();
+    entity_membership_repository = new InMemoryEntityMembershipRepository();
+    entity_customer_repository = new InMemoryEntityCustomerRepository();
   });
 
-  it('should not validate MFA, because entity not exists', async () => {
+  it('should not validate MFA, because token is invalid', async () => {
     (argon2.verify as jest.Mock).mockResolvedValue(false);
+    (jwt_service.verify as jest.Mock).mockImplementation(() => {
+      throw new Error('jwt inválido');
+    });
     const validateMFAService = new ValidateMFAService(
-      entity_repository,
+      entity_membership_repository,
+      entity_customer_repository,
       mfa_code_repository,
       identity_repository,
       jwt_service as any,
@@ -48,22 +60,25 @@ describe('Test in route validate mfa', () => {
     );
     expect(
       validateMFAService.execute({
-        context_id: 'academia',
         code: '13LvRY',
-        entity_id: '12',
         mfa_token: null,
       }),
-    ).rejects.toThrow(new AppError('Credenciais inválidas', 400));
+    ).rejects.toThrow(new AppError('Token inválido ou expirado', 401));
   });
-  /*
-  it('should not validate MFA, because identity not exists', async () => {
-    entity_repository.list_entity.push(
-      makeEntity({
-        id: '12',
-      }),
-    );
+
+  it('should not validate MFA, because MFA is invalid', async () => {
+    (jwt_service.verify as jest.Mock).mockReturnValue({
+      sub: 'identity-id',
+      profile_id: 'profile-id',
+      entity_id: 'entity-id',
+      code: '434343',
+      type: 'access',
+      mfa_pending: false,
+      iss: 'saas-auth',
+    });
     const validateMFAService = new ValidateMFAService(
-      entity_repository,
+      entity_membership_repository,
+      entity_customer_repository,
       mfa_code_repository,
       identity_repository,
       jwt_service as any,
@@ -72,47 +87,150 @@ describe('Test in route validate mfa', () => {
     );
     expect(
       validateMFAService.execute({
-        context_id: 'academia',
-        code: '12lfv',
-        entity_id: '12',
+        code: '13LvRY',
         mfa_token: null,
       }),
-    ).rejects.toThrow(new AppError('Credenciais inválidas', 400));
+    ).rejects.toThrow(new AppError('MFA inválido ou expirado', 401));
   });
 
-  it('should not validate MFA, because MFA not validate', async () => {
-    const jwt_service = {
-      verify: jest.fn().mockResolvedValue({
-        sub: 'entity-id',
-        context_id: 'academia',
-        type: 'mfa',
-      }),
-      sign: jest.fn().mockReturnValue('fake-jwt-token'),
-    };
-    entity_repository.list_entity.push(
-      makeEntity({
-        id: '12',
+  it('should not validate MFA, because MFA is invalid', async () => {
+    mfa_code_repository.list_MFA_Code.push(
+      makeMFACode({
+        id: '123',
+        props: {
+          type: 'mfa',
+          used_at: true,
+        },
       }),
     );
+    (jwt_service.verify as jest.Mock).mockReturnValue({
+      sub: 'identity-id',
+      profile_id: 'profile-id',
+      entity_id: 'entity-id',
+      code: '434343',
+      type: 'mfa',
+      mfa_pending: true,
+      iss: 'saas-auth',
+    });
+    const validateMFAService = new ValidateMFAService(
+      entity_membership_repository,
+      entity_customer_repository,
+      mfa_code_repository,
+      identity_repository,
+      jwt_service as any,
+      refresh_token_repository,
+      profile_repository,
+    );
+    expect(
+      validateMFAService.execute({
+        code: '13LvRY',
+        mfa_token: null,
+      }),
+    ).rejects.toThrow(new AppError('MFA inválido ou expirado', 401));
+  });
+
+  it('should not validate MFA, because code is invalid', async () => {
+    mfa_code_repository.list_MFA_Code.push(
+      makeMFACode({
+        id: '123',
+        props: {
+          type: 'mfa',
+          used_at: false,
+          code: '13LvRY',
+        },
+      }),
+    );
+    (jwt_service.verify as jest.Mock).mockReturnValue({
+      sub: 'identity-id',
+      profile_id: 'profile-id',
+      entity_id: 'entity-id',
+      code: '13LvRY',
+      type: 'mfa',
+      mfa_pending: true,
+      iss: 'saas-auth',
+    });
+    const validateMFAService = new ValidateMFAService(
+      entity_membership_repository,
+      entity_customer_repository,
+      mfa_code_repository,
+      identity_repository,
+      jwt_service as any,
+      refresh_token_repository,
+      profile_repository,
+    );
+    expect(
+      validateMFAService.execute({
+        code: '13LvRY1',
+        mfa_token: null,
+      }),
+    ).rejects.toThrow(new AppError('Código do MFA inválido', 401));
+  });
+
+  it('should not validate MFA, because identity is not exists', async () => {
+    mfa_code_repository.list_MFA_Code.push(
+      makeMFACode({
+        id: '123',
+        props: {
+          type: 'mfa',
+          used_at: false,
+          code: '434343',
+        },
+      }),
+    );
+    (jwt_service.verify as jest.Mock).mockReturnValue({
+      sub: 'identity-id',
+      profile_id: 'profile-id',
+      entity_id: 'entity-id',
+      code: '434343',
+      type: 'mfa',
+      mfa_pending: true,
+      iss: 'saas-auth',
+    });
+    const validateMFAService = new ValidateMFAService(
+      entity_membership_repository,
+      entity_customer_repository,
+      mfa_code_repository,
+      identity_repository,
+      jwt_service as any,
+      refresh_token_repository,
+      profile_repository,
+    );
+    expect(
+      validateMFAService.execute({
+        code: '434343',
+        mfa_token: null,
+      }),
+    ).rejects.toThrow(new AppError('Identidade não encontrada', 404));
+  });
+
+  it('should not validate MFA, because profile is not exists', async () => {
     identity_repository.list_identity.push(
       makeIdentity({
-        props: {
-          entity_id: entity_repository.list_entity[0]._id,
-        },
+        id: 'identity-id',
       }),
     );
     mfa_code_repository.list_MFA_Code.push(
       makeMFACode({
+        id: '123',
         props: {
-          entity_id: entity_repository.list_entity[0]._id,
-          context_id: 'academia',
-          used: false,
-          expires_at: new Date(),
+          type: 'mfa',
+          used_at: false,
+          code: '434343',
         },
       }),
     );
+    (jwt_service.verify as jest.Mock).mockReturnValue({
+      sub: 'identity-id',
+      profile_id: 'profile-id',
+      entity_id: 'entity-id',
+      code: '434343',
+      type: 'mfa',
+      mfa_pending: true,
+      iss: 'saas-auth',
+    });
     const validateMFAService = new ValidateMFAService(
-      entity_repository,
+      entity_membership_repository,
+      entity_customer_repository,
       mfa_code_repository,
       identity_repository,
       jwt_service as any,
@@ -121,203 +239,108 @@ describe('Test in route validate mfa', () => {
     );
     expect(
       validateMFAService.execute({
-        context_id: 'academia',
-        code: '22232',
-        entity_id: '12',
+        code: '434343',
         mfa_token: null,
       }),
-    ).rejects.toThrow(new AppError('MFA inválido', 400));
+    ).rejects.toThrow(new AppError('Perfil não encontrado', 404));
   });
 
-  it('should not validate MFA, because MFA not validate', async () => {
-    const jwt_service = {
-      verify: jest.fn().mockResolvedValue({
-        sub: 'entity-id',
-        context_id: 'academia',
-        type: 'mfa',
-        mfa_pending: 'jfinjhfnv76',
-      }),
-      sign: jest.fn().mockReturnValue('fake-jwt-token'),
-    };
-    entity_repository.list_entity.push(
-      makeEntity({
-        id: '12',
-      }),
-    );
+  it('should not validate MFA, because user is not exists', async () => {
     identity_repository.list_identity.push(
       makeIdentity({
-        props: {
-          entity_id: entity_repository.list_entity[0]._id,
-        },
-      }),
-    );
-    mfa_code_repository.list_MFA_Code.push(
-      makeMFACode({
-        props: {
-          entity_id: entity_repository.list_entity[0]._id,
-          context_id: 'academia',
-          used: false,
-          expires_at: new Date(),
-        },
-      }),
-    );
-    const validateMFAService = new ValidateMFAService(
-      entity_repository,
-      mfa_code_repository,
-      identity_repository,
-      jwt_service as any,
-      refresh_token_repository,
-      profile_repository,
-    );
-    expect(
-      validateMFAService.execute({
-        context_id: 'academia',
-        code: '22232',
-        entity_id: '12',
-        mfa_token: null,
-      }),
-    ).rejects.toThrow(new AppError('MFA inválido ou já usado', 400));
-  });
-
-  it('should not be validate MFA, because MFA and code informed are not equal', async () => {
-    const jwt_service = {
-      verify: jest.fn().mockResolvedValue({
-        sub: 'entity-id',
-        context_id: 'academia',
-        type: 'mfa',
-        mfa_pending: 'jfinjhfnv76',
-      }),
-      sign: jest.fn().mockReturnValue('fake-jwt-token'),
-    };
-    entity_repository.list_entity.push(
-      makeEntity({
-        id: '12',
-      }),
-    );
-    identity_repository.list_identity.push(
-      makeIdentity({
-        props: {
-          entity_id: entity_repository.list_entity[0]._id,
-        },
-      }),
-    );
-    mfa_code_repository.list_MFA_Code.push(
-      makeMFACode({
-        props: {
-          entity_id: entity_repository.list_entity[0]._id,
-          context_id: 'academia',
-          used: false,
-          code: 'hjhjyjyjy',
-        },
-      }),
-    );
-    const validateMFAService = new ValidateMFAService(
-      entity_repository,
-      mfa_code_repository,
-      identity_repository,
-      jwt_service as any,
-      refresh_token_repository,
-      profile_repository,
-    );
-    expect(
-      validateMFAService.execute({
-        context_id: 'academia',
-        code: '4234tuv',
-        entity_id: '12',
-        mfa_token: 'mdkdnvdvhdvjh fv',
-      }),
-    ).rejects.toThrow(new AppError('Código do MFA inválido', 400));
-  });
-
-  it('should not validate MFA, because profile not exist', async () => {
-    const jwt_service = {
-      verify: jest.fn().mockResolvedValue({
-        sub: 'entity-id',
-        context_id: 'academia',
-        type: 'mfa',
-        mfa_pending: 'jfinjhfnv76',
-      }),
-      sign: jest.fn().mockReturnValue('fake-jwt-token'),
-    };
-    entity_repository.list_entity.push(
-      makeEntity({
-        id: '12',
-      }),
-    );
-    identity_repository.list_identity.push(
-      makeIdentity({
-        props: {
-          entity_id: entity_repository.list_entity[0]._id,
-        },
-      }),
-    );
-    mfa_code_repository.list_MFA_Code.push(
-      makeMFACode({
-        props: {
-          entity_id: entity_repository.list_entity[0]._id,
-          context_id: 'academia',
-        },
-      }),
-    );
-    const validateMFAService = new ValidateMFAService(
-      entity_repository,
-      mfa_code_repository,
-      identity_repository,
-      jwt_service as any,
-      refresh_token_repository,
-      profile_repository,
-    );
-    expect(
-      validateMFAService.execute({
-        context_id: 'academia',
-        code: '4234tuv',
-        entity_id: '12',
-        mfa_token: 'mdkdnvdvhdvjh fv',
-      }),
-    ).rejects.toThrow(
-      new AppError('Perfil não encontrado para este tenant', 404),
-    );
-  });
-
-  it('should validate MFA', async () => {
-    const jwt_service = {
-      verify: jest.fn().mockResolvedValue({
-        sub: 'entity-id',
-        context_id: 'academia',
-        type: 'mfa',
-        mfa_pending: 'jfinjhfnv76',
-      }),
-      sign: jest.fn().mockReturnValue('fake-jwt-token'),
-    };
-    entity_repository.list_entity.push(
-      makeEntity({
-        id: '12',
-      }),
-    );
-    identity_repository.list_identity.push(
-      makeIdentity({
-        props: {
-          entity_id: entity_repository.list_entity[0]._id,
-        },
+        id: 'identity-id',
       }),
     );
     profile_repository.list_profile.push(
       makeProfile({
+        id: '12345',
         props: {
-          entity_id: entity_repository.list_entity[0]._id,
+          identity_id: identity_repository.list_identity[0].id,
         },
       }),
     );
     mfa_code_repository.list_MFA_Code.push(
       makeMFACode({
+        id: '123',
         props: {
-          entity_id: entity_repository.list_entity[0]._id,
-          context_id: 'academia',
+          type: 'mfa',
+          used_at: false,
+          code: '434343',
         },
       }),
     );
+    (jwt_service.verify as jest.Mock).mockReturnValue({
+      sub: 'identity-id',
+      profile_id: 'profile-id',
+      entity_id: 'entity-id',
+      code: '434343',
+      type: 'mfa',
+      mfa_pending: true,
+      iss: 'saas-auth',
+    });
     const validateMFAService = new ValidateMFAService(
-      entity_repository,
+      entity_membership_repository,
+      entity_customer_repository,
+      mfa_code_repository,
+      identity_repository,
+      jwt_service as any,
+      refresh_token_repository,
+      profile_repository,
+    );
+    expect(
+      validateMFAService.execute({
+        code: '434343',
+        mfa_token: null,
+      }),
+    ).rejects.toThrow(
+      new AppError('Usuário não pertence a esta organização', 403),
+    );
+  });
+
+  it('should validate MFA, because is membership', async () => {
+    identity_repository.list_identity.push(
+      makeIdentity({
+        id: 'identity-id',
+      }),
+    );
+    profile_repository.list_profile.push(
+      makeProfile({
+        id: 'profile-id',
+        props: {
+          identity_id: identity_repository.list_identity[0].id,
+        },
+      }),
+    );
+    mfa_code_repository.list_MFA_Code.push(
+      makeMFACode({
+        id: '123',
+        props: {
+          type: 'mfa',
+          used_at: false,
+          code: '434343',
+        },
+      }),
+    );
+    entity_membership_repository.list_membership.push(
+      makeEntityMembership({
+        props: {
+          entity_id: 'entity-id',
+          profile_id: 'profile-id',
+        },
+      }),
+    );
+    (jwt_service.verify as jest.Mock).mockReturnValue({
+      sub: 'identity-id',
+      profile_id: 'profile-id',
+      entity_id: 'entity-id',
+      code: '434343',
+      type: 'mfa',
+      mfa_pending: true,
+      iss: 'saas-auth',
+    });
+    const validateMFAService = new ValidateMFAService(
+      entity_membership_repository,
+      entity_customer_repository,
       mfa_code_repository,
       identity_repository,
       jwt_service as any,
@@ -325,15 +348,143 @@ describe('Test in route validate mfa', () => {
       profile_repository,
     );
     const result = await validateMFAService.execute({
-      context_id: 'academia',
-      code: '4234tuv',
-      entity_id: '12',
-      mfa_token: 'mdkdnvdvhdvjh fv',
+      code: '434343',
+      mfa_token: null,
     });
     expect(result.access_token).toBeTruthy();
-    expect(result.mfa_required).toBe(false);
+    expect(result.mfa_required).toBe(true);
     expect(result.refresh_token).toBeTruthy();
-    expect(entity_repository.list_entity).toHaveLength(1);
-    expect(identity_repository.list_identity).toHaveLength(1);
-  });*/
+    expect(entity_membership_repository.list_membership.length).toEqual(1);
+    expect(entity_customer_repository.list_customer.length).toEqual(0);
+  });
+
+  it('should validate MFA, because is client', async () => {
+    identity_repository.list_identity.push(
+      makeIdentity({
+        id: 'identity-id',
+      }),
+    );
+    profile_repository.list_profile.push(
+      makeProfile({
+        id: 'profile-id',
+        props: {
+          identity_id: identity_repository.list_identity[0].id,
+        },
+      }),
+    );
+    mfa_code_repository.list_MFA_Code.push(
+      makeMFACode({
+        id: '123',
+        props: {
+          type: 'mfa',
+          used_at: false,
+          code: '434343',
+        },
+      }),
+    );
+    entity_customer_repository.list_customer.push(
+      makeEntityMembershipCustomer({
+        props: {
+          entity_id: 'entity-id',
+          profile_id: 'profile-id',
+        },
+      }),
+    );
+    (jwt_service.verify as jest.Mock).mockReturnValue({
+      sub: 'identity-id',
+      profile_id: 'profile-id',
+      entity_id: 'entity-id',
+      code: '434343',
+      type: 'mfa',
+      mfa_pending: true,
+      iss: 'saas-auth',
+    });
+    const validateMFAService = new ValidateMFAService(
+      entity_membership_repository,
+      entity_customer_repository,
+      mfa_code_repository,
+      identity_repository,
+      jwt_service as any,
+      refresh_token_repository,
+      profile_repository,
+    );
+    const result = await validateMFAService.execute({
+      code: '434343',
+      mfa_token: null,
+    });
+    expect(result.access_token).toBeTruthy();
+    expect(result.mfa_required).toBe(true);
+    expect(result.refresh_token).toBeTruthy();
+    expect(entity_membership_repository.list_membership.length).toEqual(0);
+    expect(entity_customer_repository.list_customer.length).toEqual(1);
+  });
+
+  it('should validate MFA, because is client and membership', async () => {
+    identity_repository.list_identity.push(
+      makeIdentity({
+        id: 'identity-id',
+      }),
+    );
+    profile_repository.list_profile.push(
+      makeProfile({
+        id: 'profile-id',
+        props: {
+          identity_id: identity_repository.list_identity[0].id,
+        },
+      }),
+    );
+    mfa_code_repository.list_MFA_Code.push(
+      makeMFACode({
+        id: '123',
+        props: {
+          type: 'mfa',
+          used_at: false,
+          code: '434343',
+        },
+      }),
+    );
+    entity_customer_repository.list_customer.push(
+      makeEntityMembershipCustomer({
+        props: {
+          entity_id: 'entity-id',
+          profile_id: 'profile-id',
+        },
+      }),
+    );
+    entity_membership_repository.list_membership.push(
+      makeEntityMembership({
+        props: {
+          entity_id: 'entity-id',
+          profile_id: 'profile-id',
+        },
+      }),
+    );
+    (jwt_service.verify as jest.Mock).mockReturnValue({
+      sub: 'identity-id',
+      profile_id: 'profile-id',
+      entity_id: 'entity-id',
+      code: '434343',
+      type: 'mfa',
+      mfa_pending: true,
+      iss: 'saas-auth',
+    });
+    const validateMFAService = new ValidateMFAService(
+      entity_membership_repository,
+      entity_customer_repository,
+      mfa_code_repository,
+      identity_repository,
+      jwt_service as any,
+      refresh_token_repository,
+      profile_repository,
+    );
+    const result = await validateMFAService.execute({
+      code: '434343',
+      mfa_token: null,
+    });
+    expect(result.access_token).toBeTruthy();
+    expect(result.mfa_required).toBe(true);
+    expect(result.refresh_token).toBeTruthy();
+    expect(entity_membership_repository.list_membership.length).toEqual(1);
+    expect(entity_customer_repository.list_customer.length).toEqual(1);
+  });
 });

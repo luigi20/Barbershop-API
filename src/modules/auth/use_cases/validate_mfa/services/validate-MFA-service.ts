@@ -1,4 +1,3 @@
-import { IEntityRepository } from '@modules/auth/entity/shared/repositories/abstract_class/ientity-repository';
 import { IEntityCustomerRepository } from '@modules/auth/entity_customer/shared/repositories/abstract_class/ientitycustomer-repository';
 import { IEntityMembershipRepository } from '@modules/auth/entity_membership/shared/repositories/abstract_class/ientitymembership-repository';
 import { IIdentityRepository } from '@modules/auth/identity/shared/repositories/abstract_class/iidentity-repository';
@@ -19,6 +18,8 @@ interface IRequest {
 interface IMFATokenPayload {
   sub: string;
   profile_id: string;
+  entity_id: string;
+  code: string;
   type: string;
   mfa_pending: boolean;
   iss: string;
@@ -46,13 +47,13 @@ export class ValidateMFAService {
     try {
       payload = this.jwt_service.verify<IMFATokenPayload>(mfa_token);
     } catch {
-      throw new AppError('MFA inválido ou expirado', 401);
+      throw new AppError('Token inválido ou expirado', 401);
     }
     if (payload.type !== 'mfa' || payload.mfa_pending !== true)
       throw new AppError('MFA inválido ou expirado', 401);
     // 2. Busca o código MFA da Identity
     const mfa = await this.mfa_code_repository.find_one_code_and_expires_at(
-      payload.sub,
+      payload.code,
       false,
       new Date(),
     );
@@ -85,8 +86,8 @@ export class ValidateMFAService {
     // 7. Marca o código MFA como usado
     await this.mfa_code_repository.update_used(mfa.id);
     // 8. Monta os roles
-    const roles: string[] = [];
-    if (isMember) roles.push(membership.role);
+    let roles: string[] = [];
+    if (isMember) roles = membership.roles.map((item) => item);
     if (isCustomer) roles.push('cliente');
     // 9. Gera Access Token
     const access_token = this.jwt_service.sign(
@@ -96,7 +97,7 @@ export class ValidateMFAService {
         entity_id: payload.entity_id,
         name: profile.name,
         photo: profile.photo,
-        roles,
+        roles: roles,
         type: 'access',
         iss: 'saas-auth',
       },
@@ -133,7 +134,7 @@ export class ValidateMFAService {
     );
     return {
       access_token,
-      mfa_required: false,
+      mfa_required: true,
       refresh_token,
     };
   }
