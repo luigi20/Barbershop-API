@@ -59,7 +59,7 @@ model Profile {
 model MfaCode {
   id          String   @id @db.Uuid
   identity_id String   @db.Uuid
-  code_hash   String   @db.VarChar(255)
+  code        String   @db.VarChar(255)
   type        String   @db.VarChar(255)
   expires_at  DateTime
   used_at     Boolean

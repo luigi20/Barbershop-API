@@ -24,5 +24,23 @@ class MFACodeRepository implements IMFACodeRepository {
       },
     });
   }
+
+  async find_one(
+    identity_id: string,
+    used: boolean,
+    now: Date,
+  ): Promise<MFA_Code | null> {
+    const mfa_code = await this.prisma.getPrismaClient().mfaCode.findFirst({
+      where: {
+        identity_id: identity_id,
+        used_at: used,
+        expires_at: {
+          gt: now,
+        },
+      },
+    });
+    if (!mfa_code) return null;
+    return MFACodeMapper.toDomain(mfa_code);
+  }
 }
 export { MFACodeRepository };
