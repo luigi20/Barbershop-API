@@ -10,8 +10,8 @@ export function makeMFACode({ id, props }: FactoryParams = {}) {
   return new MFA_Code(
     {
       identity_id: randomUUID(),
-      expires_at: new Date(Date.now() + 15 * 60 * 1000),
-      code_hash: '4234tuv',
+      expires_at: new Date(Date.now() + 10 * 60 * 1000),
+      code: '4234tuv',
       used_at: false,
       attempts: 0,
       type: 'email',

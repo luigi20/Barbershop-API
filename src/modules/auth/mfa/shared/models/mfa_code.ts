@@ -4,7 +4,7 @@ import { randomUUID } from 'crypto';
 export interface MFA_Code_Props {
   identity_id: string;
   type: string;
-  code_hash: string;
+  code: string;
   expires_at: Date;
   used_at: boolean;
   attempts: number;
@@ -48,12 +48,12 @@ export class MFA_Code {
     this.props.identity_id = identity_id;
   }
 
-  public get code_hash(): string {
-    return this.props.code_hash;
+  public get code(): string {
+    return this.props.code;
   }
 
-  public set code_hash(code_hash: string) {
-    this.props.code_hash = code_hash;
+  public set code(code: string) {
+    this.props.code = code;
   }
 
   public get type(): string {

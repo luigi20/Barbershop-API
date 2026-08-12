@@ -4,7 +4,7 @@ export class MFACodeMapper {
   static toPrisma(mfa_code: MFA_Code) {
     return {
       id: mfa_code.id,
-      code_hash: mfa_code.code_hash,
+      code: mfa_code.code,
       identity_id: mfa_code.identity_id,
       attempts: mfa_code.attempts,
       type: mfa_code.type,
@@ -19,7 +19,7 @@ export class MFACodeMapper {
     return new MFA_Code(
       {
         identity_id: raw.identity_id,
-        code_hash: raw.code_hash,
+        code: raw.code,
         attempts: raw.attempts,
         type: raw.type,
         expires_at: raw.expires_at,

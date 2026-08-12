@@ -10,9 +10,7 @@ export class MFAConfirmController {
   public async MFAConfirm(@Body() data: MFAConfirmDTO) {
     const result = await this.mfaConfirmService.execute({
       email: data.email,
-      mfa_required: data.mfa_required,
       mfa_code: data.mfa_code,
-      context_id: data.context_id,
     });
     return result;
   }

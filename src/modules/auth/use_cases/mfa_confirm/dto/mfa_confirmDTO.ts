@@ -1,4 +1,4 @@
-import { IsEmail, IsString } from 'class-validator';
+import { IsBoolean, IsEmail, IsString, IsUUID } from 'class-validator';
 
 export class MFAConfirmDTO {
   @IsEmail()
@@ -7,9 +7,6 @@ export class MFAConfirmDTO {
   @IsString()
   mfa_code: string;
 
-  @IsString()
-  mfa_required: 'enabled' | 'disabled';
-
-  @IsString()
-  context_id: string;
+  @IsUUID()
+  identity_id: string;
 }
