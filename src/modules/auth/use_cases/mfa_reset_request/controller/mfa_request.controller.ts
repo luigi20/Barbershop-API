@@ -10,7 +10,6 @@ export class MFARequestController {
   public async MFARequest(@Body() data: MFARequestDTO) {
     const result = await this.mfaRequestService.execute({
       email: data.email,
-      context_id: data.context_id,
     });
     return result;
   }
