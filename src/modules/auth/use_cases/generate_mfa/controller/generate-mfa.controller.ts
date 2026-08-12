@@ -9,8 +9,8 @@ export class GenerateMFAController {
   @Post('generatemfa')
   public async GenerateMFA(@Body() data: GenerateMFADTO) {
     const result = await this.generate_MFA_service.execute({
-      context_id: data.context_id,
       email: data.email,
+      type: data.type,
     });
     return result;
   }
