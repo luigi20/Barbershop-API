@@ -14,7 +14,7 @@ export function makeEntityMembership({ id, props }: FactoryParams = {}) {
     entity_id: randomUUID(),
     profile_id: randomUUID(),
     created_at: new Date(),
-    role: 'role',
+    roles: ['barbeiro'],
     status: 'ativo',
     updated_at: new Date(),
     ...props,

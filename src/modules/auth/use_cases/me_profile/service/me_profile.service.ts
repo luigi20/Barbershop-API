@@ -1,11 +1,12 @@
-import { IIdentityRepository } from '@modules/auth/identity/shared/repositories/abstract_class/iidentity-repository';
+import { IEntityCustomerRepository } from '@modules/auth/entity_customer/shared/repositories/abstract_class/ientitycustomer-repository';
+import { IEntityMembershipRepository } from '@modules/auth/entity_membership/shared/repositories/abstract_class/ientitymembership-repository';
 import { Profile } from '@modules/auth/profile/shared/models/profile';
 import { IProfileRepository } from '@modules/auth/profile/shared/repositories/abstract_class/iprofile-repository';
 import { AppError } from '@modules/utils/app_error';
 import { Injectable } from '@nestjs/common';
 
 interface IMeProfileRequest {
-  context_id: string;
+  profile_id: string;
   entity_id: string;
 }
 
@@ -13,25 +14,32 @@ interface IMeProfileRequest {
 export class MeProfileService {
   constructor(
     private readonly profile_repository: IProfileRepository,
-    private readonly identity_repository: IIdentityRepository,
+    private readonly entity_membership_repository: IEntityMembershipRepository,
+    private readonly entity_membercustomer_repository: IEntityCustomerRepository,
   ) {}
 
   public async execute({
-    context_id,
+    profile_id,
     entity_id,
   }: IMeProfileRequest): Promise<Profile> {
-    const identity_exists =
-      await this.identity_repository.findByEntityIdAndContextId(
-        entity_id,
-        context_id,
-      );
-    if (!identity_exists) throw new AppError('Credenciais inválidas', 404);
-    const profile_exists = await this.profile_repository.find_one(
-      entity_id,
-      context_id,
-    );
+    const profile_exists =
+      await this.profile_repository.find_identity_id(profile_id);
     if (!profile_exists) throw new AppError('Perfil não existe', 404);
-    profile_exists.role = identity_exists.role;
+    const membership = await this.entity_membership_repository.find_one(
+      entity_id,
+      profile_exists.id,
+    );
+    const customer = await this.entity_membercustomer_repository.find_one(
+      entity_id,
+      profile_exists.id,
+    );
+    const isMember = membership && membership.status.toLowerCase() === 'ativo';
+    const isCustomer = customer && customer.status.toLowerCase() === 'ativo';
+    if (!isMember && !isCustomer)
+      throw new AppError('Usuário não pertence a esta organização', 403);
+    profile_exists.roles =
+      membership?.roles?.length > 0 ? [...membership.roles] : [];
+    if (isCustomer) profile_exists.roles.push('cliente');
     return profile_exists;
   }
 }

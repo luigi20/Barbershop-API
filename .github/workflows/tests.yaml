@@ -7,6 +7,8 @@ jobs:
     name: Jest Ubuntu
     runs-on: ubuntu-latest
 
+    env:
+      DATABASE_URL: postgresql://test:test@localhost:5432/test
     steps:
       - uses: actions/checkout@v4
 
@@ -18,5 +20,7 @@ jobs:
       - run: corepack enable
 
       - run: yarn install --frozen-lockfile
+
+      - run: yarn prisma generate
 
       - run: yarn test

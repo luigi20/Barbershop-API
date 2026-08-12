@@ -4,7 +4,7 @@ export interface Entity_Membership_Props {
   entity_id: string;
   profile_id: string;
   name: string;
-  role: string;
+  roles: string[];
   status: string;
   created_at: Date;
   updated_at: Date;
@@ -56,12 +56,12 @@ export class Entity_Membership {
     this.props.profile_id = profile_id;
   }
 
-  public get role(): string {
-    return this.props.role;
+  public get roles(): string[] {
+    return this.props.roles;
   }
 
-  public set role(role: string) {
-    this.props.role = role;
+  public set roles(roles: string[]) {
+    this.props.roles = roles;
   }
 
   public get status(): string {

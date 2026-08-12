@@ -161,12 +161,12 @@ export class SignInService {
       if (membership.status.toLowerCase() !== 'ativo') continue;
       const existing = entitiesMap.get(membership.entity_id);
       if (existing) {
-        existing.roles.push(membership.role);
+        existing.roles.push(...membership.roles);
       } else {
         entitiesMap.set(membership.entity_id, {
           id: membership.entity_id,
           entity_name: membership.name,
-          roles: [membership.role],
+          roles: membership.roles,
         });
       }
     }

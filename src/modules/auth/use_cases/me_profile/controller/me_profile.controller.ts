@@ -10,8 +10,8 @@ export class MeProfileController {
   @Get('me_profile')
   public async MeProfile(@Req() req: AuthRequest) {
     const result = await this.me_profile_service.execute({
-      context_id: req.auth.context_id,
-      entity_id: req.auth.user_id,
+      profile_id: req.auth.profile_id,
+      entity_id: req.auth.entity_id,
     });
     return Profile_View_Model.toHttp(result);
   }
