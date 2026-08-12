@@ -25,6 +25,16 @@ class MFACodeRepository implements IMFACodeRepository {
     });
   }
 
+  async update(data: MFA_Code): Promise<void> {
+    const raw = MFACodeMapper.toPrisma(data);
+    await this.prisma.getPrismaClient().mfaCode.update({
+      where: {
+        id: data.id,
+      },
+      data: raw,
+    });
+  }
+
   async find_one(
     identity_id: string,
     used: boolean,

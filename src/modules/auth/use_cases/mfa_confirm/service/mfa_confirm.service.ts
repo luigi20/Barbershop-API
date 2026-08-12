@@ -31,6 +31,7 @@ export class MFAConfirmService {
     if (!mfa) throw new AppError('MFA inválido ou já usado', 404);
     if (mfa.code !== mfa_code) throw new AppError('Código do MFA inválido');
     mfa.used_at = true;
+    mfa.attempts = mfa.attempts + 1;
     await this.mfa_code_repository.update_used(mfa.id);
     return 'MFA atualizado com sucesso';
   }

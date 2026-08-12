@@ -4,6 +4,12 @@ import { IMFACodeRepository } from '../abstract_class/imfa-code-repository';
 
 @Injectable()
 export class InMemoryMFACodeRepository implements IMFACodeRepository {
+  async update(data: MFA_Code): Promise<void> {
+    const index = this.list_MFA_Code.findIndex((item) => item.id === data.id);
+    if (index >= 0) {
+      this.list_MFA_Code[index] = data;
+    }
+  }
   async find_one(
     identity_id: string,
     used: boolean,
