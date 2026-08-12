@@ -12,9 +12,9 @@ export class AuthMiddleware implements NestMiddleware {
     try {
       const payload: any = this.jwt_service.verify(token);
       req.auth = {
-        user_id: payload.sub,
-        context_id: payload.context_id,
-        tenant_id: payload.tenant_id,
+        identity_id: payload.sub,
+        profile_id: payload.profile_id,
+        entity_id: payload.entity_id,
         role: payload.role,
       };
       next();

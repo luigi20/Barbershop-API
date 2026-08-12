@@ -10,6 +10,19 @@ export class InMemoryMFACodeRepository implements IMFACodeRepository {
       this.list_MFA_Code[index] = data;
     }
   }
+
+  async find_one_code_and_expires_at(
+    code: string,
+    used: boolean,
+    now: Date,
+  ): Promise<MFA_Code | null> {
+    const mfa_code = this.list_MFA_Code.find(
+      (item) =>
+        item.code === code && item.used_at === used && item.expires_at > now,
+    );
+    if (!mfa_code) return null;
+    return mfa_code;
+  }
   async find_one(
     identity_id: string,
     used: boolean,

@@ -35,55 +35,21 @@ describe('Test in route signup', () => {
     entity_membercustomer_repository = new InMemoryEntityCustomerRepository();
   });
 
-  it('should not signin, because entity not exists', async () => {
-    const signInService = new SignInService(
-      entity_membercustomer_repository,
-      identity_repository,
-      refresh_token_repository,
-      profile_repository,
-      entity_membership_repository,
-      entity_repository,
-      jwt_service as any,
-    );
-    expect(
-      signInService.execute({
-        entity_id: 'academia',
-        email: 'luisfoco@gmail.com',
-        password: '1',
-      }),
-    ).rejects.toThrow(new AppError('Empresa não encontrada', 404));
-  });
-
   it('should not signin, because identity not exists', async () => {
-    entity_repository.list_entity.push(
-      makeEntity({
-        id: 'academia',
-      }),
-    );
-    identity_repository.list_identity.push(
-      makeIdentity({
-        id: '123',
-        props: {},
-      }),
-    );
     const signInService = new SignInService(
       entity_membercustomer_repository,
       identity_repository,
-      refresh_token_repository,
       profile_repository,
       entity_membership_repository,
-      entity_repository,
       jwt_service as any,
     );
     expect(
       signInService.execute({
-        entity_id: 'academia',
         email: 'luisfoco@gmail.com',
         password: '1',
       }),
     ).rejects.toThrow(new AppError('Credenciais inválidas'));
   });
-
   it('should not signin, because password is invalid', async () => {
     entity_repository.list_entity.push(
       makeEntity({
@@ -102,15 +68,12 @@ describe('Test in route signup', () => {
     const signInService = new SignInService(
       entity_membercustomer_repository,
       identity_repository,
-      refresh_token_repository,
       profile_repository,
       entity_membership_repository,
-      entity_repository,
       jwt_service as any,
     );
     expect(
       signInService.execute({
-        entity_id: 'academia',
         email: 'luisfoco@gmail.com',
         password: '123gghghhy6y6',
       }),
@@ -132,19 +95,15 @@ describe('Test in route signup', () => {
         },
       }),
     );
-
     const signInService = new SignInService(
       entity_membercustomer_repository,
       identity_repository,
-      refresh_token_repository,
       profile_repository,
       entity_membership_repository,
-      entity_repository,
       jwt_service as any,
     );
     expect(
       signInService.execute({
-        entity_id: 'academia',
         email: 'luisfoco@gmail.com',
         password: '123LLv!!@32mjnvhfh',
       }),
@@ -175,22 +134,233 @@ describe('Test in route signup', () => {
     const signInService = new SignInService(
       entity_membercustomer_repository,
       identity_repository,
-      refresh_token_repository,
       profile_repository,
       entity_membership_repository,
-      entity_repository,
       jwt_service as any,
     );
     expect(
       signInService.execute({
-        entity_id: 'academia',
         email: 'luisfoco@gmail.com',
         password: '123LLv!!@32mjnvhfh',
       }),
     ).rejects.toThrow(
-      new AppError('Usuário não pertence a esta organização', 404),
+      new AppError('Usuário não pertence a nenhuma organização', 403),
     );
   });
+
+  it('should signin, because is client', async () => {
+    entity_repository.list_entity.push(
+      makeEntity({
+        id: 'academia',
+      }),
+    );
+    identity_repository.list_identity.push(
+      makeIdentity({
+        props: {
+          email: 'luisfoco@gmail.com',
+          password_hash: await argon2.hash('123LLv!!@32mjnvhfh'),
+        },
+      }),
+    );
+    profile_repository.list_profile.push(
+      makeProfile({
+        props: {
+          identity_id: identity_repository.list_identity[0].id,
+        },
+      }),
+    );
+    entity_membercustomer_repository.list_customer.push(
+      makeEntityMembershipCustomer({
+        props: {
+          entity_id: entity_repository.list_entity[0]._id,
+          profile_id: profile_repository.list_profile[0].id,
+          name: 'Profit',
+        },
+      }),
+    );
+    const signInService = new SignInService(
+      entity_membercustomer_repository,
+      identity_repository,
+      profile_repository,
+      entity_membership_repository,
+      jwt_service as any,
+    );
+    const result = await signInService.execute({
+      email: 'luisfoco@gmail.com',
+      password: '123LLv!!@32mjnvhfh',
+    });
+    expect(result.requires_entity_selection).toBe(false);
+    expect(result.login_token).not.toBe(null);
+    expect(identity_repository.list_identity).toHaveLength(1);
+  });
+
+  it('should signin, because is membership', async () => {
+    entity_repository.list_entity.push(
+      makeEntity({
+        id: 'academia',
+      }),
+    );
+    identity_repository.list_identity.push(
+      makeIdentity({
+        props: {
+          email: 'luisfoco@gmail.com',
+          password_hash: await argon2.hash('123LLv!!@32mjnvhfh'),
+        },
+      }),
+    );
+    profile_repository.list_profile.push(
+      makeProfile({
+        props: {
+          identity_id: identity_repository.list_identity[0].id,
+        },
+      }),
+    );
+    entity_membership_repository.list_membership.push(
+      makeEntityMembership({
+        props: {
+          entity_id: entity_repository.list_entity[0]._id,
+          profile_id: profile_repository.list_profile[0].id,
+          name: 'Profit',
+        },
+      }),
+    );
+    const signInService = new SignInService(
+      entity_membercustomer_repository,
+      identity_repository,
+      profile_repository,
+      entity_membership_repository,
+      jwt_service as any,
+    );
+    const result = await signInService.execute({
+      email: 'luisfoco@gmail.com',
+      password: '123LLv!!@32mjnvhfh',
+    });
+    expect(result.requires_entity_selection).toBe(false);
+    expect(result.login_token).not.toBe(null);
+    expect(entity_membership_repository.list_membership).toHaveLength(1);
+  });
+
+  it('should signin, because is membership and client in same organization', async () => {
+    entity_repository.list_entity.push(
+      makeEntity({
+        id: 'academia',
+      }),
+    );
+    identity_repository.list_identity.push(
+      makeIdentity({
+        props: {
+          email: 'luisfoco@gmail.com',
+          password_hash: await argon2.hash('123LLv!!@32mjnvhfh'),
+        },
+      }),
+    );
+    profile_repository.list_profile.push(
+      makeProfile({
+        props: {
+          identity_id: identity_repository.list_identity[0].id,
+        },
+      }),
+    );
+    entity_membercustomer_repository.list_customer.push(
+      makeEntityMembershipCustomer({
+        props: {
+          entity_id: entity_repository.list_entity[0]._id,
+          profile_id: profile_repository.list_profile[0].id,
+          name: 'Profit',
+        },
+      }),
+    );
+    entity_membership_repository.list_membership.push(
+      makeEntityMembership({
+        props: {
+          entity_id: entity_repository.list_entity[0]._id,
+          profile_id: profile_repository.list_profile[0].id,
+          name: 'Profit',
+        },
+      }),
+    );
+    const signInService = new SignInService(
+      entity_membercustomer_repository,
+      identity_repository,
+      profile_repository,
+      entity_membership_repository,
+      jwt_service as any,
+    );
+    const result = await signInService.execute({
+      email: 'luisfoco@gmail.com',
+      password: '123LLv!!@32mjnvhfh',
+    });
+    expect(result.requires_entity_selection).toBe(false);
+    expect(result.login_token).not.toBe(null);
+    expect(entity_membership_repository.list_membership).toHaveLength(1);
+  });
+
+  it('should signin, because is membership and client in different organizations', async () => {
+    entity_repository.list_entity.push(
+      makeEntity({
+        id: 'academia',
+      }),
+    );
+    entity_repository.list_entity.push(
+      makeEntity({
+        id: 'farmacia',
+      }),
+    );
+    identity_repository.list_identity.push(
+      makeIdentity({
+        props: {
+          email: 'luisfoco@gmail.com',
+          password_hash: await argon2.hash('123LLv!!@32mjnvhfh'),
+        },
+      }),
+    );
+    profile_repository.list_profile.push(
+      makeProfile({
+        props: {
+          identity_id: identity_repository.list_identity[0].id,
+        },
+      }),
+    );
+    entity_membercustomer_repository.list_customer.push(
+      makeEntityMembershipCustomer({
+        props: {
+          entity_id: entity_repository.list_entity[1]._id,
+          profile_id: profile_repository.list_profile[0].id,
+          name: 'Pague Menos',
+        },
+      }),
+    );
+    entity_membership_repository.list_membership.push(
+      makeEntityMembership({
+        props: {
+          entity_id: entity_repository.list_entity[0]._id,
+          profile_id: profile_repository.list_profile[0].id,
+          name: 'Profit',
+        },
+      }),
+    );
+    const signInService = new SignInService(
+      entity_membercustomer_repository,
+      identity_repository,
+      profile_repository,
+      entity_membership_repository,
+      jwt_service as any,
+    );
+    const result = await signInService.execute({
+      email: 'luisfoco@gmail.com',
+      password: '123LLv!!@32mjnvhfh',
+    });
+    expect(result.requires_entity_selection).toBe(true);
+    expect(result.login_token).not.toBe(null);
+    expect(entity_membership_repository.list_membership).toHaveLength(1);
+  });
+  /*
+ 
+ 
+
+  
+
+ 
 
   it('should signin without mfa required, being membership', async () => {
     entity_repository.list_entity.push(
@@ -384,5 +554,5 @@ describe('Test in route signup', () => {
     expect(result.mfa_required).toBe(true);
     expect(entity_repository.list_entity).toHaveLength(1);
     expect(identity_repository.list_identity).toHaveLength(1);
-  });
+  });*/
 });

@@ -49,13 +49,31 @@ class EntityMembershipRepository implements IEntityMembershipRepository {
       data: raw,
     });
   }
-
   async find_list_entity_id(entity_id: string): Promise<Entity_Membership[]> {
     const list_entity_membership = await this.prisma
       .getPrismaClient()
       .entityMembership.findMany({
         where: {
           entity_id: entity_id,
+        },
+      });
+    return list_entity_membership.map((item) =>
+      EntityMembershipMapper.toDomain(item),
+    );
+  }
+  async find_list_profile_id(profile_id: string): Promise<Entity_Membership[]> {
+    const list_entity_membership = await this.prisma
+      .getPrismaClient()
+      .entityMembership.findMany({
+        where: {
+          profile_id: profile_id,
+        },
+        include: {
+          entity: {
+            select: {
+              name: true,
+            },
+          },
         },
       });
     return list_entity_membership.map((item) =>

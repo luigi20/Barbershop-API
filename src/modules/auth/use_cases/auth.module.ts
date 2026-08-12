@@ -49,7 +49,7 @@ import { ChangeProfileService } from './change_profile/service/change_profile.se
 import { IEntityMembershipRepository } from '../entity_membership/shared/repositories/abstract_class/ientitymembership-repository';
 import { EntityMembershipRepository } from '../entity_membership/shared/repositories/entitymembership-repository';
 import { IEntityCustomerRepository } from '../entity_customer/shared/repositories/abstract_class/ientitycustomer-repository';
-import { EntityCustomerRepository } from '../entity_customer/shared/repositories/entitymembership-repository';
+import { EntityCustomerRepository } from '../entity_customer/shared/repositories/entitycustomer-repository';
 
 @Module({
   imports: [

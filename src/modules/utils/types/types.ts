@@ -2,9 +2,15 @@ import { Request } from 'express';
 
 export interface AuthRequest extends Request {
   auth: {
-    user_id: string;
-    context_id: string;
-    tenant_id: string;
+    identity_id: string;
+    profile_id: string;
+    entity_id: string;
     role: string;
   };
 }
+
+export type entity_name = {
+  id: string;
+  entity_name: string;
+  roles: string[];
+};
