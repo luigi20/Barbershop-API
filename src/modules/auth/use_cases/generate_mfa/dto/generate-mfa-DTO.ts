@@ -5,5 +5,5 @@ export class GenerateMFADTO {
   email: string;
 
   @IsString()
-  context_id: string;
+  type: string;
 }
