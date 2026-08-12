@@ -1,4 +1,4 @@
-import { IsString } from 'class-validator';
+import { IsString, IsUUID } from 'class-validator';
 
 export class ChangeProfileDTO {
   @IsString()
@@ -6,4 +6,10 @@ export class ChangeProfileDTO {
 
   @IsString()
   photo_url: string;
+
+  @IsString()
+  birth_date: string;
+
+  @IsString()
+  phone: string;
 }

@@ -14,10 +14,11 @@ export class ChangeProfileController {
     @Body() data: ChangeProfileDTO,
   ) {
     const result = await this.change_profile_service.execute({
-      context_id: req.auth.context_id,
-      entity_id: req.auth.user_id,
+      profile_id: req.auth.profile_id,
       name: data.name,
       photo_url: data.photo_url,
+      birth_date: data.birth_date,
+      phone: data.phone,
     });
     return Profile_View_Model.toHttp(result);
   }

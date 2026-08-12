@@ -19,77 +19,37 @@ describe('Test in route Change Profile', () => {
     identity_repository = new InMemoryIdentityRepository();
   });
 
-  it('should not change profile, because credentials not exists', async () => {
-    const change_profile_service = new ChangeProfileService(
-      profile_repository,
-      identity_repository,
-    );
-    expect(
-      change_profile_service.execute({
-        context_id: 'academia',
-        name: 'luisfoco@gmail.com',
-        entity_id: '1',
-        photo_url: '1232323',
-      }),
-    ).rejects.toThrow(new AppError('Credenciais inválidas', 404));
-  });
-
   it('should not change profile, because profile not exists', async () => {
-    entity_repository.list_entity.push(makeEntity());
-    identity_repository.list_identity.push(
-      makeIdentity({
-        props: {
-          entity_id: entity_repository.list_entity[0]._id,
-          password: await argon2.hash('123LLv!!@32mjnvhfh'),
-          mfa_required: true,
-        },
-      }),
-    );
-    const change_profile_service = new ChangeProfileService(
-      profile_repository,
-      identity_repository,
-    );
+    const change_profile_service = new ChangeProfileService(profile_repository);
     expect(
       change_profile_service.execute({
-        context_id: 'academia',
         name: 'luisfoco@gmail.com',
-        entity_id: entity_repository.list_entity[0]._id,
         photo_url: '1232323',
+        birth_date: '12/04/1990',
+        phone: '6565656',
+        profile_id: '123',
       }),
     ).rejects.toThrow(new AppError('Perfil não existe', 404));
   });
 
   it('should change profile', async () => {
-    entity_repository.list_entity.push(makeEntity());
-    identity_repository.list_identity.push(
-      makeIdentity({
-        props: {
-          entity_id: entity_repository.list_entity[0]._id,
-          password: await argon2.hash('123LLv!!@32mjnvhfh'),
-          mfa_required: true,
-        },
-      }),
-    );
     profile_repository.list_profile.push(
       makeProfile({
+        id: '123',
         props: {
-          context_id: 'academia',
-          entity_id: entity_repository.list_entity[0]._id,
+          name: 'Pedro',
         },
       }),
     );
-    const change_profile_service = new ChangeProfileService(
-      profile_repository,
-      identity_repository,
-    );
+    const change_profile_service = new ChangeProfileService(profile_repository);
     const result = await change_profile_service.execute({
-      context_id: 'academia',
-      name: 'Pedro',
-      entity_id: entity_repository.list_entity[0]._id,
+      name: 'luisfoco@gmail.com',
       photo_url: '1232323',
+      birth_date: '12/04/1990',
+      phone: '6565656',
+      profile_id: '123',
     });
-    expect(result.name).toBe('Pedro');
-    expect(entity_repository.list_entity).toHaveLength(1);
-    expect(identity_repository.list_identity).toHaveLength(1);
+    expect(result.name).toBe('luisfoco@gmail.com');
+    expect(profile_repository.list_profile).toHaveLength(1);
   });
 });
