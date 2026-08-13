@@ -50,6 +50,8 @@ import { IEntityMembershipRepository } from '../entity_membership/shared/reposit
 import { EntityMembershipRepository } from '../entity_membership/shared/repositories/entitymembership-repository';
 import { IEntityCustomerRepository } from '../entity_customer/shared/repositories/abstract_class/ientitycustomer-repository';
 import { EntityCustomerRepository } from '../entity_customer/shared/repositories/entitycustomer-repository';
+import { SelectEntityController } from './select_entity/controller/select_entity.controller';
+import { SelectEntityService } from './select_entity/service/select_entity.service';
 
 @Module({
   imports: [
@@ -78,6 +80,7 @@ import { EntityCustomerRepository } from '../entity_customer/shared/repositories
     MembersController,
     ChangeProfileController,
     MeProfileController,
+    SelectEntityController,
   ],
   providers: [
     {
@@ -131,6 +134,7 @@ import { EntityCustomerRepository } from '../entity_customer/shared/repositories
     AuthMiddleware,
     MeProfileService,
     ChangeProfileService,
+    SelectEntityService,
   ],
   exports: [JwtModule, AuthModule],
 })
