@@ -165,7 +165,7 @@ export class SignInService {
       } else {
         entitiesMap.set(membership.entity_id, {
           id: membership.entity_id,
-          entity_name: membership.name,
+          entity_name: membership.entity_name,
           roles: membership.roles,
         });
       }
