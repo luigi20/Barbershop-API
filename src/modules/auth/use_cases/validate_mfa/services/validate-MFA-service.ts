@@ -49,7 +49,11 @@ export class ValidateMFAService {
     } catch {
       throw new AppError('Token inválido ou expirado', 401);
     }
-    if (payload.type !== 'mfa' || payload.mfa_pending !== true)
+    if (
+      payload.type.toLowerCase() !== 'mfa' ||
+      payload.mfa_pending !== true ||
+      payload.type.toLowerCase() !== 'login'
+    )
       throw new AppError('MFA inválido ou expirado', 401);
     // 2. Busca o código MFA da Identity
     const mfa = await this.mfa_code_repository.find_one_code_and_expires_at(

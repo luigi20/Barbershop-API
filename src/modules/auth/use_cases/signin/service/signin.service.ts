@@ -191,7 +191,7 @@ export class SignInService {
       {
         sub: identity.id,
         profile_id: profile.id,
-        mfa_required: identity.mfa_required,
+        mfa_pending: identity.mfa_required,
         type: 'challenge',
         iss: 'saas-auth',
       },

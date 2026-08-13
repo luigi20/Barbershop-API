@@ -6,6 +6,7 @@ import { IMFACodeRepository } from '@modules/auth/mfa/shared/repositories/abstra
 interface IMFAConfirmRequest {
   email: string;
   mfa_code: string;
+  enabled_mfa: boolean;
 }
 
 @Injectable()
@@ -18,11 +19,13 @@ export class MFAConfirmService {
   public async execute({
     email,
     mfa_code,
+    enabled_mfa,
   }: IMFAConfirmRequest): Promise<string> {
     const identity = await this.identity_repository.find_by_email(
       email.toLowerCase().trim(),
     );
     if (!identity) throw new AppError('Credenciais inválidas');
+
     const mfa = await this.mfa_code_repository.find_one(
       identity.id,
       false,
@@ -33,6 +36,11 @@ export class MFAConfirmService {
     mfa.used_at = true;
     mfa.attempts = mfa.attempts + 1;
     await this.mfa_code_repository.update_used(mfa.id);
+    identity.mfa_required = enabled_mfa;
+    await this.identity_repository.set_update_mfa_required(
+      identity.id,
+      enabled_mfa,
+    );
     return 'MFA atualizado com sucesso';
   }
 }

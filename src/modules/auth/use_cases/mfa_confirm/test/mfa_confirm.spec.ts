@@ -24,6 +24,7 @@ describe('Test in route MFA confirm', () => {
       mfaConfirmService.execute({
         email: 'luisfoco@gmail.com',
         mfa_code: '123',
+        enabled_mfa: true,
       }),
     ).rejects.toThrow(new AppError('Credenciais inválidas', 400));
   });
@@ -52,6 +53,7 @@ describe('Test in route MFA confirm', () => {
       mfaConfirmService.execute({
         email: 'luisfoco@gmail.com',
         mfa_code: '123',
+        enabled_mfa: true,
       }),
     ).rejects.toThrow(new AppError('MFA inválido ou já usado', 404));
   });
@@ -80,10 +82,11 @@ describe('Test in route MFA confirm', () => {
       mfaConfirmService.execute({
         email: 'luisfoco@gmail.com',
         mfa_code: '123',
+        enabled_mfa: true,
       }),
     ).rejects.toThrow(new AppError('Código do MFA inválido'));
   });
-  it('should mfa confirm', async () => {
+  it('should mfa true confirm', async () => {
     identity_repository.list_identity.push(
       makeIdentity({
         props: {
@@ -106,8 +109,40 @@ describe('Test in route MFA confirm', () => {
     const result = await mfaConfirmService.execute({
       email: 'luisfoco@gmail.com',
       mfa_code: '4234tuv',
+      enabled_mfa: true,
     });
     expect(result).toBe('MFA atualizado com sucesso');
     expect(identity_repository.list_identity).toHaveLength(1);
+    expect(identity_repository.list_identity[0].mfa_required).toBe(true);
+  });
+
+  it('should mfa false confirm', async () => {
+    identity_repository.list_identity.push(
+      makeIdentity({
+        props: {
+          email: 'luisfoco@gmail.com',
+        },
+      }),
+    );
+    mfa_code_repository.list_MFA_Code.push(
+      makeMFACode({
+        props: {
+          identity_id: identity_repository.list_identity[0].id,
+          used_at: false,
+        },
+      }),
+    );
+    const mfaConfirmService = new MFAConfirmService(
+      identity_repository,
+      mfa_code_repository,
+    );
+    const result = await mfaConfirmService.execute({
+      email: 'luisfoco@gmail.com',
+      mfa_code: '4234tuv',
+      enabled_mfa: false,
+    });
+    expect(result).toBe('MFA atualizado com sucesso');
+    expect(identity_repository.list_identity).toHaveLength(1);
+    expect(identity_repository.list_identity[0].mfa_required).toBe(false);
   });
 });
