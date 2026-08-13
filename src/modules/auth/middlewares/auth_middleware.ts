@@ -15,8 +15,8 @@ export class AuthMiddleware implements NestMiddleware {
         identity_id: payload.sub,
         profile_id: payload.profile_id,
         entity_id: payload.entity_id,
-        roles: payload.roles,
-        name: payload.name,
+        roles: payload?.roles,
+        name: payload?.name,
         photo: payload.photo,
       };
       next();

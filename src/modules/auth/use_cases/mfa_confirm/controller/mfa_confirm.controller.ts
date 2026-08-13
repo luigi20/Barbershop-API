@@ -11,6 +11,7 @@ export class MFAConfirmController {
     const result = await this.mfaConfirmService.execute({
       email: data.email,
       mfa_code: data.mfa_code,
+      enabled_mfa: data.enabled_MFA,
     });
     return result;
   }

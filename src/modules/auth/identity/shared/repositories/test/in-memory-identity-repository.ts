@@ -33,10 +33,12 @@ class InMemoryIdentityRepository implements IIdentityRepository {
     }
   }
   async set_update_mfa_required(
-    entity_id: string,
+    identity_id: string,
     mfa_required: boolean,
   ): Promise<void> {
-    const index = this.list_identity.findIndex((item) => item.id === entity_id);
+    const index = this.list_identity.findIndex(
+      (item) => item.id === identity_id,
+    );
     if (index >= 0) {
       this.list_identity[index].mfa_required = mfa_required;
     }

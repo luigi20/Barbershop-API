@@ -8,5 +8,5 @@ export class MFAConfirmDTO {
   mfa_code: string;
 
   @IsUUID()
-  identity_id: string;
+  enabled_MFA: boolean;
 }
