@@ -20,7 +20,7 @@ export class EntityMembershipMapper {
     return {
       entity_id: entity_membership.entity_id,
       profile_id: entity_membership.profile_id,
-      role: entity_membership.role,
+      roles: entity_membership.roles,
       status: entity_membership.status,
       created_at: entity_membership.created_at,
       updated_at: entity_membership.updated_at,
@@ -31,7 +31,7 @@ export class EntityMembershipMapper {
     return new Entity_Membership({
       entity_id: raw.entity_id,
       profile_id: raw.profile_id,
-      role: raw.role,
+      roles: raw.roles,
       status: raw.status,
       created_at: raw.created_at,
       updated_at: raw.updated_at,
@@ -45,7 +45,7 @@ export class EntityMembershipMapper {
       entity_id: raw.entity_id,
       profile_id: raw.profile_id,
       name: raw?.entity?.name ? raw.entity.name : null,
-      role: raw.role,
+      roles: raw.roles,
       status: raw.status,
       created_at: raw.created_at,
       updated_at: raw.updated_at,

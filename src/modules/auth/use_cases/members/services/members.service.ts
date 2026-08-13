@@ -1,35 +1,41 @@
 import { Injectable } from '@nestjs/common';
+import { IEntityMembershipRepository } from '@modules/auth/entity_membership/shared/repositories/abstract_class/ientitymembership-repository';
+import { Entity_Membership } from '@modules/auth/entity_membership/shared/models/entity_membership';
 import { IProfileRepository } from '@modules/auth/profile/shared/repositories/abstract_class/iprofile-repository';
-import { Profile } from '@modules/auth/profile/shared/models/profile';
-import { IIdentityRepository } from '@modules/auth/identity/shared/repositories/abstract_class/iidentity-repository';
+import { IEntityRepository } from '@modules/auth/entity/shared/repositories/abstract_class/ientity-repository';
+import { AppError } from '@modules/utils/app_error';
 
 interface IMembersRequest {
-  tenant_id: string;
-  context_id: string;
+  entity_id: string;
+  identity_id: string;
 }
 
 @Injectable()
 export class MembersService {
   constructor(
+    private readonly entity_membership_repository: IEntityMembershipRepository,
     private readonly profile_repository: IProfileRepository,
-    private readonly identity_repository: IIdentityRepository,
+    private readonly entity_repository: IEntityRepository,
   ) {}
 
   public async execute({
-    context_id,
-    tenant_id,
-  }: IMembersRequest): Promise<Profile[]> {
-    const members = await this.profile_repository.find(context_id, tenant_id);
-    if (!members || members.length === 0) return [];
+    entity_id,
+    identity_id,
+  }: IMembersRequest): Promise<Entity_Membership[]> {
+    const entity = await this.entity_repository.findById(entity_id);
+    if (!entity) throw new AppError('Empresa não existe', 404);
+    const members =
+      await this.entity_membership_repository.find_list_entity_id(entity_id);
+    if (members.length === 0) return [];
     await Promise.all(
       members.map(async (member) => {
-        const identity =
-          await this.identity_repository.findByEntityIdAndContextId(
-            member.entity_id,
-            context_id,
-          );
-        if (identity) {
-          member.role = identity.role;
+        const profile =
+          await this.profile_repository.find_identity_id(identity_id);
+        if (profile) {
+          member.entity_name = entity.name;
+          member.profile_name = profile.name;
+          member.phone = profile.phone;
+          member.photo = profile.photo;
         }
       }),
     );
