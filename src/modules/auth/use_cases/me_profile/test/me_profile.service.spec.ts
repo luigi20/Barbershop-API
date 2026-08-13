@@ -75,7 +75,7 @@ describe('Test in route Me Profile', () => {
     );
   });
 
-  it('should not get profile, because is membership', async () => {
+  it('should get profile, because is membership', async () => {
     entity_repository.list_entity.push(
       makeEntity({
         id: '123',
@@ -121,7 +121,7 @@ describe('Test in route Me Profile', () => {
     expect(result.roles.length).toEqual(1);
   });
 
-  it('should not get profile, because is membercostumer', async () => {
+  it('should get profile, because is membercostumer', async () => {
     entity_repository.list_entity.push(
       makeEntity({
         id: '123',
@@ -167,7 +167,7 @@ describe('Test in route Me Profile', () => {
     expect(result.roles[0]).toEqual('cliente');
   });
 
-  it('should not get profile, because is membercostumer and membership', async () => {
+  it('should get profile, because is membercostumer and membership', async () => {
     entity_repository.list_entity.push(
       makeEntity({
         id: '123',
@@ -223,38 +223,4 @@ describe('Test in route Me Profile', () => {
     expect(result.roles.length).toEqual(2);
     console.log(result);
   });
-  /*
-  
-
-  it('should get profile', async () => {
-    entity_repository.list_entity.push(makeEntity());
-    identity_repository.list_identity.push(
-      makeIdentity({
-        props: {
-          entity_id: entity_repository.list_entity[0]._id,
-          password: await argon2.hash('123LLv!!@32mjnvhfh'),
-          mfa_required: true,
-        },
-      }),
-    );
-    profile_repository.list_profile.push(
-      makeProfile({
-        props: {
-          context_id: 'academia',
-          entity_id: entity_repository.list_entity[0]._id,
-        },
-      }),
-    );
-    const change_profile_service = new MeProfileService(
-      profile_repository,
-      identity_repository,
-    );
-    const result = await change_profile_service.execute({
-      context_id: 'academia',
-      entity_id: entity_repository.list_entity[0]._id,
-    });
-    expect(result).toEqual(profile_repository.list_profile[0]);
-    expect(entity_repository.list_entity).toHaveLength(1);
-    expect(identity_repository.list_identity).toHaveLength(1);
-  });*/
 });
