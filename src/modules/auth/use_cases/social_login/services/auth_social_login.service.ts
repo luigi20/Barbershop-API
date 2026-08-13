@@ -1,147 +1,157 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { IdentityProviderService } from './identity_provider.service';
 import { IEntityRepository } from '@modules/auth/entity/shared/repositories/abstract_class/ientity-repository';
-import { Entity } from '@modules/auth/entity/shared/models/entity';
 import { Identity } from '@modules/auth/identity/shared/models/identity';
 import { IIdentityRepository } from '@modules/auth/identity/shared/repositories/abstract_class/iidentity-repository';
-import {
-  Generate_Hash,
-  generateValidRandomPassword,
-} from '@modules/utils/functions';
-import argon2 from 'argon2';
-import { IRefreshTokensRepository } from '@modules/auth/refresh_token/shared/repositories/abstract_class/irefresh-tokens-repository';
-import { Refresh_Tokens } from '@modules/auth/refresh_token/shared/models/refresh-tokens';
 import { IProfileRepository } from '@modules/auth/profile/shared/repositories/abstract_class/iprofile-repository';
 import { AppError } from '@modules/utils/app_error';
 import { Profile } from '@modules/auth/profile/shared/models/profile';
+import { IEntityMembershipRepository } from '@modules/auth/entity_membership/shared/repositories/abstract_class/ientitymembership-repository';
+import { IEntityCustomerRepository } from '@modules/auth/entity_customer/shared/repositories/abstract_class/ientitycustomer-repository';
+import { entity_name } from '@modules/utils/types/types';
 
-interface IRequest_Login_Social {
-  context_id: string;
+export interface IRequest_Login_Social {
   provider: string;
   token: string;
+}
+
+export interface IResponse_Login_Social {
+  login_token: string;
+  mfa_required: boolean;
+  entities: entity_name[];
 }
 
 @Injectable()
 export class AuthSocialLoginService {
   constructor(
-    private readonly entity_repository: IEntityRepository,
     private readonly identity_repository: IIdentityRepository,
-    private readonly refresh_token_repository: IRefreshTokensRepository,
+    private readonly profile_repository: IProfileRepository,
+    private readonly entity_repository: IEntityRepository,
+    private readonly entity_membership_repository: IEntityMembershipRepository,
+    private readonly entity_membercustomer_repository: IEntityCustomerRepository,
     private readonly jwt_service: JwtService,
     private readonly identity_provider_service: IdentityProviderService,
-    private readonly profile_repository: IProfileRepository,
   ) {}
 
   async execute({
-    context_id,
     provider,
     token,
-  }: IRequest_Login_Social): Promise<{
-    access_token: string;
-    mfa_required: boolean;
-    refresh_token: string;
-  }> {
+  }: IRequest_Login_Social): Promise<IResponse_Login_Social> {
     const profile_provider = await this.identity_provider_service.validate(
       provider,
       token,
     );
-    let create_identity: Identity = null;
-    let create_entity = await this.entity_repository.findByEmail(
+    if (!profile_provider?.email)
+      throw new AppError(
+        'Não foi possível obter o e-mail da conta social',
+        401,
+      );
+    let identity = await this.identity_repository.find_by_email(
       profile_provider.email,
     );
-    if (!create_entity) {
-      create_entity = new Entity({
+    if (!identity) {
+      identity = new Identity({
         email: profile_provider.email,
-      });
-      const password = await generateValidRandomPassword();
-      const password_hash = await argon2.hash(password);
-      await this.entity_repository.create(create_entity);
-      create_identity = new Identity({
-        context_id: context_id,
-        entity_id: create_entity._id,
-        is_active: true,
+        status: 'ativo',
         mfa_required: false,
-        password: password_hash,
-        role: 'user',
+        provider: profile_provider.type,
       });
-      await this.identity_repository.create(create_identity);
-    }
-    if (!create_identity)
-      create_identity =
-        await this.identity_repository.findByEntityIdAndContextId(
-          create_entity._id,
-          context_id,
-        );
-    const profile = new Profile({
-      context_id: context_id,
-      entity_id: create_entity._id,
-      name: profile_provider?.name + ' ' + profile_provider?.last_name,
-      tenant_id: 'default',
-    });
-    await this.profile_repository.create(profile);
-    if (!create_identity.mfa_required) {
-      const access_token = this.jwt_service.sign(
-        {
-          sub: create_entity._id,
-          context_id: context_id,
-          role: create_identity.role,
-          tenant_id: profile.tenant_id,
-          type: 'access',
-          iss: 'saas-auth',
-        },
-        {
-          algorithm: 'RS256',
-          //expiresIn: '15m',
-          expiresIn: '1d',
-          keyid: 'v1',
-        },
-      );
-      const refresh_token = this.jwt_service.sign(
-        {
-          sub: create_entity._id,
-          context_id: context_id,
-          tenant_id: profile.tenant_id,
-          type: 'refresh',
-          iss: 'saas-auth',
-        },
-        {
-          algorithm: 'RS256',
-          expiresIn: '7d',
-          keyid: 'v1',
-        },
-      );
-      const token_hash = await Generate_Hash(refresh_token);
-      const refresh_tokens = new Refresh_Tokens({
-        context_id: create_identity.context_id,
-        entity_id: create_entity._id,
-        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        revoked: false,
-        token_hash: token_hash,
+      await this.identity_repository.create(identity);
+      const profile = new Profile({
+        identity_id: identity.id,
+        name: `${profile_provider.name ?? ''} ${
+          profile_provider.last_name ?? ''
+        }`.trim(),
       });
-      await this.refresh_token_repository.create(refresh_tokens);
-      return {
-        access_token: access_token,
-        mfa_required: false,
-        refresh_token: refresh_token,
-      };
+      await this.profile_repository.create(profile);
     }
-    const access_token = this.jwt_service.sign(
+    if (identity.status.toLowerCase() !== 'ativo')
+      throw new AppError('Usuário inativo', 403);
+    const profile = await this.profile_repository.find_identity_id(identity.id);
+    if (!profile) throw new AppError('Perfil não encontrado', 404);
+    const memberships =
+      await this.entity_membership_repository.find_list_profile_id(profile.id);
+    const customers =
+      await this.entity_membercustomer_repository.find_list_profile_id(
+        profile.id,
+      );
+    const entity_ids = new Set<string>();
+    for (const membership of memberships ?? []) {
+      if (membership.status?.toLowerCase() === 'ativo')
+        entity_ids.add(membership.entity_id);
+    }
+    for (const customer of customers ?? []) {
+      if (customer.status?.toLowerCase() === 'ativo')
+        entity_ids.add(customer.entity_id);
+    }
+    const entities: entity_name[] = [];
+    for (const entity_id of entity_ids) {
+      const entity = await this.entity_repository.findById(entity_id);
+      if (!entity) continue;
+      if (entity.status?.toLowerCase() !== 'ativo') continue;
+      const membership = memberships?.find(
+        (item) =>
+          item.entity_id === entity_id &&
+          item.status?.toLowerCase() === 'ativo',
+      );
+      const customer = customers?.find(
+        (item) =>
+          item.entity_id === entity_id &&
+          item.status?.toLowerCase() === 'ativo',
+      );
+      const roles: string[] = [];
+      if (membership) roles.push(...membership.roles);
+      if (customer) roles.push('cliente');
+      entities.push({
+        id: entity._id,
+        entity_name: entity.name,
+        roles: [...new Set(roles)],
+      });
+    }
+    /**
+     * 9. Usuário autenticado pelo provider,
+     * mas não possui nenhuma empresa vinculada.
+     */
+    if (entities.length === 0) {
+      throw new AppError(
+        'Usuário não possui nenhuma organização vinculada',
+        403,
+      );
+    }
+
+    /**
+     * 10. Gera login_token
+     *
+     * Esse NÃO é access_token.
+     *
+     * Ele apenas representa uma autenticação parcialmente concluída.
+     */
+    const login_token = this.jwt_service.sign(
       {
-        sub: create_entity._id,
-        context_id: context_id,
-        tenant_id: profile.tenant_id,
-        mfa_pending: true,
+        sub: identity.id,
+        profile_id: profile.id,
+        type: 'login',
+        provider,
         iss: 'saas-auth',
       },
       {
+        algorithm: 'RS256',
         expiresIn: '10m',
+        keyid: 'v1',
       },
     );
+
+    /**
+     * 11. Informa se MFA será necessário.
+     *
+     * O MFA ainda será validado depois que
+     * a Entity for selecionada.
+     */
     return {
-      access_token: access_token,
-      mfa_required: true,
-      refresh_token: '',
+      login_token,
+      mfa_required: identity.mfa_required,
+      entities,
     };
   }
 }

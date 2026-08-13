@@ -39,6 +39,8 @@ describe('Test in route Logout', () => {
       '$argon2id$v=19$m=65536,t=3,p=4$c29tZXNhbHR2YWx1ZQ$7sH1QxYk6dJ6z9K8Yf5rW1qK9VwV8bTz1CkGm3nQp9I',
     );
     expect(refresh_token_repository.list_refresh_tokens).toHaveLength(1);
-    expect(refresh_token_repository.list_refresh_tokens[0].revoked).toBe(true);
+    expect(refresh_token_repository.list_refresh_tokens[0].revoked_at).toBe(
+      true,
+    );
   });
 });

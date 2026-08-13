@@ -10,6 +10,7 @@ export interface SocialProfile {
   name?: string;
   last_name: string;
   avatar?: string | null;
+  type: string;
 }
 
 @Injectable()
@@ -22,9 +23,11 @@ export class IdentityProviderService {
   async validate(provider: string, token: string): Promise<SocialProfile> {
     switch (provider) {
       case 'google':
-        return await this.googleProvider.validate(token);
+        const result = await this.googleProvider.validate(token);
+        return result;
       case 'microsoft':
-        //    return await this.microsoftProvider.validate(token);
+        //   const result = await this.microsoftProvider.validate(token);
+        // result.type = 'microsoft';
         break;
       default:
         throw new AppError('Provider não suportado');

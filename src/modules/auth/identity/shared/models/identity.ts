@@ -28,6 +28,7 @@ export class Identity {
         updated_at?: Date;
         last_login_at?: Date;
         provider_id?: string;
+        password_hash?: string;
         profile?: Profile;
       }
     >,
@@ -41,6 +42,7 @@ export class Identity {
       last_login_at: props.last_login_at ?? new Date(),
       provider_id: props.provider_id ?? null,
       profile: props.profile ?? null,
+      password_hash: props.password_hash ?? null,
     };
   }
 
