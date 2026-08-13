@@ -14,7 +14,7 @@ import { makeEntityMembership } from '@modules/auth/entity_membership/shared/mod
 import { makeEntityMembershipCustomer } from '@modules/auth/entity_customer/shared/models/test/entity-customer-factory';
 
 jest.mock('argon2');
-describe('Test in route signup', () => {
+describe('Test in route signin', () => {
   let entity_repository: InMemoryEntityRepository;
   let identity_repository: InMemoryIdentityRepository;
   let refresh_token_repository: InMemoryRefreshTokensRepository;
@@ -220,7 +220,7 @@ describe('Test in route signup', () => {
         props: {
           entity_id: entity_repository.list_entity[0]._id,
           profile_id: profile_repository.list_profile[0].id,
-          name: 'Profit',
+          entity_name: 'Profit',
         },
       }),
     );
@@ -275,7 +275,7 @@ describe('Test in route signup', () => {
         props: {
           entity_id: entity_repository.list_entity[0]._id,
           profile_id: profile_repository.list_profile[0].id,
-          name: 'Profit',
+          entity_name: 'Profit',
         },
       }),
     );
@@ -335,7 +335,7 @@ describe('Test in route signup', () => {
         props: {
           entity_id: entity_repository.list_entity[0]._id,
           profile_id: profile_repository.list_profile[0].id,
-          name: 'Profit',
+          entity_name: 'Profit',
         },
       }),
     );

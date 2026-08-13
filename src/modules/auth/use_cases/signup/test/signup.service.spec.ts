@@ -88,6 +88,10 @@ describe('Test in route signup', () => {
   });
 
   it('should not add signup, because transaction failed', async () => {
+    const prismaMock = {
+      getPrismaClient: jest.fn(),
+      $transaction: jest.fn().mockRejectedValue(new Error('Erro na transação')),
+    } as unknown as PrismaService;
     const signUpService = new SignUpService(
       prismaMock,
       entity_repository,

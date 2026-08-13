@@ -82,7 +82,7 @@ export class SignUpService {
     const membership = new Entity_Membership({
       entity_id: entity._id,
       profile_id: profile.id,
-      role: MemberRole.DONO,
+      roles: [MemberRole.DONO],
       status: 'ATIVO',
     });
     try {
