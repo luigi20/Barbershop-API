@@ -27,6 +27,8 @@ export class Profile {
         photo?: string;
         identity?: Identity;
         roles?: string[];
+        phone?: string;
+        birth_date?: Date;
       }
     >,
     id?: string,
@@ -39,6 +41,8 @@ export class Profile {
       photo: props.photo ?? null,
       identity: props.identity ?? null,
       roles: props.roles ?? [],
+      phone: props.phone ?? null,
+      birth_date: props.birth_date ?? null,
     };
   }
 

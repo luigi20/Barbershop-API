@@ -18,11 +18,9 @@ export class AuthSocialLoginController {
   @Post('social_login')
   @HttpCode(HttpStatus.OK)
   async google_login(@Body() data: Social_LoginDTO) {
-    const result = await this.authSocialLoginService.execute({
-      context_id: data.context_id,
+    return this.authSocialLoginService.execute({
       provider: data.provider,
       token: data.token,
     });
-    return result;
   }
 }

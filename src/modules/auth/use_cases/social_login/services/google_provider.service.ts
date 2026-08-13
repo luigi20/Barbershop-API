@@ -22,6 +22,7 @@ export class GoogleProviderService {
       name: payload.given_name,
       last_name: payload.family_name,
       avatar: payload.picture,
+      type: 'google',
     };
   }
 }
