@@ -1,8 +1,13 @@
-import { Controller, Get, Req } from '@nestjs/common';
+import { Controller, Get, Req, UseGuards } from '@nestjs/common';
 import { Profile_View_Model } from '@modules/auth/profile/shared/view-models/profile-view-model';
 import { AuthRequest } from '@modules/utils/types/types';
 import { MeProfileService } from '../service/me_profile.service';
+import { AuthGuard } from '@modules/auth/guards/auth_guard';
+import { TokenTypeRequired } from '@modules/auth/decorators/token-type.decorator';
+import { TokenType } from '@modules/utils/enum';
 
+@UseGuards(AuthGuard)
+@TokenTypeRequired(TokenType.ACCESS)
 @Controller()
 export class MeProfileController {
   constructor(private readonly me_profile_service: MeProfileService) {}

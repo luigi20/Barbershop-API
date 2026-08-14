@@ -1,7 +1,12 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { MFAConfirmDTO } from '../dto/mfa_confirmDTO';
 import { MFAConfirmService } from '../service/mfa_confirm.service';
+import { AuthGuard } from '@modules/auth/guards/auth_guard';
+import { TokenTypeRequired } from '@modules/auth/decorators/token-type.decorator';
+import { TokenType } from '@modules/utils/enum';
 
+@UseGuards(AuthGuard)
+@TokenTypeRequired(TokenType.MFA)
 @Controller('auth')
 export class MFAConfirmController {
   constructor(private readonly mfaConfirmService: MFAConfirmService) {}

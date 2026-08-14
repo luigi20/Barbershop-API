@@ -1,7 +1,19 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { LogoutService } from '../service/logout.service';
 import { LogoutDTO } from '../dto/logoutDTO';
+import { AuthGuard } from '@modules/auth/guards/auth_guard';
+import { TokenTypeRequired } from '@modules/auth/decorators/token-type.decorator';
+import { TokenType } from '@modules/utils/enum';
 
+@UseGuards(AuthGuard)
+@TokenTypeRequired(TokenType.ACCESS)
 @Controller('auth')
 export class LogoutController {
   constructor(private readonly logout_service: LogoutService) {}

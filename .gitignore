@@ -12,6 +12,10 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
+.env
+.env.*
+!.env.example
+
 # OS
 .DS_Store
 

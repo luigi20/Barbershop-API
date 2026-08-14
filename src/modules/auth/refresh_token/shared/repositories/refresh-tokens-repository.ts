@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { IRefreshTokensRepository } from './abstract_class/irefresh-tokens-repository';
 import { Refresh_Tokens } from '../models/refresh-tokens';
-import { DynamoDBRefreshTokensMapper } from '@modules/utils/mappers/dynamoDBRefreshTokensMapper';
 import { PrismaService } from 'infra/database/prisma/prisma.service';
 import { RefreshTokensMapper } from 'infra/database/mappers/RefreshTokensMapper';
 import { PasswordResetTokensMapper } from 'infra/database/mappers/PasswordResetTokensMapper';
@@ -57,7 +56,7 @@ class RefreshTokensRepository implements IRefreshTokensRepository {
         id: id,
       },
       data: {
-        used_at: true,
+        revoked_at: true,
       },
     });
   }
