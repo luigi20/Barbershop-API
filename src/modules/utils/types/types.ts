@@ -5,7 +5,9 @@ export interface AuthRequest extends Request {
     identity_id: string;
     profile_id: string;
     entity_id: string;
-    role: string;
+    roles?: string[];
+    name?: string;
+    photo?: string;
   };
 }
 

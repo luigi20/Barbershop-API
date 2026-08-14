@@ -4,9 +4,6 @@ export class SignInDTO {
   @IsString()
   password: string;
 
-  @IsUUID()
-  entity_id: string;
-
   @IsEmail()
   email: string;
 }

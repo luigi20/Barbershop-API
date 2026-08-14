@@ -17,6 +17,7 @@ export class SignUpController {
       phone: data.phone,
       photo: data.photo,
       entity_type: data.entity_type,
+      document: data.document,
     });
   }
 }

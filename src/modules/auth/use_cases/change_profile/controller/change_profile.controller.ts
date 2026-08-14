@@ -1,10 +1,15 @@
-import { Body, Controller, Put, Req } from '@nestjs/common';
+import { Body, Controller, Put, Req, UseGuards } from '@nestjs/common';
 import { Profile_View_Model } from '@modules/auth/profile/shared/view-models/profile-view-model';
 import { AuthRequest } from '@modules/utils/types/types';
 import { ChangeProfileService } from '../service/change_profile.service';
 import { ChangeProfileDTO } from '../dto/change-profile-DTO';
+import { AuthGuard } from '@modules/auth/guards/auth_guard';
+import { TokenTypeRequired } from '@modules/auth/decorators/token-type.decorator';
+import { TokenType } from '@modules/utils/enum';
 
-@Controller()
+@UseGuards(AuthGuard)
+@TokenTypeRequired(TokenType.ACCESS)
+@Controller('auth')
 export class ChangeProfileController {
   constructor(private readonly change_profile_service: ChangeProfileService) {}
 
