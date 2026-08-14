@@ -41,7 +41,6 @@ import { IProfileRepository } from '../profile/shared/repositories/abstract_clas
 import { ProfileRepository } from '../profile/shared/repositories/profile-repository';
 import { MembersService } from './members/services/members.service';
 import { MembersController } from './members/controller/members.controller';
-import { AuthMiddleware } from '../middlewares/auth_middleware';
 import { ChangeProfileController } from './change_profile/controller/change_profile.controller';
 import { MeProfileController } from './me_profile/controller/me_profile.controller';
 import { MeProfileService } from './me_profile/service/me_profile.service';
@@ -131,7 +130,6 @@ import { SelectEntityService } from './select_entity/service/select_entity.servi
     MFAConfirmService,
     MFARequestService,
     MembersService,
-    AuthMiddleware,
     MeProfileService,
     ChangeProfileService,
     SelectEntityService,

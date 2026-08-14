@@ -40,3 +40,11 @@ export enum MembershipStatus {
   CONVIDADO = 'CONVIDADO',
   INATIVO = 'INATIVO',
 }
+
+export enum TokenType {
+  LOGIN = 'login_token',
+  MFA = 'mfa_token',
+  ACCESS = 'access_token',
+  CHALLENGE = 'challenge',
+  REFRESH = 'refresh',
+}

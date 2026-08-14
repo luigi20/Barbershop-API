@@ -14,6 +14,9 @@ interface IMFATokenPayload {
   type: string;
   mfa_pending: boolean;
   iss: string;
+  name: string;
+  photo: string;
+  roles: string[];
 }
 
 @Injectable()

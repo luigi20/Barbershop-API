@@ -22,6 +22,9 @@ export class SignUpDTO {
   @IsString()
   photo: string;
 
+  @IsString()
+  document: string;
+
   @IsDate()
   birth_date: Date;
 }

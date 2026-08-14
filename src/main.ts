@@ -15,12 +15,7 @@ async function bootstrapServer() {
       new ExpressAdapter(expressApp),
     );
     app.enableCors({
-      origin: [
-        process.env.FRONTEND_DEV_EVEREST,
-        process.env.FRONTEND_PROD_EVEREST,
-        process.env.FRONTEND_TELE,
-        process.env.FRONTEND_LOCAL_EVEREST,
-      ], // ou coloque seus domínios
+      origin: [process.env.FRONTEND_LOCAL_EVEREST], // ou coloque seus domínios
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization'],
       credentials: true,
