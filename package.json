@@ -24,7 +24,7 @@
     "prepare": "husky",
     "commit": "cz",
     "serverless:offline": "yarn build && serverless offline",
-    "services:up": "docker compose up --build -d",
+    "services:up": "yarn build && docker compose up --build -d",
     "services:down": "docker compose down",
     "services:stop": "docker compose stop"
   },
