@@ -33,19 +33,16 @@ export class AuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<AuthRequest>();
     const authHeader = request.headers.authorization;
-    console.log('oi 1');
     if (!authHeader) throw new AppError('Internal Server Error', 500);
     const [type, token] = authHeader.split(' ');
     if (type !== 'Bearer') throw new AppError('Internal Server Error', 500);
     if (!token) throw new AppError('Internal Server Error', 500);
     try {
-      console.log('oi 2');
       const payload = this.jwtService.verify<IMFATokenPayload>(token);
       const requiredTokenTypes = this.reflector.get<TokenType[]>(
         TOKEN_TYPE_KEY,
         context.getHandler(),
       );
-
       if (
         requiredTokenTypes &&
         !requiredTokenTypes.includes(payload.type as TokenType)
@@ -64,11 +61,7 @@ export class AuthGuard implements CanActivate {
       };
       return true;
     } catch (error) {
-      console.log('oi 3');
-      if (error instanceof UnauthorizedException) {
-        throw error;
-      }
-      console.log('oi 4');
+      if (error instanceof UnauthorizedException) throw error;
       throw new UnauthorizedException('Token inválido ou expirado');
     }
   }
