@@ -5,11 +5,20 @@ import { ChangeProfileService } from '../service/change_profile.service';
 import { ChangeProfileDTO } from '../dto/change-profile-DTO';
 import { AuthGuard } from '@modules/auth/guards/auth_guard';
 import { TokenTypeRequired } from '@modules/auth/decorators/token-type.decorator';
-import { TokenType } from '@modules/utils/enum';
+import { MemberRole, TokenType } from '@modules/utils/enum';
+import { RolesGuard } from '@modules/auth/guards/roles_guards';
+import { Roles } from '@modules/auth/decorators/roles.decorator';
 
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, RolesGuard)
 @TokenTypeRequired(TokenType.ACCESS)
 @Controller('auth')
+@Roles(
+  MemberRole.DONO,
+  MemberRole.ADMINISTRADOR,
+  MemberRole.RECEPCIONISTA,
+  MemberRole.CLIENTE,
+  MemberRole.BARBEIRO,
+)
 export class ChangeProfileController {
   constructor(private readonly change_profile_service: ChangeProfileService) {}
 

@@ -33,6 +33,7 @@ export enum MemberRole {
   ADMINISTRADOR = 'ADMINISTRADOR',
   BARBEIRO = 'BARBEIRO',
   RECEPCIONISTA = 'RECEPCIONISTA',
+  CLIENTE = 'CLIENTE',
 }
 
 export enum MembershipStatus {

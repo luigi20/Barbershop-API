@@ -1,11 +1,12 @@
 import { Request } from 'express';
+import { MemberRole } from '../enum';
 
 export interface AuthRequest extends Request {
   auth: {
     identity_id: string;
     profile_id: string;
     entity_id: string;
-    roles?: string[];
+    roles?: MemberRole[];
     name?: string;
     photo?: string;
   };

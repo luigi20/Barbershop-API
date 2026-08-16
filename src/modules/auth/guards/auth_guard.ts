@@ -2,13 +2,12 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
-  InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Reflector } from '@nestjs/core';
 import { AuthRequest } from '@modules/utils/types/types';
-import { TokenType } from '@modules/utils/enum';
+import { MemberRole, TokenType } from '@modules/utils/enum';
 import { TOKEN_TYPE_KEY } from '../decorators/token-type.decorator';
 import { AppError } from '@modules/utils/app_error';
 interface IMFATokenPayload {
@@ -21,7 +20,7 @@ interface IMFATokenPayload {
   iss: string;
   name: string;
   photo: string;
-  roles: string[];
+  roles: MemberRole[];
 }
 @Injectable()
 export class AuthGuard implements CanActivate {

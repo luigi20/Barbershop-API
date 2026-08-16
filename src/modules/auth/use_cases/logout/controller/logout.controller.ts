@@ -10,11 +10,20 @@ import { LogoutService } from '../service/logout.service';
 import { LogoutDTO } from '../dto/logoutDTO';
 import { AuthGuard } from '@modules/auth/guards/auth_guard';
 import { TokenTypeRequired } from '@modules/auth/decorators/token-type.decorator';
-import { TokenType } from '@modules/utils/enum';
+import { MemberRole, TokenType } from '@modules/utils/enum';
+import { RolesGuard } from '@modules/auth/guards/roles_guards';
+import { Roles } from '@modules/auth/decorators/roles.decorator';
 
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, RolesGuard)
 @TokenTypeRequired(TokenType.ACCESS)
 @Controller('auth')
+@Roles(
+  MemberRole.DONO,
+  MemberRole.ADMINISTRADOR,
+  MemberRole.RECEPCIONISTA,
+  MemberRole.CLIENTE,
+  MemberRole.BARBEIRO,
+)
 export class LogoutController {
   constructor(private readonly logout_service: LogoutService) {}
 
