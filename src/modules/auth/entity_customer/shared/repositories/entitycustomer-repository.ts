@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'infra/database/prisma/prisma.service';
 import { IEntityCustomerRepository } from './abstract_class/ientitycustomer-repository';
 import { Entity_Customer } from '../models/entity_customer';
-import { EntityCustomerMapper } from 'infra/database/mappers/EntityCustomer';
+import { EntityCustomerMapper } from 'infra/database/mappers/EntityCustomerMapper';
 
 @Injectable()
 class EntityCustomerRepository implements IEntityCustomerRepository {

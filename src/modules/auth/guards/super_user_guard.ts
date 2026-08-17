@@ -9,7 +9,6 @@ export class SuperUserGuard implements CanActivate {
     const user = request.auth;
     if (!user) throw new AppError('Usuário não pode acessar essa rota', 401);
     if (!user.is_superuser) throw new AppError('Acesso negado', 403);
-
     return true;
   }
 }

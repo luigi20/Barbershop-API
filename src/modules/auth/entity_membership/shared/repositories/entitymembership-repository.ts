@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { IEntityMembershipRepository } from './abstract_class/ientitymembership-repository';
 import { PrismaService } from 'infra/database/prisma/prisma.service';
 import { Entity_Membership } from '../models/entity_membership';
-import { EntityMembershipMapper } from 'infra/database/mappers/EntityMembership';
+import { EntityMembershipMapper } from 'infra/database/mappers/EntityMembershipMapper';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
