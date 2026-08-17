@@ -36,6 +36,7 @@ export class MembersService {
           member.profile_name = profile.name;
           member.phone = profile.phone;
           member.photo = profile.photo;
+          member.roles = member.roles;
         }
       }),
     );
