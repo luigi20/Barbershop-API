@@ -8,10 +8,10 @@ RUN yarn install --frozen-lockfile
 
 COPY . .
 
-RUN yarn build
+RUN yarn prisma generate
 
-RUN yarn prisma generate 
+RUN yarn build
 
 EXPOSE 3333
 
-CMD ["sh", "-c", "yarn prisma migrate dev && yarn serverless offline --host 0.0.0.0 --httpPort 3333"]
+CMD ["yarn", "serverless", "offline", "--host", "0.0.0.0", "--httpPort", "3333"]

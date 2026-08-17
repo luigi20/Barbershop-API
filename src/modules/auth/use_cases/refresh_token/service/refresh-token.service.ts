@@ -12,6 +12,7 @@ interface IMFATokenPayload {
   entity_id: string;
   code: string;
   type: string;
+  is_superuser: boolean;
   mfa_pending: boolean;
   iss: string;
   name: string;
@@ -65,6 +66,7 @@ export class RefreshTokenService {
         photo: profile.photo,
         roles: roles,
         type: 'access',
+        is_superuser: identity.is_superuser,
         iss: 'saas-auth',
       },
       {

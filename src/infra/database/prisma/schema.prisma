@@ -32,6 +32,7 @@ model Identity {
   provider_id         String?              @db.Uuid()
   status              String               @db.VarChar()
   last_login_at       DateTime?
+  is_superuser        Boolean
   created_at          DateTime
   updated_at          DateTime
   profile             Profile?

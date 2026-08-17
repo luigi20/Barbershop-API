@@ -106,6 +106,7 @@ export class SelectEntityService {
         photo: profile.photo,
         roles: uniqueRoles,
         type: 'access',
+        is_superuser: identity.is_superuser,
         iss: 'saas-auth',
       },
       {
