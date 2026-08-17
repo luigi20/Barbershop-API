@@ -11,6 +11,7 @@ export interface Identity_Props {
   password_hash: string;
   provider: string;
   provider_id: string;
+  is_superuser: boolean;
   status: string;
   last_login_at: Date;
   profile: Profile;
@@ -29,6 +30,7 @@ export class Identity {
         last_login_at?: Date;
         provider_id?: string;
         password_hash?: string;
+        is_superuser?: boolean;
         profile?: Profile;
       }
     >,
@@ -43,11 +45,20 @@ export class Identity {
       provider_id: props.provider_id ?? null,
       profile: props.profile ?? null,
       password_hash: props.password_hash ?? null,
+      is_superuser: props.is_superuser ?? false,
     };
   }
 
   public get id() {
     return this._id;
+  }
+
+  public get is_superuser(): boolean {
+    return this.props.is_superuser;
+  }
+
+  public set is_superuser(is_superuser: boolean) {
+    this.props.is_superuser = is_superuser;
   }
 
   public get password_hash(): string {
