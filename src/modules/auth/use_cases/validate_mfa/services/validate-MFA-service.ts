@@ -103,6 +103,7 @@ export class ValidateMFAService {
         photo: profile.photo,
         roles: roles,
         type: 'access',
+        is_superuser: identity.is_superuser,
         iss: 'saas-auth',
       },
       {

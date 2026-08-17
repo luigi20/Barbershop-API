@@ -9,6 +9,7 @@ export interface AuthRequest extends Request {
     roles?: MemberRole[];
     name?: string;
     photo?: string;
+    is_superuser?: boolean;
   };
 }
 
