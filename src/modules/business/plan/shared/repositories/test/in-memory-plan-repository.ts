@@ -1,9 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { IPlanRepository } from '../abstract_class/iplan-repository';
 import { Plan } from '../../models/plan';
+import { IdAndName } from '@modules/utils/types/types';
 
 @Injectable()
 class InMemoryPlanRepository implements IPlanRepository {
+  async findByIdSelectIdAndName(id: string): Promise<IdAndName | null> {
+    const plan = this.list_plan.find((item) => item._id === id);
+    if (!plan) return null;
+    return {
+      id: plan._id,
+      name: plan.name,
+    };
+  }
   async update(data: Plan): Promise<void> {
     const index = this.list_plan.findIndex((item) => item._id === data._id);
     if (index >= 0) {

@@ -18,3 +18,8 @@ export type entity_name = {
   entity_name: string;
   roles: string[];
 };
+
+export type IdAndName = {
+  id: string;
+  name: string;
+};

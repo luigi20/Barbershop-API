@@ -13,7 +13,7 @@ import { PlanUpdateDTO } from '../dto/planUpdateDTO';
 @TokenTypeRequired(TokenType.ACCESS)
 @Roles(MemberRole.ADMINISTRADOR)
 @Controller('plan')
-export class PlanController {
+export class PlanUpdateController {
   constructor(private readonly planUpdateService: PlanUpdateService) {}
 
   @Put(':id')

@@ -1,9 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { Entity } from '@modules/auth/entity/shared/models/entity';
 import { IEntityRepository } from '../abstract_class/ientity-repository';
+import { IdAndName } from '@modules/utils/types/types';
 
 @Injectable()
 class InMemoryEntityRepository implements IEntityRepository {
+  async findByIdSelectIdAndName(id: string): Promise<IdAndName | null> {
+    const entity = this.list_entity.find((item) => item._id);
+    if (!entity) return null;
+    return {
+      id: entity._id,
+      name: entity.name,
+    };
+  }
   async findByDocument(document: string): Promise<Entity | null> {
     const entity = this.list_entity.find((item) => item.document === document);
     if (!entity) return null;

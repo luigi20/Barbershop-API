@@ -4,10 +4,23 @@ import { IEntityRepository } from './abstract_class/ientity-repository';
 import { PrismaService } from 'infra/database/prisma/prisma.service';
 import { EntityMapper } from 'infra/database/mappers/EntityMapper';
 import { Prisma } from '@prisma/client';
+import { IdAndName } from '@modules/utils/types/types';
 
 @Injectable()
 class EntityRepository implements IEntityRepository {
   constructor(private prisma: PrismaService) {}
+  async findByIdSelectIdAndName(id: string): Promise<IdAndName | null> {
+    const entity = await this.prisma.getPrismaClient().entity.findFirst({
+      where: {
+        id: id,
+      },
+    });
+    if (!entity) return null;
+    return {
+      id: entity.id,
+      name: entity.name,
+    };
+  }
   async findByDocument(document: string): Promise<Entity | null> {
     const entity = await this.prisma.getPrismaClient().entity.findFirst({
       where: {
