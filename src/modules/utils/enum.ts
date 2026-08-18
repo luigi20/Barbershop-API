@@ -1,45 +1,45 @@
 export enum EntityType {
-  BARBEARIA = 'BARBEARIA',
-  STUDIO = 'STUDIO',
+  BARBEARIA = 'barbearia',
+  STUDIO = 'studio',
 }
 
 export enum EntityStatus {
-  ATIVO = 'ATIVO',
-  INATIVO = 'INATIVO',
-  BLOQUEADO = 'BLOQUEADO',
-  PENDENTE = 'PENDENTE',
+  ATIVO = 'ativo',
+  INATIVO = 'inativo',
+  BLOQUEADO = 'bloqueado',
+  PENDENTE = 'pendente',
 }
 
 export enum CustomerStatus {
-  ATIVO = 'ATIVO',
-  INATIVO = 'INATIVO',
-  BLOQUEADO = 'BLOQUEADO',
+  ATIVO = 'ativo',
+  INATIVO = 'inativo',
+  BLOQUEADO = 'bloqueado',
 }
 
 export enum AuthProvider {
-  LOCAL = 'LOCAL',
-  GOOGLE = 'GOOGLE',
-  APPLE = 'APPLE',
+  LOCAL = 'local',
+  GOOGLE = 'google',
+  APPLE = 'apple',
 }
 
 export enum IdentityStatus {
-  ATIVO = 'ATIVO',
-  INATIVO = 'INATIVO',
-  BLOQUEADO = 'BLOQUEADO',
+  ATIVO = 'ativo',
+  INATIVO = 'inativo',
+  BLOQUEADO = 'bloqueado',
 }
 
 export enum MemberRole {
-  DONO = 'DONO',
-  ADMINISTRADOR = 'ADMINISTRADOR',
-  BARBEIRO = 'BARBEIRO',
-  RECEPCIONISTA = 'RECEPCIONISTA',
-  CLIENTE = 'CLIENTE',
+  DONO = 'dono',
+  ADMINISTRADOR = 'administrador',
+  BARBEIRO = 'barbeiro',
+  RECEPCIONISTA = 'recepcionista',
+  CLIENTE = 'cliente',
 }
 
 export enum MembershipStatus {
-  ATIVO = 'ATIVO',
-  CONVIDADO = 'CONVIDADO',
-  INATIVO = 'INATIVO',
+  ATIVO = 'ativo',
+  CONVIDADO = 'convidado',
+  INATIVO = 'inativo',
 }
 
 export enum TokenType {

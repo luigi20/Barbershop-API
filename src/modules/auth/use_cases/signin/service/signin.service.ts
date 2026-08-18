@@ -32,7 +32,10 @@ export class SignInService {
     // 1. Localiza a Identity
     const identity =
       await this.identity_repository.find_by_email(normalizedEmail);
-    if (!identity) throw new AppError('Credenciais inválidas');
+    if (!identity || !identity.status)
+      throw new AppError('Credenciais inválidas');
+    if (identity.status.toLowerCase() !== 'ativo')
+      throw new AppError('Usuário bloqueado', 401);
     // 2. Valida a senha
     const validPassword = await argon2.verify(identity.password_hash, password);
     if (!validPassword) throw new AppError('Senha inválida');

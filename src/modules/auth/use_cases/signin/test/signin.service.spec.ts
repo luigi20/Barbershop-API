@@ -62,6 +62,7 @@ describe('Test in route signin', () => {
         props: {
           email: 'luisfoco@gmail.com',
           password_hash: '154trghtht',
+          status: 'ativo',
         },
       }),
     );
@@ -78,6 +79,37 @@ describe('Test in route signin', () => {
         password: '123gghghhy6y6',
       }),
     ).rejects.toThrow(new AppError('Senha inválida'));
+  });
+
+  it('should not signin, because status is not active', async () => {
+    (argon2.verify as jest.Mock).mockResolvedValue(true);
+    entity_repository.list_entity.push(
+      makeEntity({
+        id: 'academia',
+      }),
+    );
+    identity_repository.list_identity.push(
+      makeIdentity({
+        props: {
+          email: 'luisfoco@gmail.com',
+          password_hash: '123LLv!!@32mjnvhfh',
+          status: 'inativo',
+        },
+      }),
+    );
+    const signInService = new SignInService(
+      entity_membercustomer_repository,
+      identity_repository,
+      profile_repository,
+      entity_membership_repository,
+      jwt_service as any,
+    );
+    expect(
+      signInService.execute({
+        email: 'luisfoco@gmail.com',
+        password: '123LLv!!@32mjnvhfh',
+      }),
+    ).rejects.toThrow(new AppError('Usuário bloqueado', 404));
   });
 
   it('should not signin, because profile not exists', async () => {

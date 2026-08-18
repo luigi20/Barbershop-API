@@ -8,6 +8,7 @@ export interface Profile_Props {
   name: string;
   phone: string;
   photo: string;
+  status: string;
   roles: string[];
   birth_date: Date;
   created_at: Date;
@@ -29,6 +30,7 @@ export class Profile {
         roles?: string[];
         phone?: string;
         birth_date?: Date;
+        status?: string;
       }
     >,
     id?: string,
@@ -43,11 +45,20 @@ export class Profile {
       roles: props.roles ?? [],
       phone: props.phone ?? null,
       birth_date: props.birth_date ?? null,
+      status: props.status ?? null,
     };
   }
 
   public get id() {
     return this._id;
+  }
+
+  public get status(): string {
+    return this.props.status;
+  }
+
+  public set status(status: string) {
+    this.props.status = status;
   }
 
   public get identity_id(): string {
