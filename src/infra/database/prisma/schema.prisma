@@ -129,10 +129,10 @@ model EntityCustomer {
 }
 
 model Subscription {
-  id         String    @id @default(uuid()) @db.Uuid
+  id         String    @id @db.Uuid
   entity_id  String    @db.Uuid
   plan_id    String    @db.Uuid
-  status     String    @db.VarChar(255)
+  status     String    @db.VarChar(30)
   started_at DateTime
   ended_at   DateTime?
   created_at DateTime
@@ -158,4 +158,9 @@ model Plan {
   updated_at       DateTime
 
   subscriptions Subscription[]
+}
+
+model Service {
+  id   String @id @db.Uuid
+  name String @db.VarChar(100)
 }
