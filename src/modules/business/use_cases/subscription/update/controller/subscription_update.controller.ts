@@ -17,7 +17,7 @@ export class SubscriptionUpdateController {
     private readonly subscriptionUpdateService: SubscriptionUpdateService,
   ) {}
 
-  @Put(':id')
+  @Put('update/:id')
   public async Subscription(
     @Body() data: SubscriptionUpdateDTO,
     @Param('id') id: string,

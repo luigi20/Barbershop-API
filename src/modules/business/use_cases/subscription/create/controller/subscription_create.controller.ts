@@ -17,7 +17,7 @@ export class SubscriptionCreateController {
     private readonly subscriptionCreateService: SubscriptionCreateService,
   ) {}
 
-  @Post()
+  @Post('create')
   public async Subscription(@Body() data: SubscriptionCreateDTO) {
     const result = await this.subscriptionCreateService.execute({
       entity_id: data.entity_id,

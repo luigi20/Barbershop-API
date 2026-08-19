@@ -14,7 +14,7 @@ import { PlanGetOneService } from '../service/plan_get_one.service';
 export class PlanGetOneController {
   constructor(private readonly planGetOneService: PlanGetOneService) {}
 
-  @Get(':id')
+  @Get('get_one/:id')
   public async PlanGetAll(@Param('id') id: string) {
     const result = await this.planGetOneService.execute(id);
     return PlanViewModel.toHttp(result);

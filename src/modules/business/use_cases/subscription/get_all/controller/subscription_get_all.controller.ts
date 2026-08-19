@@ -17,7 +17,7 @@ export class SubscriptionGetAllController {
     private readonly subscriptionGetAllService: SubscriptionGetAllService,
   ) {}
 
-  @Get()
+  @Get('get_all')
   public async Subscription() {
     const result = await this.subscriptionGetAllService.execute();
     return result.map((item) => SubscriptionViewModel.toHttp(item));

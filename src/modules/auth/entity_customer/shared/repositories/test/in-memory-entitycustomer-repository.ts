@@ -4,6 +4,9 @@ import { Entity_Customer } from '../../models/entity_customer';
 
 @Injectable()
 export class InMemoryEntityCustomerRepository implements IEntityCustomerRepository {
+  async find_all(): Promise<Entity_Customer[]> {
+    return this.list_customer;
+  }
   async find_list_profile_id(profile_id: string): Promise<Entity_Customer[]> {
     const list_entity_customer = this.list_customer.filter(
       (item) => item.profile_id === profile_id,

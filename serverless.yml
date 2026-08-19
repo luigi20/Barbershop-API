@@ -1,8 +1,8 @@
-service: authentication
+service: barbershop
 
 provider:
   name: aws
-  runtime: nodejs20.x
+  runtime: nodejs24.x
   region: us-east-1
   stage: dev
 

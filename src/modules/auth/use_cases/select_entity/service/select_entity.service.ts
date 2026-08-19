@@ -8,7 +8,7 @@ import { IEntityCustomerRepository } from '@modules/auth/entity_customer/shared/
 import { generateHash } from '@modules/utils/functions';
 import { IRefreshTokensRepository } from '@modules/auth/refresh_token/shared/repositories/abstract_class/irefresh-tokens-repository';
 import { Refresh_Tokens } from '@modules/auth/refresh_token/shared/models/refresh-tokens';
-import { IEntityMembershipRepository } from '@modules/business/entity_membership/shared/repositories/abstract_class/ientitymembership-repository';
+import { IEntityMembershipRepository } from '@modules/auth/entity_membership/shared/repositories/abstract_class/ientitymembership-repository';
 
 export interface ISelectEntityRequest {
   login_token: string;

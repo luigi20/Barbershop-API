@@ -16,7 +16,7 @@ import { PlanCreateDTO } from '../dto/planCreateDTO';
 export class PlanCreateController {
   constructor(private readonly planService: PlanCreateService) {}
 
-  @Post()
+  @Post('create')
   public async SignIn(@Body() data: PlanCreateDTO) {
     const result = await this.planService.execute({
       active: data.active,
