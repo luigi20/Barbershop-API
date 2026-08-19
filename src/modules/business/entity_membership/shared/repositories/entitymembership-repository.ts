@@ -39,6 +39,15 @@ class EntityMembershipRepository implements IEntityMembershipRepository {
     return EntityMembershipMapper.toDomain(entity_membership);
   }
 
+  async find_all(): Promise<Entity_Membership[]> {
+    const list_entity_membership = await this.prisma
+      .getPrismaClient()
+      .entityMembership.findMany();
+    return list_entity_membership.map((item) =>
+      EntityMembershipMapper.toDomain(item),
+    );
+  }
+
   async update(data: Entity_Membership): Promise<void> {
     const raw = EntityMembershipMapper.toPrisma(data);
     await this.prisma.getPrismaClient().entityMembership.update({

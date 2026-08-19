@@ -7,10 +7,10 @@ import { InMemoryEntityRepository } from '@modules/auth/entity/shared/repositori
 import { InMemoryIdentityRepository } from '@modules/auth/identity/shared/repositories/test/in-memory-identity-repository';
 import argon2 from 'argon2';
 import { MeProfileService } from '../service/me_profile.service';
-import { InMemoryEntityMembershipRepository } from '@modules/auth/entity_membership/shared/repositories/test/in-memory-entitymembership-repository';
 import { InMemoryEntityCustomerRepository } from '@modules/auth/entity_customer/shared/repositories/test/in-memory-entitycustomer-repository';
-import { makeEntityMembership } from '@modules/auth/entity_membership/shared/models/test/entity-membership-factory';
 import { makeEntityMembershipCustomer } from '@modules/auth/entity_customer/shared/models/test/entity-customer-factory';
+import { InMemoryEntityMembershipRepository } from '@modules/business/entity_membership/shared/repositories/test/in-memory-entitymembership-repository';
+import { makeEntityMembership } from '@modules/business/entity_membership/shared/models/test/entity-membership-factory';
 
 describe('Test in route Me Profile', () => {
   let profile_repository: InMemoryProfileRepository;
@@ -221,6 +221,5 @@ describe('Test in route Me Profile', () => {
     expect(entity_membership_repository.list_membership).toHaveLength(1);
     expect(entity_customer_repository.list_customer).toHaveLength(1);
     expect(result.roles.length).toEqual(2);
-    console.log(result);
   });
 });

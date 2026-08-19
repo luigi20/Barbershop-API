@@ -7,9 +7,9 @@ import { IIdentityRepository } from '@modules/auth/identity/shared/repositories/
 import { IProfileRepository } from '@modules/auth/profile/shared/repositories/abstract_class/iprofile-repository';
 import { AppError } from '@modules/utils/app_error';
 import { Profile } from '@modules/auth/profile/shared/models/profile';
-import { IEntityMembershipRepository } from '@modules/auth/entity_membership/shared/repositories/abstract_class/ientitymembership-repository';
 import { IEntityCustomerRepository } from '@modules/auth/entity_customer/shared/repositories/abstract_class/ientitycustomer-repository';
 import { entity_name } from '@modules/utils/types/types';
+import { IEntityMembershipRepository } from '@modules/business/entity_membership/shared/repositories/abstract_class/ientitymembership-repository';
 
 export interface IRequest_Login_Social {
   provider: string;

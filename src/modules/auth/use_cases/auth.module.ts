@@ -39,18 +39,16 @@ import { MFARequestController } from './mfa_reset_request/controller/mfa_request
 import { MFAConfirmService } from './mfa_confirm/service/mfa_confirm.service';
 import { IProfileRepository } from '../profile/shared/repositories/abstract_class/iprofile-repository';
 import { ProfileRepository } from '../profile/shared/repositories/profile-repository';
-import { MembersService } from './members/services/members.service';
-import { MembersController } from './members/controller/members.controller';
 import { ChangeProfileController } from './change_profile/controller/change_profile.controller';
 import { MeProfileController } from './me_profile/controller/me_profile.controller';
 import { MeProfileService } from './me_profile/service/me_profile.service';
 import { ChangeProfileService } from './change_profile/service/change_profile.service';
-import { IEntityMembershipRepository } from '../entity_membership/shared/repositories/abstract_class/ientitymembership-repository';
-import { EntityMembershipRepository } from '../entity_membership/shared/repositories/entitymembership-repository';
 import { IEntityCustomerRepository } from '../entity_customer/shared/repositories/abstract_class/ientitycustomer-repository';
 import { EntityCustomerRepository } from '../entity_customer/shared/repositories/entitycustomer-repository';
 import { SelectEntityController } from './select_entity/controller/select_entity.controller';
 import { SelectEntityService } from './select_entity/service/select_entity.service';
+import { IEntityMembershipRepository } from '@modules/business/entity_membership/shared/repositories/abstract_class/ientitymembership-repository';
+import { EntityMembershipRepository } from '@modules/business/entity_membership/shared/repositories/entitymembership-repository';
 
 @Module({
   imports: [
@@ -76,7 +74,6 @@ import { SelectEntityService } from './select_entity/service/select_entity.servi
     AuthSocialLoginController,
     MFAConfirmController,
     MFARequestController,
-    MembersController,
     ChangeProfileController,
     MeProfileController,
     SelectEntityController,
@@ -91,12 +88,12 @@ import { SelectEntityService } from './select_entity/service/select_entity.servi
       useClass: EntityRepository,
     },
     {
-      provide: IEntityMembershipRepository,
-      useClass: EntityMembershipRepository,
-    },
-    {
       provide: IEntityCustomerRepository,
       useClass: EntityCustomerRepository,
+    },
+    {
+      provide: IEntityMembershipRepository,
+      useClass: EntityMembershipRepository,
     },
     {
       provide: IIdentityRepository,
@@ -129,7 +126,6 @@ import { SelectEntityService } from './select_entity/service/select_entity.servi
     LogoutService,
     MFAConfirmService,
     MFARequestService,
-    MembersService,
     MeProfileService,
     ChangeProfileService,
     SelectEntityService,

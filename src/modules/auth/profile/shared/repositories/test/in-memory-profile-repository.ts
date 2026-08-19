@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Profile } from '../../models/profile';
 import { IProfileRepository } from '../abstract_class/iprofile-repository';
+import { IdAndName } from '@modules/utils/types/types';
 
 @Injectable()
 export class InMemoryProfileRepository implements IProfileRepository {
@@ -10,6 +11,15 @@ export class InMemoryProfileRepository implements IProfileRepository {
     );
     if (!index) return null;
     return index;
+  }
+
+  async findByIdSelectIdAndName(id: string): Promise<IdAndName | null> {
+    const index = this.list_profile.find((item) => item.id === id);
+    if (!index) return null;
+    return {
+      id: index.id,
+      name: index.name,
+    };
   }
 
   async find_one(id: string): Promise<Profile | null> {
