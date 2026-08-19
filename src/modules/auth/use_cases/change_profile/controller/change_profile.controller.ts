@@ -13,7 +13,6 @@ import { Roles } from '@modules/auth/decorators/roles.decorator';
 @TokenTypeRequired(TokenType.ACCESS)
 @Controller('auth')
 @Roles(
-  MemberRole.DONO,
   MemberRole.ADMINISTRADOR,
   MemberRole.RECEPCIONISTA,
   MemberRole.CLIENTE,

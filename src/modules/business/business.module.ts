@@ -25,9 +25,25 @@ import { SubscriptionRepository } from './subscription/shared/repositories/subsc
 import { ProfileRepository } from '@modules/auth/profile/shared/repositories/profile-repository';
 import { IdentityRepository } from '@modules/auth/identity/shared/repositories/identity-repository';
 import { IIdentityRepository } from '@modules/auth/identity/shared/repositories/abstract_class/iidentity-repository';
-import { IEntityMembershipRepository } from '../auth/entity_membership/shared/repositories/abstract_class/ientitymembership-repository';
-import { EntityMembershipRepository } from '../auth/entity_membership/shared/repositories/entitymembership-repository';
 import { IProfileRepository } from '@modules/auth/profile/shared/repositories/abstract_class/iprofile-repository';
+import { EntityCustomerCreateController } from './use_cases/entity_customer/create/controller/entity_customer_create.controller';
+import { EntityCustomerUpdateController } from './use_cases/entity_customer/update/controller/entity_customer_update.controller';
+import { EntityCustomerGetAllController } from './use_cases/entity_customer/get_all/controller/entity_customer_get_all.controller';
+import { EntityCustomerGetOneController } from './use_cases/entity_customer/get_one/controller/entity_customer_get_one.controller';
+import { EntityCustomerCreateService } from './use_cases/entity_customer/create/services/entity_customer_create.service';
+import { EntityCustomerUpdateService } from './use_cases/entity_customer/update/services/entity_customer_update.service';
+import { EntityCustomerGetAllService } from './use_cases/entity_customer/get_all/services/entity_customer_get_all.service';
+import { EntityCustomerGetOneService } from './use_cases/entity_customer/get_one/services/entity_customer_get_one.service';
+import { EntityMembershipRepository } from './entity_membership/shared/repositories/entitymembership-repository';
+import { IEntityMembershipRepository } from './entity_membership/shared/repositories/abstract_class/ientitymembership-repository';
+import { IEntityCustomerRepository } from './entity_customer/shared/repositories/abstract_class/ientitycustomer-repository';
+import { EntityCustomerRepository } from './entity_customer/shared/repositories/entitycustomer-repository';
+import { EntityGetAllController } from './use_cases/entity/get_all/controller/entity_get_all.controller';
+import { EntityGetOneController } from './use_cases/entity/get_one/controller/entity_get_one.controller';
+import { EntityUpdateController } from './use_cases/entity/update/controller/entity_update.controller';
+import { EntityGetOneService } from './use_cases/entity/get_one/service/entity_get_one.service';
+import { EntityGetAllService } from './use_cases/entity/get_all/service/entity_get_all.service';
+import { EntityUpdateService } from './use_cases/entity/update/service/entity_update.service';
 
 @Module({
   imports: [
@@ -49,6 +65,13 @@ import { IProfileRepository } from '@modules/auth/profile/shared/repositories/ab
     SubscriptionUpdateController,
     SubscriptionGetAllController,
     SubscriptionGetOneController,
+    EntityCustomerCreateController,
+    EntityCustomerUpdateController,
+    EntityCustomerGetAllController,
+    EntityCustomerGetOneController,
+    EntityGetAllController,
+    EntityGetOneController,
+    EntityUpdateController,
   ],
   providers: [
     PlanCreateService,
@@ -59,6 +82,13 @@ import { IProfileRepository } from '@modules/auth/profile/shared/repositories/ab
     SubscriptionUpdateService,
     SubscriptionGetAllService,
     SubscriptionGetOneService,
+    EntityCustomerCreateService,
+    EntityCustomerUpdateService,
+    EntityCustomerGetAllService,
+    EntityCustomerGetOneService,
+    EntityGetAllService,
+    EntityGetOneService,
+    EntityUpdateService,
     {
       provide: IPlanRepository,
       useClass: PlanRepository,
@@ -74,6 +104,10 @@ import { IProfileRepository } from '@modules/auth/profile/shared/repositories/ab
     {
       provide: IEntityMembershipRepository,
       useClass: EntityMembershipRepository,
+    },
+    {
+      provide: IEntityCustomerRepository,
+      useClass: EntityCustomerRepository,
     },
     {
       provide: IIdentityRepository,

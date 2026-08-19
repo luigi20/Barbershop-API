@@ -12,5 +12,7 @@ abstract class IEntityRepository {
     email: string,
   ): Promise<Entity | null>;
   abstract findByDocument(document: string): Promise<Entity | null>;
+  abstract list(): Promise<Entity[]>;
+  abstract update(data: Entity): Promise<void>;
 }
 export { IEntityRepository };

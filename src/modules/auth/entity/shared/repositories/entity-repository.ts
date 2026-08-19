@@ -51,6 +51,11 @@ class EntityRepository implements IEntityRepository {
     return EntityMapper.toDomain(entity);
   }
 
+  async list(): Promise<Entity[]> {
+    const list_entity = await this.prisma.getPrismaClient().entity.findMany();
+    return list_entity.map((item) => EntityMapper.toDomain(item));
+  }
+
   async findByIdAndEmail(id: string, email: string): Promise<Entity | null> {
     const entity = await this.prisma.getPrismaClient().entity.findFirst({
       where: {
@@ -66,6 +71,15 @@ class EntityRepository implements IEntityRepository {
     const raw = EntityMapper.toPrisma(data);
     const client = tx ?? this.prisma;
     await client.entity.create({
+      data: raw,
+    });
+  }
+  async update(data: Entity): Promise<void> {
+    const raw = EntityMapper.toPrisma(data);
+    await this.prisma.getPrismaClient().entity.update({
+      where: {
+        id: data._id,
+      },
       data: raw,
     });
   }

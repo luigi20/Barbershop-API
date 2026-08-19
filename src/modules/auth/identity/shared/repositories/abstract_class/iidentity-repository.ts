@@ -14,6 +14,6 @@ abstract class IIdentityRepository {
     identity_id: string,
     mfa_required: boolean,
   ): Promise<void>;
-  abstract update(data: Identity): Promise<void>;
+  abstract update(data: Identity, tx?: Prisma.TransactionClient): Promise<void>;
 }
 export { IIdentityRepository };

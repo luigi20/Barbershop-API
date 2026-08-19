@@ -6,7 +6,7 @@ import { InMemoryIdentityRepository } from '@modules/auth/identity/shared/reposi
 import { AppError } from '@modules/utils/app_error';
 import { InMemoryProfileRepository } from '@modules/auth/profile/shared/repositories/test/in-memory-profile-repository';
 import { PrismaService } from 'infra/database/prisma/prisma.service';
-import { InMemoryEntityMembershipRepository } from '@modules/auth/entity_membership/shared/repositories/test/in-memory-entitymembership-repository';
+import { InMemoryEntityMembershipRepository } from '@modules/business/entity_membership/shared/repositories/test/in-memory-entitymembership-repository';
 
 describe('Test in route signup', () => {
   let entity_repository: InMemoryEntityRepository;

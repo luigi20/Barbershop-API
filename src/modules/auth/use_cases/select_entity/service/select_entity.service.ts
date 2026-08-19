@@ -3,12 +3,11 @@ import { JwtService } from '@nestjs/jwt';
 import { AppError } from '@modules/utils/app_error';
 import { IIdentityRepository } from '@modules/auth/identity/shared/repositories/abstract_class/iidentity-repository';
 import { IProfileRepository } from '@modules/auth/profile/shared/repositories/abstract_class/iprofile-repository';
-import { IEntityCustomerRepository } from '@modules/auth/entity_customer/shared/repositories/abstract_class/ientitycustomer-repository';
-
 import { generateHash } from '@modules/utils/functions';
 import { IRefreshTokensRepository } from '@modules/auth/refresh_token/shared/repositories/abstract_class/irefresh-tokens-repository';
 import { Refresh_Tokens } from '@modules/auth/refresh_token/shared/models/refresh-tokens';
-import { IEntityMembershipRepository } from '@modules/auth/entity_membership/shared/repositories/abstract_class/ientitymembership-repository';
+import { IEntityCustomerRepository } from '@modules/business/entity_customer/shared/repositories/abstract_class/ientitycustomer-repository';
+import { IEntityMembershipRepository } from '@modules/business/entity_membership/shared/repositories/abstract_class/ientitymembership-repository';
 
 export interface ISelectEntityRequest {
   login_token: string;
@@ -71,7 +70,10 @@ export class SelectEntityService {
     const isMember = membership && membership.status.toLowerCase() === 'ativo';
     const isCustomer = customer && customer.status.toLowerCase() === 'ativo';
     if (!isMember && !isCustomer)
-      throw new AppError('Usuário não pertence a esta organização', 403);
+      throw new AppError(
+        'Usuário não pertence a esta organização ou não está ativo',
+        403,
+      );
     const roles = [
       ...(isMember ? membership.roles : []),
       ...(isCustomer ? ['cliente'] : []),

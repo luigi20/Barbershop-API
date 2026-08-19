@@ -49,12 +49,10 @@ class IdentityRepository implements IIdentityRepository {
     });
   }
 
-  async update(data: Identity): Promise<void> {
+  async update(data: Identity, tx?: Prisma.TransactionClient): Promise<void> {
     const raw = IdentityMapper.toPrisma(data);
-    await this.prisma.getPrismaClient().identity.update({
-      where: {
-        id: raw.id,
-      },
+    const client = tx ?? this.prisma;
+    await client.identity.update({
       data: raw,
     });
   }
