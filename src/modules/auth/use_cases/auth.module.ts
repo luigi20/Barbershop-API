@@ -47,8 +47,24 @@ import { IEntityCustomerRepository } from '../entity_customer/shared/repositorie
 import { EntityCustomerRepository } from '../entity_customer/shared/repositories/entitycustomer-repository';
 import { SelectEntityController } from './select_entity/controller/select_entity.controller';
 import { SelectEntityService } from './select_entity/service/select_entity.service';
-import { IEntityMembershipRepository } from '@modules/business/entity_membership/shared/repositories/abstract_class/ientitymembership-repository';
-import { EntityMembershipRepository } from '@modules/business/entity_membership/shared/repositories/entitymembership-repository';
+import { IEntityMembershipRepository } from '@modules/auth/entity_membership/shared/repositories/abstract_class/ientitymembership-repository';
+import { EntityMembershipRepository } from '@modules/auth/entity_membership/shared/repositories/entitymembership-repository';
+import { EntityMembershipCreateService } from './entity_membership/create/services/entity_membership_create.service';
+import { EntityMembershipGetAllService } from './entity_membership/get_all/services/entity_membership_get_all.service';
+import { EntityMembershipGetOneService } from './entity_membership/get_one/services/entity_membership_get_one.service';
+import { EntityMembershipUpdateService } from './entity_membership/update/services/entity_membership_update.service';
+import { EntityMembershipUpdateController } from './entity_membership/update/controller/entity_membership_update.controller';
+import { EntityMembershipCreateController } from './entity_membership/create/controller/entity_membership_create.controller';
+import { EntityMembershipGetAllController } from './entity_membership/get_all/controller/entity_membership_get_all.controller';
+import { EntityMembershipGetOneController } from './entity_membership/get_one/controller/entity_membership_get_one.controller';
+import { EntityCustomerCreateController } from './entity_customer/create/controller/entity_customer_create.controller';
+import { EntityCustomerUpdateController } from './entity_customer/update/controller/entity_customer_update.controller';
+import { EntityCustomerGetAllController } from './entity_customer/get_all/controller/entity_customer_get_all.controller';
+import { EntityCustomerGetOneController } from './entity_customer/get_one/controller/entity_customer_get_one.controller';
+import { EntityCustomerGetOneService } from './entity_customer/get_one/services/entity_customer_get_one.service';
+import { EntityCustomerGetAllService } from './entity_customer/get_all/services/entity_customer_get_all.service';
+import { EntityCustomerUpdateService } from './entity_customer/update/services/entity_customer_update.service';
+import { EntityCustomerCreateService } from './entity_customer/create/services/entity_customer_create.service';
 
 @Module({
   imports: [
@@ -77,6 +93,14 @@ import { EntityMembershipRepository } from '@modules/business/entity_membership/
     ChangeProfileController,
     MeProfileController,
     SelectEntityController,
+    EntityMembershipCreateController,
+    EntityMembershipUpdateController,
+    EntityMembershipGetAllController,
+    EntityMembershipGetOneController,
+    EntityCustomerCreateController,
+    EntityCustomerUpdateController,
+    EntityCustomerGetAllController,
+    EntityCustomerGetOneController,
   ],
   providers: [
     {
@@ -129,6 +153,14 @@ import { EntityMembershipRepository } from '@modules/business/entity_membership/
     MeProfileService,
     ChangeProfileService,
     SelectEntityService,
+    EntityMembershipCreateService,
+    EntityMembershipUpdateService,
+    EntityMembershipGetAllService,
+    EntityMembershipGetOneService,
+    EntityCustomerCreateService,
+    EntityCustomerUpdateService,
+    EntityCustomerGetAllService,
+    EntityCustomerGetOneService,
   ],
   exports: [JwtModule, AuthModule],
 })

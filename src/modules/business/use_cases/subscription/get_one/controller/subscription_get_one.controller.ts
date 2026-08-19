@@ -16,7 +16,7 @@ export class SubscriptionGetOneController {
     private readonly subscriptionGetOneService: SubscriptionGetOneService,
   ) {}
 
-  @Get(':id')
+  @Get('get_one/:id')
   public async Subscription(@Param('id') id: string) {
     const result = await this.subscriptionGetOneService.execute(id);
     return SubscriptionViewModel.toHttp(result);

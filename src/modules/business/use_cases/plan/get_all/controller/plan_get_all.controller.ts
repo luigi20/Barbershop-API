@@ -14,7 +14,7 @@ import { PlanGetAllService } from '../service/plan_get_all.service';
 export class PlanGetAllController {
   constructor(private readonly planGetAllService: PlanGetAllService) {}
 
-  @Get()
+  @Get('get_all')
   public async PlanGetAll() {
     const result = await this.planGetAllService.execute();
     return result.map((item) => PlanViewModel.toHttp(item));

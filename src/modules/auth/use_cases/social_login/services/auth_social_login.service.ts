@@ -9,7 +9,7 @@ import { AppError } from '@modules/utils/app_error';
 import { Profile } from '@modules/auth/profile/shared/models/profile';
 import { IEntityCustomerRepository } from '@modules/auth/entity_customer/shared/repositories/abstract_class/ientitycustomer-repository';
 import { entity_name } from '@modules/utils/types/types';
-import { IEntityMembershipRepository } from '@modules/business/entity_membership/shared/repositories/abstract_class/ientitymembership-repository';
+import { IEntityMembershipRepository } from '@modules/auth/entity_membership/shared/repositories/abstract_class/ientitymembership-repository';
 
 export interface IRequest_Login_Social {
   provider: string;

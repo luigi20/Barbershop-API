@@ -12,8 +12,8 @@ import { makeProfile } from '@modules/auth/profile/shared/models/test/profile-fa
 import * as argon2 from 'argon2';
 import { InMemoryEntityCustomerRepository } from '@modules/auth/entity_customer/shared/repositories/test/in-memory-entitycustomer-repository';
 import { makeEntityMembershipCustomer } from '@modules/auth/entity_customer/shared/models/test/entity-customer-factory';
-import { InMemoryEntityMembershipRepository } from '@modules/business/entity_membership/shared/repositories/test/in-memory-entitymembership-repository';
-import { makeEntityMembership } from '@modules/business/entity_membership/shared/models/test/entity-membership-factory';
+import { InMemoryEntityMembershipRepository } from '@modules/auth/entity_membership/shared/repositories/test/in-memory-entitymembership-repository';
+import { makeEntityMembership } from '@modules/auth/entity_membership/shared/models/test/entity-membership-factory';
 
 jest.mock('argon2');
 describe('Test in route validate mfa', () => {

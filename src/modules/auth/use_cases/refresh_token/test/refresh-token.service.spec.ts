@@ -8,8 +8,8 @@ import { InMemoryProfileRepository } from '@modules/auth/profile/shared/reposito
 import { makeProfile } from '@modules/auth/profile/shared/models/test/profile-factory';
 import { InMemoryEntityCustomerRepository } from '@modules/auth/entity_customer/shared/repositories/test/in-memory-entitycustomer-repository';
 import { makeEntityMembershipCustomer } from '@modules/auth/entity_customer/shared/models/test/entity-customer-factory';
-import { InMemoryEntityMembershipRepository } from '@modules/business/entity_membership/shared/repositories/test/in-memory-entitymembership-repository';
-import { makeEntityMembership } from '@modules/business/entity_membership/shared/models/test/entity-membership-factory';
+import { InMemoryEntityMembershipRepository } from '@modules/auth/entity_membership/shared/repositories/test/in-memory-entitymembership-repository';
+import { makeEntityMembership } from '@modules/auth/entity_membership/shared/models/test/entity-membership-factory';
 
 describe('Test in route Refresh Token', () => {
   let identity_repository: InMemoryIdentityRepository;

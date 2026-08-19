@@ -16,7 +16,7 @@ import { PlanUpdateDTO } from '../dto/planUpdateDTO';
 export class PlanUpdateController {
   constructor(private readonly planUpdateService: PlanUpdateService) {}
 
-  @Put(':id')
+  @Put('update/:id')
   public async PlanUpdate(
     @Body() data: PlanUpdateDTO,
     @Param('id') id: string,

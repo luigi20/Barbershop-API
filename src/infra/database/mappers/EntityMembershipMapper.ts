@@ -1,4 +1,4 @@
-import { Entity_Membership } from '@modules/business/entity_membership/shared/models/entity_membership';
+import { Entity_Membership } from '@modules/auth/entity_membership/shared/models/entity_membership';
 import {
   Prisma,
   EntityMembership as PrismaEntityMembership,

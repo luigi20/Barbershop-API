@@ -8,6 +8,11 @@ export interface Entity_Customer_Props {
   status: string;
   created_at: Date;
   updated_at: Date;
+  entity_name: string;
+  profile_name: string;
+  phone: string;
+  photo: string;
+  birth_date: Date;
 }
 
 export class Entity_Customer {
@@ -21,6 +26,11 @@ export class Entity_Customer {
         updated_at?: Date;
         notes?: string;
         name?: string;
+        profile_name?: string;
+        entity_name?: string;
+        phone?: string;
+        photo?: string;
+        birth_date?: Date;
       }
     >,
     id?: string,
@@ -31,7 +41,44 @@ export class Entity_Customer {
       updated_at: props.updated_at ?? new Date(),
       notes: props.notes ?? null,
       name: props.name ?? null,
+      profile_name: props.profile_name ?? null,
+      entity_name: props.entity_name ?? null,
+      phone: props.phone ?? null,
+      photo: props.photo ?? null,
+      birth_date: props.birth_date ?? null,
     };
+  }
+
+  public get birth_date(): Date {
+    return this.props.birth_date;
+  }
+
+  public set birth_date(birth_date: Date) {
+    this.props.birth_date = birth_date;
+  }
+
+  public get photo(): string {
+    return this.props.photo;
+  }
+
+  public set photo(photo: string) {
+    this.props.photo = photo;
+  }
+
+  public get phone(): string {
+    return this.props.phone;
+  }
+
+  public set phone(phone: string) {
+    this.props.phone = phone;
+  }
+
+  public get entity_name(): string {
+    return this.props.entity_name;
+  }
+
+  public set entity_name(entity_name: string) {
+    this.props.entity_name = entity_name;
   }
 
   public get entity_id(): string {
@@ -40,6 +87,14 @@ export class Entity_Customer {
 
   public set entity_id(entity_id: string) {
     this.props.entity_id = entity_id;
+  }
+
+  public get profile_name(): string {
+    return this.props.profile_name;
+  }
+
+  public set profile_name(profile_name: string) {
+    this.props.profile_name = profile_name;
   }
 
   public get profile_id(): string {
