@@ -4,6 +4,9 @@ import { Entity_Membership } from '../../models/entity_membership';
 
 @Injectable()
 export class InMemoryEntityMembershipRepository implements IEntityMembershipRepository {
+  async find_all(): Promise<Entity_Membership[]> {
+    return this.list_membership;
+  }
   async find_list_profile_id(profile_id: string): Promise<Entity_Membership[]> {
     const list_entity_membership = this.list_membership.filter(
       (item) => item.profile_id === profile_id,

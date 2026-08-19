@@ -4,6 +4,12 @@ import { Identity } from '@modules/auth/identity/shared/models/identity';
 
 @Injectable()
 class InMemoryIdentityRepository implements IIdentityRepository {
+  async update(data: Identity): Promise<void> {
+    const index = this.list_identity.findIndex((item) => item.id === data.id);
+    if (index >= 0) {
+      this.list_identity[index] = data;
+    }
+  }
   async update_last_login_at(
     identity_id: string,
     last_login_at: Date,
@@ -26,8 +32,10 @@ class InMemoryIdentityRepository implements IIdentityRepository {
     if (!identity) return null;
     return identity;
   }
-  async update_password(entity_id: string, new_hash: string): Promise<void> {
-    const index = this.list_identity.findIndex((item) => item.id === entity_id);
+  async update_password(identity_id: string, new_hash: string): Promise<void> {
+    const index = this.list_identity.findIndex(
+      (item) => item.id === identity_id,
+    );
     if (index >= 0) {
       this.list_identity[index].password_hash = new_hash;
     }

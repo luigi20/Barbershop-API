@@ -4,7 +4,6 @@ import { Prisma } from '@prisma/client';
 abstract class IIdentityRepository {
   abstract create(data: Identity, tx?: Prisma.TransactionClient): Promise<void>;
   abstract update_password(entity_id: string, new_hash: string): Promise<void>;
-
   abstract update_last_login_at(
     identity_id: string,
     last_login_at: Date,
@@ -15,5 +14,6 @@ abstract class IIdentityRepository {
     identity_id: string,
     mfa_required: boolean,
   ): Promise<void>;
+  abstract update(data: Identity): Promise<void>;
 }
 export { IIdentityRepository };

@@ -22,6 +22,20 @@ import { IEntityRepository } from '@modules/auth/entity/shared/repositories/abst
 import { EntityRepository } from '@modules/auth/entity/shared/repositories/entity-repository';
 import { ISubscriptionRepository } from './subscription/shared/repositories/abstract_class/isubscription-repository';
 import { SubscriptionRepository } from './subscription/shared/repositories/subscription-repository';
+import { EntityMembershipCreateController } from './use_cases/entity_membership/create/controller/entity_membership_create.controller';
+import { EntityMembershipUpdateController } from './use_cases/entity_membership/update/controller/entity_membership_update.controller';
+import { EntityMembershipGetAllController } from './use_cases/entity_membership/get_all/controller/entity_membership_get_all.controller';
+import { EntityMembershipGetOneService } from './use_cases/entity_membership/get_one/services/entity_membership_get_one.service';
+import { EntityMembershipGetOneController } from './use_cases/entity_membership/get_one/controller/entity_membership_get_one.controller';
+import { EntityMembershipUpdateService } from './use_cases/entity_membership/update/services/entity_membership_update.service';
+import { EntityMembershipGetAllService } from './use_cases/entity_membership/get_all/services/entity_membership_get_all.service';
+import { EntityMembershipCreateService } from './use_cases/entity_membership/create/services/entity_membership_create.service';
+import { ProfileRepository } from '@modules/auth/profile/shared/repositories/profile-repository';
+import { IdentityRepository } from '@modules/auth/identity/shared/repositories/identity-repository';
+import { IIdentityRepository } from '@modules/auth/identity/shared/repositories/abstract_class/iidentity-repository';
+import { IEntityMembershipRepository } from './entity_membership/shared/repositories/abstract_class/ientitymembership-repository';
+import { EntityMembershipRepository } from './entity_membership/shared/repositories/entitymembership-repository';
+import { IProfileRepository } from '@modules/auth/profile/shared/repositories/abstract_class/iprofile-repository';
 
 @Module({
   imports: [
@@ -43,6 +57,10 @@ import { SubscriptionRepository } from './subscription/shared/repositories/subsc
     SubscriptionUpdateController,
     SubscriptionGetAllController,
     SubscriptionGetOneController,
+    EntityMembershipCreateController,
+    EntityMembershipUpdateController,
+    EntityMembershipGetAllController,
+    EntityMembershipGetOneController,
   ],
   providers: [
     PlanCreateService,
@@ -53,6 +71,10 @@ import { SubscriptionRepository } from './subscription/shared/repositories/subsc
     SubscriptionUpdateService,
     SubscriptionGetAllService,
     SubscriptionGetOneService,
+    EntityMembershipCreateService,
+    EntityMembershipUpdateService,
+    EntityMembershipGetAllService,
+    EntityMembershipGetOneService,
     {
       provide: IPlanRepository,
       useClass: PlanRepository,
@@ -64,6 +86,22 @@ import { SubscriptionRepository } from './subscription/shared/repositories/subsc
     {
       provide: ISubscriptionRepository,
       useClass: SubscriptionRepository,
+    },
+    {
+      provide: IEntityMembershipRepository,
+      useClass: EntityMembershipRepository,
+    },
+    {
+      provide: IIdentityRepository,
+      useClass: IdentityRepository,
+    },
+    {
+      provide: IProfileRepository,
+      useClass: ProfileRepository,
+    },
+    {
+      provide: IEntityRepository,
+      useClass: EntityRepository,
     },
   ],
   exports: [JwtModule, BusinessModule],

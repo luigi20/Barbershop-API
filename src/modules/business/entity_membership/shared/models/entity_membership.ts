@@ -31,7 +31,6 @@ export class Entity_Membership {
         birth_date?: Date;
       }
     >,
-    id?: string,
   ) {
     this.props = {
       ...props,

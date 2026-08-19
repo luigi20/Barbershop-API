@@ -8,6 +8,8 @@ abstract class IEntityMembershipRepository {
   ): Promise<void>;
   abstract update(data: Entity_Membership): Promise<void>;
   abstract find_list_entity_id(entity_id: string): Promise<Entity_Membership[]>;
+
+  abstract find_all(): Promise<Entity_Membership[]>;
   abstract find_list_profile_id(
     profile_id: string,
   ): Promise<Entity_Membership[]>;
