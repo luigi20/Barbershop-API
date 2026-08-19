@@ -11,7 +11,6 @@ import { Roles } from '@modules/auth/decorators/roles.decorator';
 @UseGuards(AuthGuard, RolesGuard)
 @TokenTypeRequired(TokenType.ACCESS)
 @Roles(
-  MemberRole.DONO,
   MemberRole.ADMINISTRADOR,
   MemberRole.RECEPCIONISTA,
   MemberRole.CLIENTE,

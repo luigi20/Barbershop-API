@@ -1,4 +1,4 @@
-import { Entity_Customer } from '@modules/auth/entity_customer/shared/models/entity_customer';
+import { Entity_Customer } from '@modules/business/entity_customer/shared/models/entity_customer';
 import { Prisma, EntityCustomer as PrismaEntityCustomer } from '@prisma/client';
 
 type PrismaEntityCustomerWithEntityName = Prisma.EntityCustomerGetPayload<{

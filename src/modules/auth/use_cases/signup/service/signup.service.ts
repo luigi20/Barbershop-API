@@ -4,8 +4,8 @@ import { Identity } from '@modules/auth/identity/shared/models/identity';
 import { IIdentityRepository } from '@modules/auth/identity/shared/repositories/abstract_class/iidentity-repository';
 import { Profile } from '@modules/auth/profile/shared/models/profile';
 import { IProfileRepository } from '@modules/auth/profile/shared/repositories/abstract_class/iprofile-repository';
-import { Entity_Membership } from '@modules/auth/entity_membership/shared/models/entity_membership';
-import { IEntityMembershipRepository } from '@modules/auth/entity_membership/shared/repositories/abstract_class/ientitymembership-repository';
+import { Entity_Membership } from '@modules/business/entity_membership/shared/models/entity_membership';
+import { IEntityMembershipRepository } from '@modules/business/entity_membership/shared/repositories/abstract_class/ientitymembership-repository';
 import { AppError } from '@modules/utils/app_error';
 import { EntityStatus, IdentityStatus, MemberRole } from '@modules/utils/enum';
 import { userPasswordValidator } from '@modules/utils/functions';
@@ -82,7 +82,7 @@ export class SignUpService {
     const membership = new Entity_Membership({
       entity_id: entity._id,
       profile_id: profile.id,
-      roles: [MemberRole.DONO],
+      roles: [MemberRole.ADMINISTRADOR],
       status: 'ATIVO',
     });
     try {

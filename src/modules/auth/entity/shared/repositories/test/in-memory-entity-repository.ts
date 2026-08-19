@@ -5,6 +5,15 @@ import { IdAndName } from '@modules/utils/types/types';
 
 @Injectable()
 class InMemoryEntityRepository implements IEntityRepository {
+  async update(data: Entity): Promise<void> {
+    const index = this.list_entity.findIndex((item) => item._id === data._id);
+    if (index >= 0) {
+      this.list_entity[index] = data;
+    }
+  }
+  async list(): Promise<Entity[]> {
+    return this.list_entity;
+  }
   async findByIdSelectIdAndName(id: string): Promise<IdAndName | null> {
     const entity = this.list_entity.find((item) => item._id);
     if (!entity) return null;

@@ -29,7 +29,6 @@ export enum IdentityStatus {
 }
 
 export enum MemberRole {
-  DONO = 'dono',
   ADMINISTRADOR = 'administrador',
   BARBEIRO = 'barbeiro',
   RECEPCIONISTA = 'recepcionista',
