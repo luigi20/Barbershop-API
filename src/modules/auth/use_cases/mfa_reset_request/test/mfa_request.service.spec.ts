@@ -1,4 +1,3 @@
-import { makeEntity } from '@modules/auth/entity/shared/models/test/entity-factory';
 import { AppError } from '@modules/utils/app_error';
 import { MFARequestService } from '../service/mfa_request.service';
 import { InMemoryIdentityRepository } from '@modules/auth/identity/shared/repositories/test/in-memory-identity-repository';
@@ -8,8 +7,8 @@ import { makeIdentity } from '@modules/auth/identity/shared/models/test/identity
 describe('Test in route mfa request', () => {
   let mfa_code_repository: InMemoryMFACodeRepository;
   let identity_repository: InMemoryIdentityRepository;
-  const email_service = {
-    send: jest.fn().mockReturnValue('fake-jwt-token'),
+  const email_service_mock = {
+    send: jest.fn().mockResolvedValue(undefined),
   };
   beforeEach(() => {
     // Populando os repositórios com dados iniciais
@@ -21,6 +20,7 @@ describe('Test in route mfa request', () => {
     const mfa_request_service = new MFARequestService(
       mfa_code_repository,
       identity_repository,
+      email_service_mock,
     );
     expect(
       mfa_request_service.execute({
@@ -40,6 +40,7 @@ describe('Test in route mfa request', () => {
     const mfa_request_service = new MFARequestService(
       mfa_code_repository,
       identity_repository,
+      email_service_mock,
     );
     const result = await mfa_request_service.execute({
       email: 'luisfoco@gmail.com',

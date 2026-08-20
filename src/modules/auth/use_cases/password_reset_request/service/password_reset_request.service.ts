@@ -5,6 +5,8 @@ import argon2 from 'argon2';
 import { Password_Reset_Tokens } from '@modules/auth/password_reset_tokens/shared/models/password-reset-tokens';
 import { IPasswordResetTokensRepository } from '@modules/auth/password_reset_tokens/shared/repositories/abstract_class/ipassword-reset-tokens-repository';
 import { IIdentityRepository } from '@modules/auth/identity/shared/repositories/abstract_class/iidentity-repository';
+import { IEmailService } from 'infra/email/abstract class/IEmailService';
+import { PasswordResetEmailTemplate } from '@modules/utils/functions';
 
 interface IPasswordResetRequest {
   email: string;
@@ -15,6 +17,7 @@ export class PasswordResetRequestService {
   constructor(
     private readonly identity_repository: IIdentityRepository,
     private readonly password_reset_tokens_repository: IPasswordResetTokensRepository,
+    private readonly email_service: IEmailService,
   ) {}
 
   public async execute({ email }: IPasswordResetRequest): Promise<string> {
@@ -31,13 +34,17 @@ export class PasswordResetRequestService {
       identity_id: identity_exists.id,
     });
     await this.password_reset_tokens_repository.create(password_reset_tokens);
-    // aqui vai um email
-    /*this.email_service.send(
-      [email],
-      'Token para resetar senha',
-      'Olá, usuário Everest. Seu token é ' + token,
-      process.env.FROM_EMAIL,
-    );*/
+    this.email_service
+      .send({
+        to: identity_exists.email,
+        subject: 'Redefinição de senha',
+        html: PasswordResetEmailTemplate({
+          token,
+        }),
+      })
+      .catch((error) => {
+        console.error('Erro ao enviar e-mail de redefinição de senha:', error);
+      });
     return 'Email foi enviado';
   }
 }

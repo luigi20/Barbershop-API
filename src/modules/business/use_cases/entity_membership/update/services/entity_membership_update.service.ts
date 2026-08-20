@@ -107,8 +107,9 @@ export class EntityMembershipUpdateService {
       profile_name: profile.name,
       entity_name: info_entity.name,
     });
+    const prisma = this.prisma.getPrismaClient();
     try {
-      await this.prisma.$transaction(async (tx) => {
+      await prisma.$transaction(async (tx) => {
         await this.identity_repository.update(identity, tx);
         await this.profile_repository.update(profile, tx);
         await this.entity_membership_repository.update(entity_membership, tx);

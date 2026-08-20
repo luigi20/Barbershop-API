@@ -2,15 +2,14 @@ import { AppError } from '@modules/utils/app_error';
 import { GenerateMFAService } from '../services/generate-mfa-service';
 import { IMFACodeRepository } from '@modules/auth/mfa/shared/repositories/abstract_class/imfa-code-repository';
 import { InMemoryIdentityRepository } from '@modules/auth/identity/shared/repositories/test/in-memory-identity-repository';
-import { makeEntity } from '@modules/auth/entity/shared/models/test/entity-factory';
 import { makeIdentity } from '@modules/auth/identity/shared/models/test/identity-factory';
 import { InMemoryMFACodeRepository } from '@modules/auth/mfa/shared/repositories/test/in-memory-mfa-code-repository';
 
 describe('Test in route generate mfa', () => {
   let identity_repository: InMemoryIdentityRepository;
   let mfa_code_repository: IMFACodeRepository;
-  const email_service = {
-    send: jest.fn().mockReturnValue('fake-jwt-token'),
+  const email_service_mock = {
+    send: jest.fn().mockResolvedValue(undefined),
   };
   beforeEach(() => {
     // Populando os repositórios com dados iniciais
@@ -22,6 +21,7 @@ describe('Test in route generate mfa', () => {
     const generateMFAService = new GenerateMFAService(
       mfa_code_repository,
       identity_repository,
+      email_service_mock,
     );
     expect(
       generateMFAService.execute({
@@ -42,6 +42,7 @@ describe('Test in route generate mfa', () => {
     const generateMFAService = new GenerateMFAService(
       mfa_code_repository,
       identity_repository,
+      email_service_mock,
     );
     const result = await generateMFAService.execute({
       email: 'luisfoco@gmail.com',

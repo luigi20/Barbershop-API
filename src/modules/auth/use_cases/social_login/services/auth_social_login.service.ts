@@ -73,8 +73,9 @@ export class AuthSocialLoginService {
         password_hash: null,
         provider_id: profile_provider.id,
       });
+      const prisma = this.prisma.getPrismaClient();
       try {
-        await this.prisma.$transaction(async (tx) => {
+        await prisma.$transaction(async (tx) => {
           await this.identity_repository.create(identity, tx);
           await this.profile_repository.create(profile, tx);
           await this.identity_credential_repository.create(

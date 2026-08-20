@@ -1,4 +1,4 @@
-import { IsDate, IsEmail, IsString, IsUUID } from 'class-validator';
+import { IsEmail, IsOptional, IsString } from 'class-validator';
 
 export class SignUpDTO {
   @IsString()
@@ -19,6 +19,7 @@ export class SignUpDTO {
   @IsString()
   phone: string;
 
+  @IsOptional()
   @IsString()
   photo: string;
 

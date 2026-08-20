@@ -19,9 +19,8 @@ describe('Test in route create customer', () => {
   let entity_member_customer_repository: InMemoryEntityCustomerRepository;
   let identity_credential_repository: InMemoryIdentityCredentialRepository;
   const prismaMock = {
-    getPrismaClient: jest.fn(),
-    $transaction: jest.fn(async (callback) => {
-      return callback(prismaMock);
+    getPrismaClient: jest.fn().mockReturnValue({
+      $transaction: jest.fn(async (callback) => callback({})),
     }),
   } as unknown as PrismaService;
   beforeEach(() => {

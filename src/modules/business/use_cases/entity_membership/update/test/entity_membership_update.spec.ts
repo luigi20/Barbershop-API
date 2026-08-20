@@ -19,9 +19,8 @@ describe('Test in route update membership', () => {
   let identity_repository: InMemoryIdentityRepository;
   let entity_membership_repository: InMemoryEntityMembershipRepository;
   const prismaMock = {
-    getPrismaClient: jest.fn(),
-    $transaction: jest.fn(async (callback) => {
-      return callback(prismaMock);
+    getPrismaClient: jest.fn().mockReturnValue({
+      $transaction: jest.fn(async (callback) => callback({})),
     }),
   } as unknown as PrismaService;
   beforeEach(() => {
@@ -295,8 +294,9 @@ describe('Test in route update membership', () => {
 
   it('should update member', async () => {
     const prismaMock = {
-      getPrismaClient: jest.fn(),
-      $transaction: jest.fn(),
+      getPrismaClient: jest.fn().mockReturnValue({
+        $transaction: jest.fn(async (callback) => callback({})),
+      }),
     } as unknown as PrismaService;
     entity_repository.list_entity.push(
       makeEntity({
