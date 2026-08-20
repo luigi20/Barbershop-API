@@ -8,6 +8,7 @@ import { Profile } from '@modules/auth/profile/shared/models/profile';
 import { PrismaService } from 'infra/database/prisma/prisma.service';
 import { IEntityCustomerRepository } from '@modules/business/entity_customer/shared/repositories/abstract_class/ientitycustomer-repository';
 import { Entity_Customer } from '@modules/business/entity_customer/shared/models/entity_customer';
+import { Identity_Credential } from '@modules/auth/identity_credential/shared/models/identity_credential';
 interface IMembersRequest {
   entity_id: string;
   email: string;
@@ -15,7 +16,7 @@ interface IMembersRequest {
   name: string;
   phone: string;
   photo: string;
-  birth_date: Date;
+  birth_date: string;
   notes: string;
   status: string;
 }
@@ -61,11 +62,9 @@ export class EntityCustomerUpdateService {
       {
         email: email,
         mfa_required: mfa_required,
-        provider: identity_exists.provider,
         status: status,
         is_superuser: identity_exists.is_superuser,
         last_login_at: identity_exists.last_login_at,
-        password_hash: identity_exists.password_hash,
         created_at: identity_exists.created_at,
       },
       identity_exists.id,
@@ -74,7 +73,7 @@ export class EntityCustomerUpdateService {
       {
         identity_id: profile_exists.identity_id,
         name: name,
-        birth_date: birth_date,
+        birth_date: new Date(birth_date),
         phone: phone,
         photo: photo,
         roles: ['cliente'],
@@ -87,7 +86,7 @@ export class EntityCustomerUpdateService {
       profile_id: profile.id,
       notes: notes,
       status: status,
-      birth_date: birth_date,
+      birth_date: new Date(birth_date),
       phone: phone,
       photo: photo,
       name: name,

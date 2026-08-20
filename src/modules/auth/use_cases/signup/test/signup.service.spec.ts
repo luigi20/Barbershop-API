@@ -7,12 +7,14 @@ import { AppError } from '@modules/utils/app_error';
 import { InMemoryProfileRepository } from '@modules/auth/profile/shared/repositories/test/in-memory-profile-repository';
 import { PrismaService } from 'infra/database/prisma/prisma.service';
 import { InMemoryEntityMembershipRepository } from '@modules/business/entity_membership/shared/repositories/test/in-memory-entitymembership-repository';
+import { InMemoryIdentityCredentialRepository } from '@modules/auth/identity_credential/shared/repositories/test/in-memory-identity-credential-repository';
 
 describe('Test in route signup', () => {
   let entity_repository: InMemoryEntityRepository;
   let identity_repository: InMemoryIdentityRepository;
   let profile_repository: InMemoryProfileRepository;
   let entity_membership_repository: InMemoryEntityMembershipRepository;
+  let identity_credential_repository: InMemoryIdentityCredentialRepository;
   const prismaMock = {
     getPrismaClient: jest.fn(),
     $transaction: jest.fn(async (callback) => {
@@ -26,6 +28,7 @@ describe('Test in route signup', () => {
     identity_repository = new InMemoryIdentityRepository();
     profile_repository = new InMemoryProfileRepository();
     entity_membership_repository = new InMemoryEntityMembershipRepository();
+    identity_credential_repository = new InMemoryIdentityCredentialRepository();
   });
 
   it('should not add signup, because password is invalid', async () => {
@@ -35,10 +38,11 @@ describe('Test in route signup', () => {
       identity_repository,
       profile_repository,
       entity_membership_repository,
+      identity_credential_repository,
     );
     expect(
       signUpService.execute({
-        birth_date: new Date(),
+        birth_date: '10/01/1976',
         entity_name: 'Brutal',
         entity_type: 'BARBEARIA',
         phone: '5511960592354',
@@ -71,13 +75,14 @@ describe('Test in route signup', () => {
       identity_repository,
       profile_repository,
       entity_membership_repository,
+      identity_credential_repository,
     );
     expect(
       signUpService.execute({
         email: 'luisfoco@gmail.com',
         password: 'scsLCDCJDVDJ#4324343435',
         name: 'Luis',
-        birth_date: new Date(),
+        birth_date: '10/01/1976',
         document: '343434',
         entity_name: '',
         entity_type: 'barbershop',
@@ -98,13 +103,14 @@ describe('Test in route signup', () => {
       identity_repository,
       profile_repository,
       entity_membership_repository,
+      identity_credential_repository,
     );
     expect(
       signUpService.execute({
         email: 'luisfoco@gmail.com',
         name: 'Luis',
         password: 'fdlmflk45454ÇFFGÇ!',
-        birth_date: new Date(),
+        birth_date: '12/03/1986',
         document: '343434',
         entity_name: '',
         entity_type: 'barbershop',
@@ -126,12 +132,13 @@ describe('Test in route signup', () => {
       identity_repository,
       profile_repository,
       entity_membership_repository,
+      identity_credential_repository,
     );
     const msg = await signUpService.execute({
       email: 'luisfoco@gmail.com',
       name: 'Luis',
       password: 'fdlmflk45454ÇFFGÇ!',
-      birth_date: new Date(),
+      birth_date: '12/01/1990',
       document: '343434',
       entity_name: '',
       entity_type: 'barbershop',

@@ -8,9 +8,6 @@ export interface Identity_Props {
   created_at: Date;
   updated_at: Date;
   email: string;
-  password_hash: string;
-  provider: string;
-  provider_id: string;
   is_superuser: boolean;
   status: string;
   last_login_at: Date;
@@ -29,7 +26,6 @@ export class Identity {
         updated_at?: Date;
         last_login_at?: Date;
         provider_id?: string;
-        password_hash?: string;
         is_superuser?: boolean;
         profile?: Profile;
       }
@@ -42,9 +38,7 @@ export class Identity {
       created_at: props.created_at ?? new Date(),
       updated_at: props.updated_at ?? new Date(),
       last_login_at: props.last_login_at ?? new Date(),
-      provider_id: props.provider_id ?? null,
       profile: props.profile ?? null,
-      password_hash: props.password_hash ?? null,
       is_superuser: props.is_superuser ?? false,
     };
   }
@@ -59,14 +53,6 @@ export class Identity {
 
   public set is_superuser(is_superuser: boolean) {
     this.props.is_superuser = is_superuser;
-  }
-
-  public get password_hash(): string {
-    return this.props.password_hash;
-  }
-
-  public set password_hash(password_hash: string) {
-    this.props.password_hash = password_hash;
   }
 
   public get mfa_required(): boolean {
@@ -115,22 +101,6 @@ export class Identity {
 
   public set status(status: string) {
     this.props.status = status;
-  }
-
-  public get provider_id(): string {
-    return this.props.provider_id;
-  }
-
-  public set provider_id(provider_id: string) {
-    this.props.provider_id = provider_id;
-  }
-
-  public get provider(): string {
-    return this.props.provider;
-  }
-
-  public set provider(provider: string) {
-    this.props.provider = provider;
   }
 
   public get email(): string {

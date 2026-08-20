@@ -12,6 +12,8 @@ import { InMemoryEntityMembershipRepository } from '@modules/business/entity_mem
 import { InMemoryEntityCustomerRepository } from '@modules/business/entity_customer/shared/repositories/test/in-memory-entitycustomer-repository';
 import { makeEntityMembership } from '@modules/business/entity_membership/shared/models/test/entity-membership-factory';
 import { makeEntityMembershipCustomer } from '@modules/business/entity_customer/shared/models/test/entity-customer-factory';
+import { InMemoryIdentityCredentialRepository } from '@modules/auth/identity_credential/shared/repositories/test/in-memory-identity-credential-repository';
+import { makeIdentityCredential } from '@modules/auth/identity_credential/shared/models/test/identity_credential-factory';
 
 jest.mock('argon2');
 describe('Test in route signin', () => {
@@ -21,6 +23,7 @@ describe('Test in route signin', () => {
   let entity_membership_repository: InMemoryEntityMembershipRepository;
   let entity_membercustomer_repository: InMemoryEntityCustomerRepository;
   let profile_repository: InMemoryProfileRepository;
+  let identity_credential_repository: InMemoryIdentityCredentialRepository;
   const jwt_service = {
     sign: jest.fn().mockReturnValue('fake-jwt-token'),
   };
@@ -33,6 +36,7 @@ describe('Test in route signin', () => {
     profile_repository = new InMemoryProfileRepository();
     entity_membership_repository = new InMemoryEntityMembershipRepository();
     entity_membercustomer_repository = new InMemoryEntityCustomerRepository();
+    identity_credential_repository = new InMemoryIdentityCredentialRepository();
   });
 
   it('should not signin, because identity not exists', async () => {
@@ -42,6 +46,7 @@ describe('Test in route signin', () => {
       profile_repository,
       entity_membership_repository,
       jwt_service as any,
+      identity_credential_repository,
     );
     expect(
       signInService.execute({
@@ -50,7 +55,8 @@ describe('Test in route signin', () => {
       }),
     ).rejects.toThrow(new AppError('Credenciais inválidas'));
   });
-  it('should not signin, because password is invalid', async () => {
+
+  it('should not signin, because credential not exists', async () => {
     entity_repository.list_entity.push(
       makeEntity({
         id: 'academia',
@@ -61,7 +67,6 @@ describe('Test in route signin', () => {
       makeIdentity({
         props: {
           email: 'luisfoco@gmail.com',
-          password_hash: '154trghtht',
           status: 'ativo',
         },
       }),
@@ -72,6 +77,47 @@ describe('Test in route signin', () => {
       profile_repository,
       entity_membership_repository,
       jwt_service as any,
+      identity_credential_repository,
+    );
+    expect(
+      signInService.execute({
+        email: 'luisfoco@gmail.com',
+        password: '123gghghhy6y6',
+      }),
+    ).rejects.toThrow(new AppError('Credencial não existe', 404));
+  });
+
+  it('should not signin, because password is invalid', async () => {
+    entity_repository.list_entity.push(
+      makeEntity({
+        id: 'academia',
+      }),
+    );
+    identity_credential_repository.list_identity_credential.push(
+      makeIdentityCredential({
+        id: '123',
+        props: {
+          identity_id: '123',
+        },
+      }),
+    );
+    (argon2.verify as jest.Mock).mockResolvedValue(false);
+    identity_repository.list_identity.push(
+      makeIdentity({
+        id: '123',
+        props: {
+          email: 'luisfoco@gmail.com',
+          status: 'ativo',
+        },
+      }),
+    );
+    const signInService = new SignInService(
+      entity_membercustomer_repository,
+      identity_repository,
+      profile_repository,
+      entity_membership_repository,
+      jwt_service as any,
+      identity_credential_repository,
     );
     expect(
       signInService.execute({
@@ -90,10 +136,18 @@ describe('Test in route signin', () => {
     );
     identity_repository.list_identity.push(
       makeIdentity({
+        id: '123',
         props: {
           email: 'luisfoco@gmail.com',
-          password_hash: '123LLv!!@32mjnvhfh',
           status: 'inativo',
+        },
+      }),
+    );
+    identity_credential_repository.list_identity_credential.push(
+      makeIdentityCredential({
+        id: '123',
+        props: {
+          identity_id: '123',
         },
       }),
     );
@@ -103,6 +157,7 @@ describe('Test in route signin', () => {
       profile_repository,
       entity_membership_repository,
       jwt_service as any,
+      identity_credential_repository,
     );
     expect(
       signInService.execute({
@@ -121,9 +176,17 @@ describe('Test in route signin', () => {
     );
     identity_repository.list_identity.push(
       makeIdentity({
+        id: '123',
         props: {
           email: 'luisfoco@gmail.com',
-          password_hash: '123LLv!!@32mjnvhfh',
+        },
+      }),
+    );
+    identity_credential_repository.list_identity_credential.push(
+      makeIdentityCredential({
+        id: '123',
+        props: {
+          identity_id: '123',
         },
       }),
     );
@@ -133,6 +196,7 @@ describe('Test in route signin', () => {
       profile_repository,
       entity_membership_repository,
       jwt_service as any,
+      identity_credential_repository,
     );
     expect(
       signInService.execute({
@@ -150,9 +214,17 @@ describe('Test in route signin', () => {
     );
     identity_repository.list_identity.push(
       makeIdentity({
+        id: '123',
         props: {
           email: 'luisfoco@gmail.com',
-          password_hash: await argon2.hash('123LLv!!@32mjnvhfh'),
+        },
+      }),
+    );
+    identity_credential_repository.list_identity_credential.push(
+      makeIdentityCredential({
+        id: '123',
+        props: {
+          identity_id: '123',
         },
       }),
     );
@@ -169,6 +241,7 @@ describe('Test in route signin', () => {
       profile_repository,
       entity_membership_repository,
       jwt_service as any,
+      identity_credential_repository,
     );
     expect(
       signInService.execute({
@@ -188,9 +261,17 @@ describe('Test in route signin', () => {
     );
     identity_repository.list_identity.push(
       makeIdentity({
+        id: '123',
         props: {
           email: 'luisfoco@gmail.com',
-          password_hash: await argon2.hash('123LLv!!@32mjnvhfh'),
+        },
+      }),
+    );
+    identity_credential_repository.list_identity_credential.push(
+      makeIdentityCredential({
+        id: '123',
+        props: {
+          identity_id: '123',
         },
       }),
     );
@@ -216,6 +297,7 @@ describe('Test in route signin', () => {
       profile_repository,
       entity_membership_repository,
       jwt_service as any,
+      identity_credential_repository,
     );
     const result = await signInService.execute({
       email: 'luisfoco@gmail.com',
@@ -234,9 +316,17 @@ describe('Test in route signin', () => {
     );
     identity_repository.list_identity.push(
       makeIdentity({
+        id: '123',
         props: {
           email: 'luisfoco@gmail.com',
-          password_hash: await argon2.hash('123LLv!!@32mjnvhfh'),
+        },
+      }),
+    );
+    identity_credential_repository.list_identity_credential.push(
+      makeIdentityCredential({
+        id: '123',
+        props: {
+          identity_id: '123',
         },
       }),
     );
@@ -262,6 +352,7 @@ describe('Test in route signin', () => {
       profile_repository,
       entity_membership_repository,
       jwt_service as any,
+      identity_credential_repository,
     );
     const result = await signInService.execute({
       email: 'luisfoco@gmail.com',
@@ -280,9 +371,17 @@ describe('Test in route signin', () => {
     );
     identity_repository.list_identity.push(
       makeIdentity({
+        id: '123',
         props: {
           email: 'luisfoco@gmail.com',
-          password_hash: await argon2.hash('123LLv!!@32mjnvhfh'),
+        },
+      }),
+    );
+    identity_credential_repository.list_identity_credential.push(
+      makeIdentityCredential({
+        id: '123',
+        props: {
+          identity_id: '123',
         },
       }),
     );
@@ -317,6 +416,7 @@ describe('Test in route signin', () => {
       profile_repository,
       entity_membership_repository,
       jwt_service as any,
+      identity_credential_repository,
     );
     const result = await signInService.execute({
       email: 'luisfoco@gmail.com',
@@ -340,9 +440,17 @@ describe('Test in route signin', () => {
     );
     identity_repository.list_identity.push(
       makeIdentity({
+        id: '123',
         props: {
           email: 'luisfoco@gmail.com',
-          password_hash: await argon2.hash('123LLv!!@32mjnvhfh'),
+        },
+      }),
+    );
+    identity_credential_repository.list_identity_credential.push(
+      makeIdentityCredential({
+        id: '123',
+        props: {
+          identity_id: '123',
         },
       }),
     );
@@ -377,6 +485,7 @@ describe('Test in route signin', () => {
       profile_repository,
       entity_membership_repository,
       jwt_service as any,
+      identity_credential_repository,
     );
     const result = await signInService.execute({
       email: 'luisfoco@gmail.com',

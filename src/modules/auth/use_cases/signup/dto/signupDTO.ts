@@ -25,6 +25,6 @@ export class SignUpDTO {
   @IsString()
   document: string;
 
-  @IsDate()
-  birth_date: Date;
+  @IsString()
+  birth_date: string;
 }

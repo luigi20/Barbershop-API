@@ -21,7 +21,7 @@ export class EntityGetOneController {
   constructor(private readonly entityGetOneService: EntityGetOneService) {}
 
   @Get('get_one/:id')
-  public async PlanGetAll(@Param('id') id: string, @Req() req: AuthRequest) {
+  public async EntityGetAll(@Param('id') id: string, @Req() req: AuthRequest) {
     const result = await this.entityGetOneService.execute({
       id: id,
     });

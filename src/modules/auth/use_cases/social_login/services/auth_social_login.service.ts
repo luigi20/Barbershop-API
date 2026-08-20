@@ -10,6 +10,9 @@ import { Profile } from '@modules/auth/profile/shared/models/profile';
 import { entity_name } from '@modules/utils/types/types';
 import { IEntityMembershipRepository } from '@modules/business/entity_membership/shared/repositories/abstract_class/ientitymembership-repository';
 import { IEntityCustomerRepository } from '@modules/business/entity_customer/shared/repositories/abstract_class/ientitycustomer-repository';
+import { PrismaService } from 'infra/database/prisma/prisma.service';
+import { IIdentityCredentialRepository } from '@modules/auth/identity_credential/shared/repositories/abstract_class/iidentitycredential-repository';
+import { Identity_Credential } from '@modules/auth/identity_credential/shared/models/identity_credential';
 
 export interface IRequest_Login_Social {
   provider: string;
@@ -32,6 +35,8 @@ export class AuthSocialLoginService {
     private readonly entity_membercustomer_repository: IEntityCustomerRepository,
     private readonly jwt_service: JwtService,
     private readonly identity_provider_service: IdentityProviderService,
+    private readonly prisma: PrismaService,
+    private readonly identity_credential_repository: IIdentityCredentialRepository,
   ) {}
 
   async execute({
@@ -55,16 +60,34 @@ export class AuthSocialLoginService {
         email: profile_provider.email,
         status: 'ativo',
         mfa_required: false,
-        provider: profile_provider.type,
       });
-      await this.identity_repository.create(identity);
       const profile = new Profile({
         identity_id: identity.id,
         name: `${profile_provider.name ?? ''} ${
           profile_provider.last_name ?? ''
         }`.trim(),
       });
-      await this.profile_repository.create(profile);
+      const identity_credential = new Identity_Credential({
+        identity_id: identity.id,
+        provider: profile_provider.type,
+        password_hash: null,
+        provider_id: profile_provider.id,
+      });
+      try {
+        await this.prisma.$transaction(async (tx) => {
+          await this.identity_repository.create(identity, tx);
+          await this.profile_repository.create(profile, tx);
+          await this.identity_credential_repository.create(
+            identity_credential,
+            tx,
+          );
+        });
+      } catch (error) {
+        throw new AppError(
+          'Não foi possível concluir o cadastro. Tente novamente.',
+          500,
+        );
+      }
     }
     if (identity.status.toLowerCase() !== 'ativo')
       throw new AppError('Usuário inativo', 403);

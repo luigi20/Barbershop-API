@@ -57,17 +57,6 @@ class IdentityRepository implements IIdentityRepository {
     });
   }
 
-  async update_password(identity_id: string, new_hash: string): Promise<void> {
-    await this.prisma.getPrismaClient().identity.update({
-      where: {
-        id: identity_id,
-      },
-      data: {
-        password_hash: new_hash,
-      },
-    });
-  }
-
   async set_update_mfa_required(
     identity_id: string,
     mfa_required: boolean,

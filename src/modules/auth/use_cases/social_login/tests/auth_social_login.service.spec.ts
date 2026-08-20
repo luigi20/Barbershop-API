@@ -13,6 +13,8 @@ import { InMemoryEntityMembershipRepository } from '@modules/business/entity_mem
 import { InMemoryEntityCustomerRepository } from '@modules/business/entity_customer/shared/repositories/test/in-memory-entitycustomer-repository';
 import { makeEntityMembershipCustomer } from '@modules/business/entity_customer/shared/models/test/entity-customer-factory';
 import { makeEntityMembership } from '@modules/business/entity_membership/shared/models/test/entity-membership-factory';
+import { InMemoryIdentityCredentialRepository } from '@modules/auth/identity_credential/shared/repositories/test/in-memory-identity-credential-repository';
+import { PrismaService } from 'infra/database/prisma/prisma.service';
 
 describe('Test in route auth social login', () => {
   let entity_repository: InMemoryEntityRepository;
@@ -21,6 +23,13 @@ describe('Test in route auth social login', () => {
   let profile_repository: InMemoryProfileRepository;
   let entity_membership_repository: InMemoryEntityMembershipRepository;
   let entity_customer_repository: InMemoryEntityCustomerRepository;
+  let identity_credential_repository: InMemoryIdentityCredentialRepository;
+  const prismaMock = {
+    getPrismaClient: jest.fn(),
+    $transaction: jest.fn(async (callback) => {
+      return callback(prismaMock);
+    }),
+  } as unknown as PrismaService;
   const jwt_service = {
     sign: jest.fn().mockReturnValue('fake-jwt-token'),
   };
@@ -33,6 +42,7 @@ describe('Test in route auth social login', () => {
     profile_repository = new InMemoryProfileRepository();
     entity_membership_repository = new InMemoryEntityMembershipRepository();
     entity_customer_repository = new InMemoryEntityCustomerRepository();
+    identity_credential_repository = new InMemoryIdentityCredentialRepository();
   });
 
   it('should not auth social login, because email is invalid', async () => {
@@ -54,6 +64,8 @@ describe('Test in route auth social login', () => {
       entity_customer_repository,
       jwt_service as any,
       identity_provider_service as any,
+      prismaMock,
+      identity_credential_repository,
     );
     expect(
       auth_social_login_service.execute({
@@ -106,6 +118,8 @@ describe('Test in route auth social login', () => {
       entity_customer_repository,
       jwt_service as any,
       identity_provider_service as any,
+      prismaMock,
+      identity_credential_repository,
     );
     expect(
       auth_social_login_service.execute({
@@ -147,6 +161,8 @@ describe('Test in route auth social login', () => {
       entity_customer_repository,
       jwt_service as any,
       identity_provider_service as any,
+      prismaMock,
+      identity_credential_repository,
     );
     expect(
       auth_social_login_service.execute({
@@ -175,6 +191,8 @@ describe('Test in route auth social login', () => {
       entity_customer_repository,
       jwt_service as any,
       identity_provider_service as any,
+      prismaMock,
+      identity_credential_repository,
     );
     expect(
       auth_social_login_service.execute({
@@ -226,6 +244,8 @@ describe('Test in route auth social login', () => {
       entity_customer_repository,
       jwt_service as any,
       identity_provider_service as any,
+      prismaMock,
+      identity_credential_repository,
     );
     expect(
       auth_social_login_service.execute({
@@ -290,6 +310,8 @@ describe('Test in route auth social login', () => {
       entity_customer_repository,
       jwt_service as any,
       identity_provider_service as any,
+      prismaMock,
+      identity_credential_repository,
     );
     const result = await auth_social_login_service.execute({
       provider: 'google',
@@ -357,6 +379,8 @@ describe('Test in route auth social login', () => {
       entity_customer_repository,
       jwt_service as any,
       identity_provider_service as any,
+      prismaMock,
+      identity_credential_repository,
     );
     const result = await auth_social_login_service.execute({
       provider: 'google',
@@ -433,6 +457,8 @@ describe('Test in route auth social login', () => {
       entity_customer_repository,
       jwt_service as any,
       identity_provider_service as any,
+      prismaMock,
+      identity_credential_repository,
     );
     const result = await auth_social_login_service.execute({
       provider: 'google',
@@ -500,6 +526,8 @@ describe('Test in route auth social login', () => {
       entity_customer_repository,
       jwt_service as any,
       identity_provider_service as any,
+      prismaMock,
+      identity_credential_repository,
     );
     const result = await auth_social_login_service.execute({
       provider: 'google',
@@ -567,6 +595,8 @@ describe('Test in route auth social login', () => {
       entity_customer_repository,
       jwt_service as any,
       identity_provider_service as any,
+      prismaMock,
+      identity_credential_repository,
     );
     const result = await auth_social_login_service.execute({
       provider: 'google',
@@ -643,6 +673,8 @@ describe('Test in route auth social login', () => {
       entity_customer_repository,
       jwt_service as any,
       identity_provider_service as any,
+      prismaMock,
+      identity_credential_repository,
     );
     const result = await auth_social_login_service.execute({
       provider: 'google',

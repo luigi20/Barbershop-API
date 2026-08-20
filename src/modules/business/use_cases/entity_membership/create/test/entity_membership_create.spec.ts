@@ -9,6 +9,7 @@ import { EntityMembershipCreateService } from '../services/entity_membership_cre
 import { PrismaService } from 'infra/database/prisma/prisma.service';
 import { randomUUID } from 'crypto';
 import { InMemoryEntityMembershipRepository } from '@modules/business/entity_membership/shared/repositories/test/in-memory-entitymembership-repository';
+import { InMemoryIdentityCredentialRepository } from '@modules/auth/identity_credential/shared/repositories/test/in-memory-identity-credential-repository';
 
 jest.mock('argon2');
 describe('Test in route create membership', () => {
@@ -16,11 +17,15 @@ describe('Test in route create membership', () => {
   let profile_repository: InMemoryProfileRepository;
   let identity_repository: InMemoryIdentityRepository;
   let entity_membership_repository: InMemoryEntityMembershipRepository;
+  let identity_credential_repository: InMemoryIdentityCredentialRepository;
   const prismaMock = {
     getPrismaClient: jest.fn(),
     $transaction: jest.fn(async (callback) => {
       return callback(prismaMock);
     }),
+    identityCredential: {
+      create: jest.fn(),
+    },
   } as unknown as PrismaService;
   beforeEach(() => {
     jest.clearAllMocks();
@@ -29,6 +34,7 @@ describe('Test in route create membership', () => {
     profile_repository = new InMemoryProfileRepository();
     entity_membership_repository = new InMemoryEntityMembershipRepository();
     identity_repository = new InMemoryIdentityRepository();
+    identity_credential_repository = new InMemoryIdentityCredentialRepository();
   });
 
   it('should not create member, because tenant not exists', async () => {
@@ -38,10 +44,11 @@ describe('Test in route create membership', () => {
       entity_repository,
       identity_repository,
       prismaMock,
+      identity_credential_repository,
     );
     expect(
       entityMembershipCreateService.execute({
-        birth_date: new Date(),
+        birth_date: '12/06/1965',
         email: 'l@gmail.com',
         entity_id: randomUUID(),
         mfa_required: false,
@@ -61,10 +68,11 @@ describe('Test in route create membership', () => {
       entity_repository,
       identity_repository,
       prismaMock,
+      identity_credential_repository,
     );
     expect(
       entityMembershipCreateService.execute({
-        birth_date: new Date(),
+        birth_date: '12/06/1965',
         email: 'l@gmail.com',
         entity_id: randomUUID(),
         mfa_required: false,
@@ -93,10 +101,11 @@ describe('Test in route create membership', () => {
       entity_repository,
       identity_repository,
       prismaMock,
+      identity_credential_repository,
     );
     expect(
       entityMembershipCreateService.execute({
-        birth_date: new Date(),
+        birth_date: '12/06/1965',
         email: 'l@gmail.com',
         entity_id: '123',
         mfa_required: false,
@@ -126,9 +135,10 @@ describe('Test in route create membership', () => {
       entity_repository,
       identity_repository,
       prismaMock,
+      identity_credential_repository,
     );
     const result = await entityMembershipCreateService.execute({
-      birth_date: new Date(),
+      birth_date: '12/06/1965',
       email: 'l@gmail.com',
       entity_id: '123',
       mfa_required: false,
@@ -144,7 +154,7 @@ describe('Test in route create membership', () => {
     expect(entity_membership_repository.list_membership.length).toEqual(1);
   });
 
-  it('should  member', async () => {
+  it('should member', async () => {
     entity_repository.list_entity.push(
       makeEntity({
         id: '123',
@@ -172,9 +182,10 @@ describe('Test in route create membership', () => {
       entity_repository,
       identity_repository,
       prismaMock,
+      identity_credential_repository,
     );
     const result = await entityMembershipCreateService.execute({
-      birth_date: new Date(),
+      birth_date: '12/06/1965',
       email: 'l@gmail.com',
       entity_id: '123',
       mfa_required: false,

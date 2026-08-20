@@ -32,14 +32,7 @@ class InMemoryIdentityRepository implements IIdentityRepository {
     if (!identity) return null;
     return identity;
   }
-  async update_password(identity_id: string, new_hash: string): Promise<void> {
-    const index = this.list_identity.findIndex(
-      (item) => item.id === identity_id,
-    );
-    if (index >= 0) {
-      this.list_identity[index].password_hash = new_hash;
-    }
-  }
+
   async set_update_mfa_required(
     identity_id: string,
     mfa_required: boolean,

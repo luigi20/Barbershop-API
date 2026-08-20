@@ -2,6 +2,8 @@ import { Entity } from '@modules/auth/entity/shared/models/entity';
 import { IEntityRepository } from '@modules/auth/entity/shared/repositories/abstract_class/ientity-repository';
 import { Identity } from '@modules/auth/identity/shared/models/identity';
 import { IIdentityRepository } from '@modules/auth/identity/shared/repositories/abstract_class/iidentity-repository';
+import { Identity_Credential } from '@modules/auth/identity_credential/shared/models/identity_credential';
+import { IIdentityCredentialRepository } from '@modules/auth/identity_credential/shared/repositories/abstract_class/iidentitycredential-repository';
 import { Profile } from '@modules/auth/profile/shared/models/profile';
 import { IProfileRepository } from '@modules/auth/profile/shared/repositories/abstract_class/iprofile-repository';
 import { Entity_Membership } from '@modules/business/entity_membership/shared/models/entity_membership';
@@ -16,7 +18,7 @@ interface ISignUpRequest {
   name: string;
   email: string;
   password: string;
-  birth_date: Date;
+  birth_date: string;
   phone: string;
   photo: string;
   entity_name: string;
@@ -33,6 +35,7 @@ export class SignUpService {
     private readonly identity_repository: IIdentityRepository,
     private readonly profile_repository: IProfileRepository,
     private readonly entity_membership_repository: IEntityMembershipRepository,
+    private readonly identity_credential_repository: IIdentityCredentialRepository,
   ) {}
 
   public async execute({
@@ -67,15 +70,18 @@ export class SignUpService {
     });
     const identity = new Identity({
       email,
-      password_hash,
       mfa_required: false,
-      provider: 'local',
       status: IdentityStatus.ATIVO,
+    });
+    const identity_credential = new Identity_Credential({
+      identity_id: identity.id,
+      provider: 'local',
+      password_hash: password_hash,
     });
     const profile = new Profile({
       identity_id: identity.id,
-      name,
-      birth_date,
+      name: name,
+      birth_date: new Date(birth_date),
       phone: phone,
       photo: photo,
     });
@@ -89,6 +95,10 @@ export class SignUpService {
       await this.prisma.$transaction(async (tx) => {
         await this.entity_repository.create(entity, tx);
         await this.identity_repository.create(identity, tx);
+        await this.identity_credential_repository.create(
+          identity_credential,
+          tx,
+        );
         await this.profile_repository.create(profile, tx);
         await this.entity_membership_repository.create(membership, tx);
       });
