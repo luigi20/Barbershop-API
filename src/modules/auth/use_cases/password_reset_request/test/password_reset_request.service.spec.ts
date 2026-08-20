@@ -9,8 +9,8 @@ import { makeIdentity } from '@modules/auth/identity/shared/models/test/identity
 describe('Test in route password reset request', () => {
   let identity_repository: InMemoryIdentityRepository;
   let password_reset_tokens_repository: InMemoryPasswordResetTokensRepository;
-  const email_service = {
-    send: jest.fn().mockReturnValue('fake-jwt-token'),
+  const email_service_mock = {
+    send: jest.fn().mockResolvedValue(undefined),
   };
   beforeEach(() => {
     // Populando os repositórios com dados iniciais
@@ -23,6 +23,7 @@ describe('Test in route password reset request', () => {
     const password_reset_tokens_service = new PasswordResetRequestService(
       identity_repository,
       password_reset_tokens_repository,
+      email_service_mock,
     );
     expect(
       password_reset_tokens_service.execute({
@@ -42,6 +43,7 @@ describe('Test in route password reset request', () => {
     const password_reset_tokens_service = new PasswordResetRequestService(
       identity_repository,
       password_reset_tokens_repository,
+      email_service_mock,
     );
     const result = await password_reset_tokens_service.execute({
       email: 'luisfoco@gmail.com',

@@ -59,6 +59,8 @@ import { IEntityMembershipRepository } from '@modules/business/entity_membership
 import { EntityMembershipRepository } from '@modules/business/entity_membership/shared/repositories/entitymembership-repository';
 import { IIdentityCredentialRepository } from '../identity_credential/shared/repositories/abstract_class/iidentitycredential-repository';
 import { IdentityCredentialRepository } from '../identity_credential/shared/repositories/identity-credential-repository';
+import { IEmailService } from 'infra/email/abstract class/IEmailService';
+import { ResendEmailService } from 'infra/email/services/resend_email_service';
 
 @Module({
   imports: [
@@ -112,6 +114,10 @@ import { IdentityCredentialRepository } from '../identity_credential/shared/repo
     {
       provide: IIdentityRepository,
       useClass: IdentityRepository,
+    },
+    {
+      provide: IEmailService,
+      useClass: ResendEmailService,
     },
     {
       provide: IIdentityCredentialRepository,

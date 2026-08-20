@@ -25,9 +25,8 @@ describe('Test in route auth social login', () => {
   let entity_customer_repository: InMemoryEntityCustomerRepository;
   let identity_credential_repository: InMemoryIdentityCredentialRepository;
   const prismaMock = {
-    getPrismaClient: jest.fn(),
-    $transaction: jest.fn(async (callback) => {
-      return callback(prismaMock);
+    getPrismaClient: jest.fn().mockReturnValue({
+      $transaction: jest.fn(async (callback) => callback({})),
     }),
   } as unknown as PrismaService;
   const jwt_service = {

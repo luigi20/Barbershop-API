@@ -8,6 +8,23 @@ import { Prisma } from '@prisma/client';
 @Injectable()
 class EntityCustomerRepository implements IEntityCustomerRepository {
   constructor(private prisma: PrismaService) {}
+
+  async update(
+    data: Entity_Customer,
+    tx?: Prisma.TransactionClient,
+  ): Promise<void> {
+    const raw = EntityCustomerMapper.toPrisma(data);
+    const client = tx ?? this.prisma;
+    await client.identity.update({
+      where: {
+        entity_id_profile_id: {
+          entity_id: data.entity_id,
+          profile_id: data.profile_id,
+        },
+      },
+      data: raw,
+    });
+  }
   async find_list_profile_id(profile_id: string): Promise<Entity_Customer[]> {
     const list_entity_customer = await this.prisma
       .getPrismaClient()
@@ -43,19 +60,6 @@ class EntityCustomerRepository implements IEntityCustomerRepository {
       });
     if (!entity_customer) return null;
     return EntityCustomerMapper.toDomain(entity_customer);
-  }
-
-  async update(data: Entity_Customer): Promise<void> {
-    const raw = EntityCustomerMapper.toPrisma(data);
-    await this.prisma.getPrismaClient().entityCustomer.update({
-      where: {
-        entity_id_profile_id: {
-          entity_id: data.entity_id,
-          profile_id: data.profile_id,
-        },
-      },
-      data: raw,
-    });
   }
 
   async find_all(): Promise<Entity_Customer[]> {

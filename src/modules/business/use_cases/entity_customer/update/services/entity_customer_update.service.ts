@@ -93,11 +93,12 @@ export class EntityCustomerUpdateService {
       profile_name: profile.name,
       entity_name: info_entity.name,
     });
+    const prisma = this.prisma.getPrismaClient();
     try {
-      await this.prisma.$transaction(async (tx) => {
-        await this.identity_repository.create(identity, tx);
-        await this.profile_repository.create(profile, tx);
-        await this.entity_customer_repository.create(entity_customer, tx);
+      await prisma.$transaction(async (tx) => {
+        await this.identity_repository.update(identity, tx);
+        await this.profile_repository.update(profile, tx);
+        await this.entity_customer_repository.update(entity_customer, tx);
       });
     } catch (error) {
       throw new AppError(

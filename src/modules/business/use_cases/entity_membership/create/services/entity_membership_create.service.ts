@@ -89,8 +89,9 @@ export class EntityMembershipCreateService {
         profile_name: profile.name,
         entity_name: info_entity.name,
       });
+      const prisma = this.prisma.getPrismaClient();
       try {
-        await this.prisma.$transaction(async (tx) => {
+        await prisma.$transaction(async (tx) => {
           await this.identity_repository.create(identity, tx);
           await this.profile_repository.create(profile, tx);
           await this.entity_membership_repository.create(entity_membership, tx);

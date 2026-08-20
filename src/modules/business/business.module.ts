@@ -46,6 +46,8 @@ import { EntityGetAllService } from './use_cases/entity/get_all/service/entity_g
 import { EntityUpdateService } from './use_cases/entity/update/service/entity_update.service';
 import { IIdentityCredentialRepository } from '@modules/auth/identity_credential/shared/repositories/abstract_class/iidentitycredential-repository';
 import { IdentityCredentialRepository } from '@modules/auth/identity_credential/shared/repositories/identity-credential-repository';
+import { IEmailService } from 'infra/email/abstract class/IEmailService';
+import { ResendEmailService } from 'infra/email/services/resend_email_service';
 
 @Module({
   imports: [
@@ -98,6 +100,10 @@ import { IdentityCredentialRepository } from '@modules/auth/identity_credential/
     {
       provide: IPlanRepository,
       useClass: PlanRepository,
+    },
+    {
+      provide: IEmailService,
+      useClass: ResendEmailService,
     },
     {
       provide: IEntityRepository,

@@ -25,7 +25,6 @@ export class MFAConfirmService {
       email.toLowerCase().trim(),
     );
     if (!identity) throw new AppError('Credenciais inválidas');
-
     const mfa = await this.mfa_code_repository.find_one(
       identity.id,
       false,

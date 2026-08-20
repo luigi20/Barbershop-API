@@ -16,11 +16,13 @@ describe('Test in route signup', () => {
   let entity_membership_repository: InMemoryEntityMembershipRepository;
   let identity_credential_repository: InMemoryIdentityCredentialRepository;
   const prismaMock = {
-    getPrismaClient: jest.fn(),
-    $transaction: jest.fn(async (callback) => {
-      return callback(prismaMock);
+    getPrismaClient: jest.fn().mockReturnValue({
+      $transaction: jest.fn(async (callback) => callback({})),
     }),
   } as unknown as PrismaService;
+  const email_service_mock = {
+    send: jest.fn().mockResolvedValue(undefined),
+  };
   beforeEach(() => {
     jest.clearAllMocks();
     // Populando os repositórios com dados iniciais
@@ -39,6 +41,7 @@ describe('Test in route signup', () => {
       profile_repository,
       entity_membership_repository,
       identity_credential_repository,
+      email_service_mock,
     );
     expect(
       signUpService.execute({
@@ -76,6 +79,7 @@ describe('Test in route signup', () => {
       profile_repository,
       entity_membership_repository,
       identity_credential_repository,
+      email_service_mock,
     );
     expect(
       signUpService.execute({
@@ -104,6 +108,7 @@ describe('Test in route signup', () => {
       profile_repository,
       entity_membership_repository,
       identity_credential_repository,
+      email_service_mock,
     );
     expect(
       signUpService.execute({
@@ -133,6 +138,7 @@ describe('Test in route signup', () => {
       profile_repository,
       entity_membership_repository,
       identity_credential_repository,
+      email_service_mock,
     );
     const msg = await signUpService.execute({
       email: 'luisfoco@gmail.com',
