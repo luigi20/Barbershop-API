@@ -57,6 +57,8 @@ import { IEntityCustomerRepository } from '@modules/business/entity_customer/sha
 import { EntityCustomerRepository } from '@modules/business/entity_customer/shared/repositories/entitycustomer-repository';
 import { IEntityMembershipRepository } from '@modules/business/entity_membership/shared/repositories/abstract_class/ientitymembership-repository';
 import { EntityMembershipRepository } from '@modules/business/entity_membership/shared/repositories/entitymembership-repository';
+import { IIdentityCredentialRepository } from '../identity_credential/shared/repositories/abstract_class/iidentitycredential-repository';
+import { IdentityCredentialRepository } from '../identity_credential/shared/repositories/identity-credential-repository';
 
 @Module({
   imports: [
@@ -110,6 +112,10 @@ import { EntityMembershipRepository } from '@modules/business/entity_membership/
     {
       provide: IIdentityRepository,
       useClass: IdentityRepository,
+    },
+    {
+      provide: IIdentityCredentialRepository,
+      useClass: IdentityCredentialRepository,
     },
     {
       provide: IMFACodeRepository,

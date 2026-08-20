@@ -16,10 +16,8 @@ type FactoryParams = {
 export function makeIdentity({ id, props }: FactoryParams = {}) {
   return new Identity(
     {
-      password_hash: randomBytes(20).toString('hex'),
       mfa_required: false,
       email: '',
-      provider: AuthProvider.LOCAL,
       status: IdentityStatus.ATIVO,
       ...props,
     },

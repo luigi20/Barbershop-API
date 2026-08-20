@@ -10,6 +10,7 @@ import { randomUUID } from 'crypto';
 import { EntityCustomerUpdateService } from '../services/entity_customer_update.service';
 import { InMemoryEntityCustomerRepository } from '@modules/business/entity_customer/shared/repositories/test/in-memory-entitycustomer-repository';
 import { makeEntityMembershipCustomer } from '@modules/business/entity_customer/shared/models/test/entity-customer-factory';
+import { InMemoryIdentityCredentialRepository } from '@modules/auth/identity_credential/shared/repositories/test/in-memory-identity-credential-repository';
 
 jest.mock('argon2');
 describe('Test in route update customer', () => {
@@ -17,6 +18,7 @@ describe('Test in route update customer', () => {
   let profile_repository: InMemoryProfileRepository;
   let identity_repository: InMemoryIdentityRepository;
   let entity_customer_repository: InMemoryEntityCustomerRepository;
+  let identity_credential_repository: InMemoryIdentityCredentialRepository;
   const prismaMock = {
     getPrismaClient: jest.fn(),
     $transaction: jest.fn(async (callback) => {
@@ -30,6 +32,7 @@ describe('Test in route update customer', () => {
     profile_repository = new InMemoryProfileRepository();
     entity_customer_repository = new InMemoryEntityCustomerRepository();
     identity_repository = new InMemoryIdentityRepository();
+    identity_credential_repository = new InMemoryIdentityCredentialRepository();
   });
 
   it('should not update member, because tenant not exists', async () => {
@@ -42,7 +45,7 @@ describe('Test in route update customer', () => {
     );
     expect(
       entityCustomerUpdateService.execute({
-        birth_date: new Date(),
+        birth_date: '12/06/1965',
         email: 'l@gmail.com',
         entity_id: randomUUID(),
         mfa_required: false,
@@ -70,7 +73,7 @@ describe('Test in route update customer', () => {
     );
     expect(
       entityCustomerUpdateService.execute({
-        birth_date: new Date(),
+        birth_date: '12/06/1965',
         email: 'l@gmail.com',
         entity_id: '123',
         mfa_required: false,
@@ -106,7 +109,7 @@ describe('Test in route update customer', () => {
     );
     expect(
       entityCustomerUpdateService.execute({
-        birth_date: new Date(),
+        birth_date: '12/06/1965',
         email: 'l@gmail.com',
         entity_id: '123',
         mfa_required: false,
@@ -150,7 +153,7 @@ describe('Test in route update customer', () => {
     );
     expect(
       entityCustomerUpdateService.execute({
-        birth_date: new Date(),
+        birth_date: '12/06/1965',
         email: 'l@gmail.com',
         entity_id: '123',
         mfa_required: false,
@@ -208,7 +211,7 @@ describe('Test in route update customer', () => {
     );
     expect(
       entityCustomerUpdateService.execute({
-        birth_date: new Date(),
+        birth_date: '12/06/1965',
         email: 'l@gmail.com',
         entity_id: '123',
         mfa_required: false,
@@ -268,7 +271,7 @@ describe('Test in route update customer', () => {
       prismaMock,
     );
     const result = await entityCustomerUpdateService.execute({
-      birth_date: new Date(),
+      birth_date: '12/06/1965',
       email: 'l@gmail.com',
       entity_id: '123',
       mfa_required: false,

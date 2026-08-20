@@ -1,4 +1,5 @@
 import { IIdentityRepository } from '@modules/auth/identity/shared/repositories/abstract_class/iidentity-repository';
+import { IIdentityCredentialRepository } from '@modules/auth/identity_credential/shared/repositories/abstract_class/iidentitycredential-repository';
 import { IProfileRepository } from '@modules/auth/profile/shared/repositories/abstract_class/iprofile-repository';
 import { IEntityCustomerRepository } from '@modules/business/entity_customer/shared/repositories/abstract_class/ientitycustomer-repository';
 import { IEntityMembershipRepository } from '@modules/business/entity_membership/shared/repositories/abstract_class/ientitymembership-repository';
@@ -21,6 +22,7 @@ export class SignInService {
     private readonly profile_repository: IProfileRepository,
     private readonly entity_membership_repository: IEntityMembershipRepository,
     private readonly jwt_service: JwtService,
+    private readonly identity_credential_repository: IIdentityCredentialRepository,
   ) {}
 
   public async execute({ email, password }: ISignInRequest): Promise<{
@@ -37,7 +39,16 @@ export class SignInService {
     if (identity.status.toLowerCase() !== 'ativo')
       throw new AppError('Usuário bloqueado', 401);
     // 2. Valida a senha
-    const validPassword = await argon2.verify(identity.password_hash, password);
+    const identity_credential =
+      await this.identity_credential_repository.find_by_provider(
+        'local',
+        identity.id,
+      );
+    if (!identity_credential) throw new AppError('Credencial não existe', 400);
+    const validPassword = await argon2.verify(
+      identity_credential.password_hash,
+      password,
+    );
     if (!validPassword) throw new AppError('Senha inválida');
     // 3. Localiza o Profile
     const profile = await this.profile_repository.find_identity_id(identity.id);

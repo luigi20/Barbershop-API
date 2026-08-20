@@ -43,7 +43,7 @@ describe('Test in route update membership', () => {
     );
     expect(
       entityMembershipUpdateService.execute({
-        birth_date: new Date(),
+        birth_date: '12/06/1965',
         email: 'l@gmail.com',
         entity_id: randomUUID(),
         mfa_required: false,
@@ -73,7 +73,7 @@ describe('Test in route update membership', () => {
     );
     expect(
       entityMembershipUpdateService.execute({
-        birth_date: new Date(),
+        birth_date: '12/06/1965',
         email: 'l@gmail.com',
         entity_id: '123',
         mfa_required: false,
@@ -111,7 +111,7 @@ describe('Test in route update membership', () => {
     );
     expect(
       entityMembershipUpdateService.execute({
-        birth_date: new Date(),
+        birth_date: '12/06/1965',
         email: 'l@gmail.com',
         entity_id: '123',
         mfa_required: false,
@@ -157,7 +157,7 @@ describe('Test in route update membership', () => {
     );
     expect(
       entityMembershipUpdateService.execute({
-        birth_date: new Date(),
+        birth_date: '12/06/1965',
         email: 'l@gmail.com',
         entity_id: '123',
         mfa_required: false,
@@ -214,7 +214,7 @@ describe('Test in route update membership', () => {
     );
     expect(
       entityMembershipUpdateService.execute({
-        birth_date: new Date(),
+        birth_date: '12/06/1965',
         email: 'l@gmail.com',
         entity_id: '123',
         mfa_required: false,
@@ -273,7 +273,7 @@ describe('Test in route update membership', () => {
     );
     expect(
       entityMembershipUpdateService.execute({
-        birth_date: new Date(),
+        birth_date: '12/06/1965',
         email: 'l@gmail.com',
         entity_id: '123',
         mfa_required: false,
@@ -336,7 +336,7 @@ describe('Test in route update membership', () => {
       prismaMock,
     );
     const result = await entityMembershipUpdateService.execute({
-      birth_date: new Date(),
+      birth_date: '12/06/1965',
       email: 'l@gmail.com',
       entity_id: '123',
       mfa_required: false,

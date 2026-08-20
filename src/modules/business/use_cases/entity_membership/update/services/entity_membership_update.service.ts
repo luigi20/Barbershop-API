@@ -18,7 +18,7 @@ interface IMembersRequest {
   name: string;
   phone: string;
   photo: string;
-  birth_date: Date;
+  birth_date: string;
   roles: string[];
   status: string;
   roles_auth: MemberRole[];
@@ -76,11 +76,9 @@ export class EntityMembershipUpdateService {
       {
         email: email,
         mfa_required: mfa_required,
-        provider: identity_exists.provider,
         status: status,
         is_superuser: identity_exists.is_superuser,
         last_login_at: identity_exists.last_login_at,
-        password_hash: identity_exists.password_hash,
         created_at: identity_exists.created_at,
       },
       identity_exists.id,
@@ -89,7 +87,7 @@ export class EntityMembershipUpdateService {
       {
         identity_id: profile_exists.identity_id,
         name: name,
-        birth_date: birth_date,
+        birth_date: new Date(birth_date),
         phone: phone,
         photo: photo,
         roles: roles,
@@ -102,7 +100,7 @@ export class EntityMembershipUpdateService {
       profile_id: profile.id,
       roles: roles,
       status: status,
-      birth_date: birth_date,
+      birth_date: new Date(birth_date),
       phone: phone,
       photo: photo,
       name: name,

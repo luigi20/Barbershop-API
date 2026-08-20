@@ -10,6 +10,8 @@ import { Profile } from '@modules/auth/profile/shared/models/profile';
 import { PrismaService } from 'infra/database/prisma/prisma.service';
 import { IEntityCustomerRepository } from '@modules/business/entity_customer/shared/repositories/abstract_class/ientitycustomer-repository';
 import { Entity_Customer } from '@modules/business/entity_customer/shared/models/entity_customer';
+import { Identity_Credential } from '@modules/auth/identity_credential/shared/models/identity_credential';
+import { IIdentityCredentialRepository } from '@modules/auth/identity_credential/shared/repositories/abstract_class/iidentitycredential-repository';
 
 interface IMembersRequest {
   entity_id: string;
@@ -19,7 +21,7 @@ interface IMembersRequest {
   name: string;
   phone: string;
   photo: string;
-  birth_date: Date;
+  birth_date: string;
   notes: string;
 }
 
@@ -31,6 +33,7 @@ export class EntityCustomerCreateService {
     private readonly entity_repository: IEntityRepository,
     private readonly identity_repository: IIdentityRepository,
     private readonly prisma: PrismaService,
+    private readonly identity_credential_repository: IIdentityCredentialRepository,
   ) {}
 
   public async execute({
@@ -60,13 +63,16 @@ export class EntityCustomerCreateService {
         mfa_required: mfa_required,
         status: 'ativo',
         is_superuser: false,
-        password_hash: password_hash,
+      });
+      const identity_credential = new Identity_Credential({
+        identity_id: identity.id,
         provider: 'local',
+        password_hash: password_hash,
       });
       const profile = new Profile({
         identity_id: identity.id,
         name: name,
-        birth_date: birth_date,
+        birth_date: new Date(birth_date),
         phone: phone,
         photo: photo,
         status: 'ativo',
@@ -76,7 +82,7 @@ export class EntityCustomerCreateService {
         profile_id: profile.id,
         notes: notes,
         status: 'ativo',
-        birth_date: birth_date,
+        birth_date: new Date(birth_date),
         phone: phone,
         photo: photo,
         name: name,
@@ -86,6 +92,10 @@ export class EntityCustomerCreateService {
       try {
         await this.prisma.$transaction(async (tx) => {
           await this.identity_repository.create(identity, tx);
+          await this.identity_credential_repository.create(
+            identity_credential,
+            tx,
+          );
           await this.profile_repository.create(profile, tx);
           await this.entity_customer_repository.create(
             entity_member_customer,
@@ -108,7 +118,7 @@ export class EntityCustomerCreateService {
         profile_id: profile.id,
         notes: notes,
         status: 'ativo',
-        birth_date: birth_date,
+        birth_date: new Date(birth_date),
         phone: phone,
         photo: photo,
         name: name,

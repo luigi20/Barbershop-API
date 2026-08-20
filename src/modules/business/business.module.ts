@@ -44,6 +44,8 @@ import { EntityUpdateController } from './use_cases/entity/update/controller/ent
 import { EntityGetOneService } from './use_cases/entity/get_one/service/entity_get_one.service';
 import { EntityGetAllService } from './use_cases/entity/get_all/service/entity_get_all.service';
 import { EntityUpdateService } from './use_cases/entity/update/service/entity_update.service';
+import { IIdentityCredentialRepository } from '@modules/auth/identity_credential/shared/repositories/abstract_class/iidentitycredential-repository';
+import { IdentityCredentialRepository } from '@modules/auth/identity_credential/shared/repositories/identity-credential-repository';
 
 @Module({
   imports: [
@@ -89,6 +91,10 @@ import { EntityUpdateService } from './use_cases/entity/update/service/entity_up
     EntityGetAllService,
     EntityGetOneService,
     EntityUpdateService,
+    {
+      provide: IIdentityCredentialRepository,
+      useClass: IdentityCredentialRepository,
+    },
     {
       provide: IPlanRepository,
       useClass: PlanRepository,

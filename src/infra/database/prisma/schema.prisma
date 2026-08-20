@@ -26,10 +26,7 @@ model Entity {
 model Identity {
   id                  String               @id @db.Uuid()
   email               String               @unique @db.VarChar()
-  password_hash       String?              @db.VarChar()
   mfa_required        Boolean
-  provider            String               @db.VarChar()
-  provider_id         String?              @db.Uuid()
   status              String               @db.VarChar()
   last_login_at       DateTime?
   is_superuser        Boolean
@@ -39,8 +36,21 @@ model Identity {
   mfaCodes            MfaCode[]
   passwordResetTokens PasswordResetToken[]
   refreshTokens       RefreshToken[]
+  identityCredentials IdentityCredential[]
+}
+
+model IdentityCredential {
+  id            String   @id @db.Uuid()
+  identity_id   String   @db.Uuid()
+  provider      String   @db.VarChar()
+  provider_id   String?  @db.VarChar()
+  password_hash String?  @db.VarChar()
+  created_at    DateTime
+  updated_at    DateTime
+  identity      Identity @relation(fields: [identity_id], references: [id])
 
   @@unique([provider, provider_id])
+  @@unique([identity_id, provider])
 }
 
 model Profile {

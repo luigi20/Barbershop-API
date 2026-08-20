@@ -11,8 +11,7 @@ import {
 
 export class EntityMembershipCreateDTO {
   @IsString()
-  @IsDate()
-  birth_date: Date;
+  birth_date: string;
 
   @IsEmail()
   email: string;

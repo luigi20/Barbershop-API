@@ -9,6 +9,7 @@ import { PrismaService } from 'infra/database/prisma/prisma.service';
 import { randomUUID } from 'crypto';
 import { EntityCustomerCreateService } from '../services/entity_customer_create.service';
 import { InMemoryEntityCustomerRepository } from '@modules/business/entity_customer/shared/repositories/test/in-memory-entitycustomer-repository';
+import { InMemoryIdentityCredentialRepository } from '@modules/auth/identity_credential/shared/repositories/test/in-memory-identity-credential-repository';
 
 jest.mock('argon2');
 describe('Test in route create customer', () => {
@@ -16,6 +17,7 @@ describe('Test in route create customer', () => {
   let profile_repository: InMemoryProfileRepository;
   let identity_repository: InMemoryIdentityRepository;
   let entity_member_customer_repository: InMemoryEntityCustomerRepository;
+  let identity_credential_repository: InMemoryIdentityCredentialRepository;
   const prismaMock = {
     getPrismaClient: jest.fn(),
     $transaction: jest.fn(async (callback) => {
@@ -29,6 +31,7 @@ describe('Test in route create customer', () => {
     profile_repository = new InMemoryProfileRepository();
     entity_member_customer_repository = new InMemoryEntityCustomerRepository();
     identity_repository = new InMemoryIdentityRepository();
+    identity_credential_repository = new InMemoryIdentityCredentialRepository();
   });
 
   it('should not create member, because tenant not exists', async () => {
@@ -38,10 +41,11 @@ describe('Test in route create customer', () => {
       entity_repository,
       identity_repository,
       prismaMock,
+      identity_credential_repository,
     );
     expect(
       entityCustomerCreateService.execute({
-        birth_date: new Date(),
+        birth_date: '12/04/1997',
         email: 'l@gmail.com',
         entity_id: randomUUID(),
         mfa_required: false,
@@ -61,10 +65,11 @@ describe('Test in route create customer', () => {
       entity_repository,
       identity_repository,
       prismaMock,
+      identity_credential_repository,
     );
     expect(
       entityCustomerCreateService.execute({
-        birth_date: new Date(),
+        birth_date: '15/02/1978',
         email: 'l@gmail.com',
         entity_id: randomUUID(),
         mfa_required: false,
@@ -93,10 +98,11 @@ describe('Test in route create customer', () => {
       entity_repository,
       identity_repository,
       prismaMock,
+      identity_credential_repository,
     );
     expect(
       entityCustomerCreateService.execute({
-        birth_date: new Date(),
+        birth_date: '23/02/1976',
         email: 'l@gmail.com',
         entity_id: '123',
         mfa_required: false,
@@ -126,9 +132,10 @@ describe('Test in route create customer', () => {
       entity_repository,
       identity_repository,
       prismaMock,
+      identity_credential_repository,
     );
     const result = await entityCustomerCreateService.execute({
-      birth_date: new Date(),
+      birth_date: '08/09/2000',
       email: 'l@gmail.com',
       entity_id: '123',
       mfa_required: false,
@@ -172,9 +179,10 @@ describe('Test in route create customer', () => {
       entity_repository,
       identity_repository,
       prismaMock,
+      identity_credential_repository,
     );
     const result = await entityCustomerCreateService.execute({
-      birth_date: new Date(),
+      birth_date: '16/08/1987',
       email: 'l@gmail.com',
       entity_id: '123',
       mfa_required: false,

@@ -5,9 +5,6 @@ export class IdentityMapper {
     return {
       id: identity.id,
       email: identity.email,
-      password_hash: identity.password_hash,
-      provider: identity.provider,
-      provider_id: identity.provider_id,
       mfa_required: identity.mfa_required,
       last_login_at: identity.last_login_at,
       is_superuser: identity.is_superuser,
@@ -20,10 +17,7 @@ export class IdentityMapper {
   static toDomain(raw: PrismaIdentity): Identity {
     return new Identity(
       {
-        provider_id: raw.provider_id,
-        provider: raw.provider,
         email: raw.email,
-        password_hash: raw.password_hash,
         mfa_required: raw.mfa_required,
         status: raw.status,
         last_login_at: raw.last_login_at,
