@@ -1,31 +1,67 @@
-import { IsEmail, IsOptional, IsString } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsDateString, IsEmail, IsString } from 'class-validator';
 
 export class SignUpDTO {
-  @IsString()
-  name: string;
-
-  @IsString()
-  password: string;
-
-  @IsString()
-  entity_type: string;
-
-  @IsString()
-  entity_name: string;
-
+  @ApiProperty({
+    description: 'E-mail do usuário.',
+    example: 'usuario@email.com',
+  })
   @IsEmail()
   email: string;
 
+  @ApiProperty({
+    description: 'Nome do usuário.',
+    example: 'Luís Antonio',
+  })
+  @IsString()
+  name: string;
+
+  @ApiProperty({
+    description: 'Senha da conta.',
+    example: 'Senha@123456',
+  })
+  @IsString()
+  password: string;
+
+  @ApiProperty({
+    description: 'Nome da entidade que será criada.',
+    example: 'Barbearia do Luís',
+  })
+  @IsString()
+  entity_name: string;
+
+  @ApiProperty({
+    description: 'Data de nascimento.',
+    example: '1995-05-20',
+  })
+  @IsDateString()
+  birth_date: string;
+
+  @ApiProperty({
+    description: 'Telefone do usuário.',
+    example: '+5579999999999',
+  })
   @IsString()
   phone: string;
 
-  @IsOptional()
+  @ApiProperty({
+    description: 'URL da foto do perfil.',
+    example: 'https://ik.imagekit.io/seu_usuario/profile.jpg',
+  })
   @IsString()
   photo: string;
 
+  @ApiProperty({
+    description: 'Tipo da entidade.',
+    example: 'BARBERSHOP',
+  })
+  @IsString()
+  entity_type: string;
+
+  @ApiProperty({
+    description: 'Documento da entidade.',
+    example: '12345678000199',
+  })
   @IsString()
   document: string;
-
-  @IsString()
-  birth_date: string;
 }

@@ -1,4 +1,10 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { EntityCustomerCreateService } from '../services/entity_customer_create.service';
 import { AuthGuard } from '@modules/auth/guards/auth_guard';
 import { TokenTypeRequired } from '@modules/auth/decorators/token-type.decorator';
@@ -8,6 +14,8 @@ import { Roles } from '@modules/auth/decorators/roles.decorator';
 import { EntityCustomerCreateDTO } from '../dto/entity_customer_createDTO';
 import { Entity_Customer_View_Model } from '@modules/business/entity_customer/shared/view-models/entity-customer-view-model';
 
+@ApiTags('Entity Customer')
+@ApiBearerAuth('access-token')
 @UseGuards(AuthGuard, RolesGuard)
 @TokenTypeRequired(TokenType.ACCESS)
 @Roles(MemberRole.ADMINISTRADOR, MemberRole.RECEPCIONISTA)
@@ -18,6 +26,31 @@ export class EntityCustomerCreateController {
   ) {}
 
   @Post('create')
+  @ApiOperation({
+    summary: 'Criar cliente',
+    description: 'Cria um novo cliente vinculado a uma entidade.',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Cliente criado com sucesso.',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Dados do cliente inválidos.',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token de acesso inválido, expirado ou ausente.',
+  })
+  @ApiResponse({
+    status: 403,
+    description:
+      'Usuário não possui permissão de administrador ou recepcionista.',
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'Cliente já cadastrado.',
+  })
   public async Members(@Body() data: EntityCustomerCreateDTO) {
     const result = await this.entityCustomerCreateService.execute({
       birth_date: data.birth_date,
@@ -30,6 +63,7 @@ export class EntityCustomerCreateController {
       photo: data.photo,
       notes: data.notes,
     });
+
     return Entity_Customer_View_Model.toHttp(result);
   }
 }

@@ -1,4 +1,11 @@
 import { Body, Controller, Put, Req, UseGuards } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { EntityMembershipUpdateService } from '../services/entity_membership_update.service';
 import { AuthGuard } from '@modules/auth/guards/auth_guard';
 import { TokenTypeRequired } from '@modules/auth/decorators/token-type.decorator';
@@ -9,6 +16,8 @@ import { EntityMembershipUpdateDTO } from '../dto/entity_membership_updateDTO';
 import { Entity_Membership_View_Model } from '@modules/business/entity_membership/shared/view-models/entity-membership-view-model';
 import { AuthRequest } from '@modules/utils/types/types';
 
+@ApiTags('Entity Membership')
+@ApiBearerAuth('access-token')
 @UseGuards(AuthGuard, RolesGuard)
 @TokenTypeRequired(TokenType.ACCESS)
 @Roles(MemberRole.ADMINISTRADOR, MemberRole.RECEPCIONISTA)
@@ -18,7 +27,34 @@ export class EntityMembershipUpdateController {
     private readonly entityMembershipUpdateService: EntityMembershipUpdateService,
   ) {}
 
-  @Put('update/:id')
+  @Put('update')
+  @ApiOperation({
+    summary: 'Atualizar membro',
+    description: 'Atualiza os dados de um membro da entidade.',
+  })
+  @ApiBody({
+    type: EntityMembershipUpdateDTO,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Membro atualizado com sucesso.',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Dados do membro inválidos.',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token de acesso inválido, expirado ou ausente.',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Usuário não possui permissão para atualizar o membro.',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Membro não encontrado.',
+  })
   public async Members(
     @Body() data: EntityMembershipUpdateDTO,
     @Req() req: AuthRequest,

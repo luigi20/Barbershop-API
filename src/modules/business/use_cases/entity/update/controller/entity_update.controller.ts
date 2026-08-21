@@ -1,4 +1,11 @@
 import { Body, Controller, Param, Put, UseGuards } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AuthGuard } from '@modules/auth/guards/auth_guard';
 import { RolesGuard } from '@modules/auth/guards/roles_guards';
 import { TokenTypeRequired } from '@modules/auth/decorators/token-type.decorator';
@@ -9,6 +16,8 @@ import { EntityUpdateDTO } from '../dto/entityUpdateDTO';
 import { EntityUpdateService } from '../service/entity_update.service';
 import { EntityViewModel } from '@modules/auth/entity/shared/view-models/entity-view-model';
 
+@ApiTags('Entity')
+@ApiBearerAuth('access-token')
 @UseGuards(AuthGuard, RolesGuard, SuperUserGuard)
 @TokenTypeRequired(TokenType.ACCESS)
 @Roles(MemberRole.ADMINISTRADOR)
@@ -17,6 +26,36 @@ export class EntityUpdateController {
   constructor(private readonly entityUpdateService: EntityUpdateService) {}
 
   @Put('update/:id')
+  @ApiOperation({
+    summary: 'Atualizar entidade',
+    description: 'Atualiza os dados de uma entidade existente.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID da entidade que será atualizada.',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Entidade atualizada com sucesso.',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Dados da entidade inválidos.',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token de acesso inválido, expirado ou ausente.',
+  })
+  @ApiResponse({
+    status: 403,
+    description:
+      'Usuário não possui permissão de administrador ou não é superusuário.',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Entidade não encontrada.',
+  })
   public async EntityUpdate(
     @Body() data: EntityUpdateDTO,
     @Param('id') id: string,
@@ -29,8 +68,9 @@ export class EntityUpdateController {
       name: data.name,
       photo: data.photo,
       type: data.type,
-      id: id,
+      id,
     });
+
     return EntityViewModel.toHttp(result);
   }
 }

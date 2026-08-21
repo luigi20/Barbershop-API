@@ -1,4 +1,12 @@
 import { Body, Controller, Param, Put, UseGuards } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AuthGuard } from '@modules/auth/guards/auth_guard';
 import { RolesGuard } from '@modules/auth/guards/roles_guards';
 import { TokenTypeRequired } from '@modules/auth/decorators/token-type.decorator';
@@ -9,6 +17,8 @@ import { PlanViewModel } from '@modules/business/plan/shared/view-models/plan-vi
 import { PlanUpdateService } from '../service/plan_update.service';
 import { PlanUpdateDTO } from '../dto/planUpdateDTO';
 
+@ApiTags('Plan')
+@ApiBearerAuth('access-token')
 @UseGuards(AuthGuard, RolesGuard, SuperUserGuard)
 @TokenTypeRequired(TokenType.ACCESS)
 @Roles(MemberRole.ADMINISTRADOR)
@@ -17,6 +27,39 @@ export class PlanUpdateController {
   constructor(private readonly planUpdateService: PlanUpdateService) {}
 
   @Put('update/:id')
+  @ApiOperation({
+    summary: 'Atualizar plano',
+    description: 'Atualiza os dados de um plano existente.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID do plano que será atualizado.',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+  })
+  @ApiBody({
+    type: PlanUpdateDTO,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Plano atualizado com sucesso.',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Dados do plano inválidos.',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token de acesso inválido, expirado ou ausente.',
+  })
+  @ApiResponse({
+    status: 403,
+    description:
+      'Usuário não possui permissão de administrador ou não é superusuário.',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Plano não encontrado.',
+  })
   public async PlanUpdate(
     @Body() data: PlanUpdateDTO,
     @Param('id') id: string,
@@ -29,7 +72,7 @@ export class PlanUpdateController {
       name: data.name,
       price: data.price,
       description: data.description ? data.description : null,
-      id: id,
+      id,
     });
     return PlanViewModel.toHttp(result);
   }
