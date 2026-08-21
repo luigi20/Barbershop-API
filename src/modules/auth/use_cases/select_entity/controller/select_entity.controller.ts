@@ -38,9 +38,10 @@ export class SelectEntityController {
     description: 'Token de desafio inválido, expirado ou ausente.',
   })
   public async SelectEntity(@Body() data: Select_EntityDTO) {
-    await this.selectEntityService.execute({
+    const result = await this.selectEntityService.execute({
       login_token: data.login_token,
       entity_id: data.entity_id,
     });
+    return result;
   }
 }

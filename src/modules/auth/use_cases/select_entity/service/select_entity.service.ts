@@ -17,14 +17,12 @@ export interface ISelectEntityRequest {
 interface ILoginTokenPayload {
   sub: string;
   profile_id: string;
-  entity_id: string;
-  code: string;
   type: string;
   mfa_pending: boolean;
   iss: string;
 }
 
-interface ISelectEntityResponse {
+export interface ISelectEntityResponse {
   mfa_required: boolean;
   mfa_token?: string;
   access_token?: string;
@@ -49,7 +47,7 @@ export class SelectEntityService {
     let payload: ILoginTokenPayload;
     try {
       payload = this.jwt_service.verify<ILoginTokenPayload>(login_token);
-    } catch {
+    } catch (error) {
       throw new AppError('Token de login inválido ou expirado', 401);
     }
     if (payload.type !== 'challenge')
