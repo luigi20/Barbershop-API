@@ -8,7 +8,7 @@ import { Profile } from '@modules/auth/profile/shared/models/profile';
 import { PrismaService } from 'infra/database/prisma/prisma.service';
 import { IEntityCustomerRepository } from '@modules/business/entity_customer/shared/repositories/abstract_class/ientitycustomer-repository';
 import { Entity_Customer } from '@modules/business/entity_customer/shared/models/entity_customer';
-import { Identity_Credential } from '@modules/auth/identity_credential/shared/models/identity_credential';
+
 interface IMembersRequest {
   entity_id: string;
   email: string;

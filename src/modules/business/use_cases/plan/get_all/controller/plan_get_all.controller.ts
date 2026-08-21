@@ -1,4 +1,11 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+
 import { AuthGuard } from '@modules/auth/guards/auth_guard';
 import { RolesGuard } from '@modules/auth/guards/roles_guards';
 import { TokenTypeRequired } from '@modules/auth/decorators/token-type.decorator';
@@ -7,6 +14,8 @@ import { Roles } from '@modules/auth/decorators/roles.decorator';
 import { PlanViewModel } from '@modules/business/plan/shared/view-models/plan-view-model';
 import { PlanGetAllService } from '../service/plan_get_all.service';
 
+@ApiTags('Plan')
+@ApiBearerAuth('access-token')
 @UseGuards(AuthGuard, RolesGuard)
 @TokenTypeRequired(TokenType.ACCESS)
 @Roles(MemberRole.ADMINISTRADOR)
@@ -15,6 +24,22 @@ export class PlanGetAllController {
   constructor(private readonly planGetAllService: PlanGetAllService) {}
 
   @Get('get_all')
+  @ApiOperation({
+    summary: 'Listar planos',
+    description: 'Retorna todos os planos cadastrados.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Planos retornados com sucesso.',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token de acesso inválido, expirado ou ausente.',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Usuário não possui a role de administrador.',
+  })
   public async PlanGetAll() {
     const result = await this.planGetAllService.execute();
     return result.map((item) => PlanViewModel.toHttp(item));

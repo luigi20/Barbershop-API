@@ -1,12 +1,18 @@
-import { IsEmail, IsString } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsString } from 'class-validator';
 
 export class Social_LoginDTO {
-  @IsString()
-  token: string;
-
+  @ApiProperty({
+    description: 'Provedor de autenticação social.',
+    example: 'google',
+  })
   @IsString()
   provider: string;
 
+  @ApiProperty({
+    description: 'Token fornecido pelo provedor de autenticação.',
+    example: 'eyJhbGciOiJSUzI1NiIsImtpZCI6...',
+  })
   @IsString()
-  context_id: string;
+  token: string;
 }
