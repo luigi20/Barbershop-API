@@ -7,13 +7,13 @@ import {
 } from '@nestjs/swagger';
 import { RefreshTokenDTO } from '../dto/refresh-tokenDTO';
 import { RefreshTokenService } from '../service/refresh-token.service';
-import { AuthGuard } from '@modules/auth/guards/auth_guard';
 import { TokenTypeRequired } from '@modules/auth/decorators/token-type.decorator';
 import { TokenType } from '@modules/utils/enum';
+import { AuthGuardRefresh } from '@modules/auth/guards/auth_guard_refresh';
 
 @ApiTags('Auth')
 @ApiBearerAuth('access-token')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuardRefresh)
 @TokenTypeRequired(TokenType.REFRESH)
 @Controller('auth')
 export class RefreshTokenController {

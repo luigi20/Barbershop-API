@@ -7,7 +7,6 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { EntityMembershipUpdateService } from '../services/entity_membership_update.service';
-import { AuthGuard } from '@modules/auth/guards/auth_guard';
 import { TokenTypeRequired } from '@modules/auth/decorators/token-type.decorator';
 import { MemberRole, TokenType } from '@modules/utils/enum';
 import { RolesGuard } from '@modules/auth/guards/roles_guards';
@@ -15,10 +14,11 @@ import { Roles } from '@modules/auth/decorators/roles.decorator';
 import { EntityMembershipUpdateDTO } from '../dto/entity_membership_updateDTO';
 import { Entity_Membership_View_Model } from '@modules/business/entity_membership/shared/view-models/entity-membership-view-model';
 import { AuthRequest } from '@modules/utils/types/types';
+import { AuthGuardAccess } from '@modules/auth/guards/auth_guard_access';
 
 @ApiTags('Entity Membership')
 @ApiBearerAuth('access-token')
-@UseGuards(AuthGuard, RolesGuard)
+@UseGuards(AuthGuardAccess, RolesGuard)
 @TokenTypeRequired(TokenType.ACCESS)
 @Roles(MemberRole.ADMINISTRADOR, MemberRole.RECEPCIONISTA)
 @Controller('entity_membership')

@@ -1,28 +1,20 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
-
 import {
   ApiBearerAuth,
   ApiOperation,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-
 import { ValidateMFAService } from '../services/validate-MFA-service';
-
 import { ValidateMFADTO } from '../dto/validate-mfa-DTO';
-
-import { AuthRequest } from '@modules/utils/types/types';
-
-import { AuthGuard } from '@modules/auth/guards/auth_guard';
-
 import { TokenTypeRequired } from '@modules/auth/decorators/token-type.decorator';
-
 import { TokenType } from '@modules/utils/enum';
+import { AuthGuardMFA } from '@modules/auth/guards/auth_guard_mfa';
 
 @ApiTags('MFA')
 @ApiBearerAuth('access-token')
-@UseGuards(AuthGuard)
-@TokenTypeRequired(TokenType.CHALLENGE, TokenType.MFA)
+@UseGuards(AuthGuardMFA)
+@TokenTypeRequired(TokenType.MFA)
 @Controller('auth')
 export class ValidateMFAController {
   constructor(private readonly validate_MFA_service: ValidateMFAService) {}
@@ -50,7 +42,6 @@ export class ValidateMFAController {
       code: data.code,
       mfa_token: data.token,
     });
-
     return result;
   }
 }

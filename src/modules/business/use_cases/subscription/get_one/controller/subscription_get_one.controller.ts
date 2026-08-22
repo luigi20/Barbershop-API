@@ -6,17 +6,17 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { AuthGuard } from '@modules/auth/guards/auth_guard';
 import { RolesGuard } from '@modules/auth/guards/roles_guards';
 import { TokenTypeRequired } from '@modules/auth/decorators/token-type.decorator';
 import { MemberRole, TokenType } from '@modules/utils/enum';
 import { Roles } from '@modules/auth/decorators/roles.decorator';
 import { SubscriptionViewModel } from '@modules/business/subscription/shared/view-models/subscription-view-model';
 import { SubscriptionGetOneService } from '../service/subscription_get_one.service';
+import { AuthGuardAccess } from '@modules/auth/guards/auth_guard_access';
 
 @ApiTags('Subscription')
 @ApiBearerAuth('access-token')
-@UseGuards(AuthGuard, RolesGuard)
+@UseGuards(AuthGuardAccess, RolesGuard)
 @TokenTypeRequired(TokenType.ACCESS)
 @Roles(MemberRole.ADMINISTRADOR)
 @Controller('subscription')

@@ -7,13 +7,13 @@ import {
 } from '@nestjs/swagger';
 import { SelectEntityService } from '../service/select_entity.service';
 import { Select_EntityDTO } from '../dto/select_entityDTO';
-import { AuthGuard } from '@modules/auth/guards/auth_guard';
 import { TokenTypeRequired } from '@modules/auth/decorators/token-type.decorator';
 import { TokenType } from '@modules/utils/enum';
+import { AuthGuardChallenge } from '@modules/auth/guards/auth_guard_challenge';
 
 @ApiTags('Auth')
 @ApiBearerAuth('access-token')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuardChallenge)
 @TokenTypeRequired(TokenType.CHALLENGE)
 @Controller('auth')
 export class SelectEntityController {
