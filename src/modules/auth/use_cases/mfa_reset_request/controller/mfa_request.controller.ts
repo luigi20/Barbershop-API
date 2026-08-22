@@ -1,26 +1,20 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
-
 import {
   ApiBearerAuth,
   ApiOperation,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-
 import { MFARequestDTO } from '../dto/mfa_requestDTO';
-
 import { MFARequestService } from '../service/mfa_request.service';
-
-import { AuthGuard } from '@modules/auth/guards/auth_guard';
-
 import { TokenTypeRequired } from '@modules/auth/decorators/token-type.decorator';
-
 import { TokenType } from '@modules/utils/enum';
+import { AuthGuardAccess } from '@modules/auth/guards/auth_guard_access';
 
 @ApiTags('MFA')
 @ApiBearerAuth('access-token')
-@UseGuards(AuthGuard)
-@TokenTypeRequired(TokenType.MFA, TokenType.LOGIN)
+@UseGuards(AuthGuardAccess)
+@TokenTypeRequired(TokenType.ACCESS)
 @Controller('auth')
 export class MFARequestController {
   constructor(private readonly mfaRequestService: MFARequestService) {}
@@ -46,7 +40,6 @@ export class MFARequestController {
     const result = await this.mfaRequestService.execute({
       email: data.email,
     });
-
     return result;
   }
 }

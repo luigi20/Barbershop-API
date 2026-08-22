@@ -7,7 +7,6 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { AuthGuard } from '@modules/auth/guards/auth_guard';
 import { RolesGuard } from '@modules/auth/guards/roles_guards';
 import { TokenTypeRequired } from '@modules/auth/decorators/token-type.decorator';
 import { MemberRole, TokenType } from '@modules/utils/enum';
@@ -15,10 +14,11 @@ import { Roles } from '@modules/auth/decorators/roles.decorator';
 import { SubscriptionUpdateDTO } from '../dto/subscriptionUpdateDTO';
 import { SubscriptionViewModel } from '@modules/business/subscription/shared/view-models/subscription-view-model';
 import { SubscriptionUpdateService } from '../service/subscription_update.service';
+import { AuthGuardAccess } from '@modules/auth/guards/auth_guard_access';
 
 @ApiTags('Subscription')
 @ApiBearerAuth('access-token')
-@UseGuards(AuthGuard, RolesGuard)
+@UseGuards(AuthGuardAccess, RolesGuard)
 @TokenTypeRequired(TokenType.ACCESS)
 @Roles(MemberRole.ADMINISTRADOR)
 @Controller('subscription')
@@ -70,7 +70,6 @@ export class SubscriptionUpdateController {
       status: data.status,
       id,
     });
-
     return SubscriptionViewModel.toHttp(result);
   }
 }

@@ -6,7 +6,6 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { AuthGuard } from '@modules/auth/guards/auth_guard';
 import { RolesGuard } from '@modules/auth/guards/roles_guards';
 import { TokenTypeRequired } from '@modules/auth/decorators/token-type.decorator';
 import { MemberRole, TokenType } from '@modules/utils/enum';
@@ -15,10 +14,11 @@ import { SuperUserGuard } from '@modules/auth/guards/super_user_guard';
 import { EntityUpdateDTO } from '../dto/entityUpdateDTO';
 import { EntityUpdateService } from '../service/entity_update.service';
 import { EntityViewModel } from '@modules/auth/entity/shared/view-models/entity-view-model';
+import { AuthGuardAccess } from '@modules/auth/guards/auth_guard_access';
 
 @ApiTags('Entity')
 @ApiBearerAuth('access-token')
-@UseGuards(AuthGuard, RolesGuard, SuperUserGuard)
+@UseGuards(AuthGuardAccess, RolesGuard, SuperUserGuard)
 @TokenTypeRequired(TokenType.ACCESS)
 @Roles(MemberRole.ADMINISTRADOR)
 @Controller('entity')

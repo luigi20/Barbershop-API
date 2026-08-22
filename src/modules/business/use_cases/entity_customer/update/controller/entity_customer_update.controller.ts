@@ -7,17 +7,17 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { EntityCustomerUpdateService } from '../services/entity_customer_update.service';
-import { AuthGuard } from '@modules/auth/guards/auth_guard';
 import { TokenTypeRequired } from '@modules/auth/decorators/token-type.decorator';
 import { MemberRole, TokenType } from '@modules/utils/enum';
 import { RolesGuard } from '@modules/auth/guards/roles_guards';
 import { Roles } from '@modules/auth/decorators/roles.decorator';
 import { EntityCustomerUpdateDTO } from '../dto/entity_customer_updateDTO';
 import { Entity_Customer_View_Model } from '@modules/business/entity_customer/shared/view-models/entity-customer-view-model';
+import { AuthGuardAccess } from '@modules/auth/guards/auth_guard_access';
 
 @ApiTags('Entity Customer')
 @ApiBearerAuth('access-token')
-@UseGuards(AuthGuard, RolesGuard)
+@UseGuards(AuthGuardAccess, RolesGuard)
 @TokenTypeRequired(TokenType.ACCESS)
 @Roles(MemberRole.ADMINISTRADOR, MemberRole.RECEPCIONISTA)
 @Controller('entity_customer')

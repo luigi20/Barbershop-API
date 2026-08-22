@@ -7,13 +7,13 @@ import {
 } from '@nestjs/swagger';
 import { MFAConfirmDTO } from '../dto/mfa_confirmDTO';
 import { MFAConfirmService } from '../service/mfa_confirm.service';
-import { AuthGuard } from '@modules/auth/guards/auth_guard';
 import { TokenTypeRequired } from '@modules/auth/decorators/token-type.decorator';
 import { TokenType } from '@modules/utils/enum';
+import { AuthGuardMFA } from '@modules/auth/guards/auth_guard_mfa';
 
 @ApiTags('MFA')
 @ApiBearerAuth('access-token')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuardMFA)
 @TokenTypeRequired(TokenType.MFA)
 @Controller('auth')
 export class MFAConfirmController {

@@ -5,11 +5,10 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Reflector } from '@nestjs/core';
 import { AuthRequest } from '@modules/utils/types/types';
 import { MemberRole, TokenType } from '@modules/utils/enum';
-import { TOKEN_TYPE_KEY } from '../decorators/token-type.decorator';
 import { AppError } from '@modules/utils/app_error';
+
 interface IMFATokenPayload {
   sub: string;
   profile_id: string;
@@ -22,12 +21,10 @@ interface IMFATokenPayload {
   photo: string;
   roles: MemberRole[];
 }
+
 @Injectable()
-export class AuthGuard implements CanActivate {
-  constructor(
-    private readonly jwtService: JwtService,
-    private readonly reflector: Reflector,
-  ) {}
+export class AuthGuardMFA implements CanActivate {
+  constructor(private readonly jwtService: JwtService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<AuthRequest>();
@@ -38,14 +35,7 @@ export class AuthGuard implements CanActivate {
     if (!token) throw new AppError('Internal Server Error', 500);
     try {
       const payload = this.jwtService.verify<IMFATokenPayload>(token);
-      const requiredTokenTypes = this.reflector.get<TokenType[]>(
-        TOKEN_TYPE_KEY,
-        context.getHandler(),
-      );
-      if (
-        requiredTokenTypes &&
-        !requiredTokenTypes.includes(payload.type as TokenType)
-      ) {
+      if (payload.type !== TokenType.MFA) {
         throw new UnauthorizedException(
           'Tipo de token inválido para esta rota',
         );

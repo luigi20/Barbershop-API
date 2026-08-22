@@ -7,14 +7,14 @@ import {
 } from '@nestjs/swagger';
 import { GenerateMFAService } from '../services/generate-mfa-service';
 import { GenerateMFADTO } from '../dto/generate-mfa-DTO';
-import { AuthGuard } from '@modules/auth/guards/auth_guard';
 import { TokenTypeRequired } from '@modules/auth/decorators/token-type.decorator';
 import { TokenType } from '@modules/utils/enum';
+import { AuthGuardMFA } from '@modules/auth/guards/auth_guard_mfa';
 
 @ApiTags('MFA')
 @ApiBearerAuth('access-token')
-@UseGuards(AuthGuard)
-@TokenTypeRequired(TokenType.CHALLENGE, TokenType.MFA)
+@UseGuards(AuthGuardMFA)
+@TokenTypeRequired(TokenType.MFA)
 @Controller('auth')
 export class GenerateMFAController {
   constructor(private readonly generate_MFA_service: GenerateMFAService) {}

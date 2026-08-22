@@ -14,15 +14,15 @@ import {
 } from '@nestjs/swagger';
 import { LogoutService } from '../service/logout.service';
 import { LogoutDTO } from '../dto/logoutDTO';
-import { AuthGuard } from '@modules/auth/guards/auth_guard';
 import { TokenTypeRequired } from '@modules/auth/decorators/token-type.decorator';
 import { MemberRole, TokenType } from '@modules/utils/enum';
 import { RolesGuard } from '@modules/auth/guards/roles_guards';
 import { Roles } from '@modules/auth/decorators/roles.decorator';
+import { AuthGuardAccess } from '@modules/auth/guards/auth_guard_access';
 
 @ApiTags('Auth')
 @ApiBearerAuth('access-token')
-@UseGuards(AuthGuard, RolesGuard)
+@UseGuards(AuthGuardAccess, RolesGuard)
 @TokenTypeRequired(TokenType.ACCESS)
 @Roles(
   MemberRole.ADMINISTRADOR,

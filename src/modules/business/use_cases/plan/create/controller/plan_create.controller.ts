@@ -1,5 +1,4 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
-
 import {
   ApiBearerAuth,
   ApiBody,
@@ -7,28 +6,19 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-
 import { PlanCreateService } from '../service/plan_create.service';
-
-import { AuthGuard } from '@modules/auth/guards/auth_guard';
-
 import { RolesGuard } from '@modules/auth/guards/roles_guards';
-
 import { TokenTypeRequired } from '@modules/auth/decorators/token-type.decorator';
-
 import { MemberRole, TokenType } from '@modules/utils/enum';
-
 import { Roles } from '@modules/auth/decorators/roles.decorator';
-
 import { SuperUserGuard } from '@modules/auth/guards/super_user_guard';
-
 import { PlanViewModel } from '@modules/business/plan/shared/view-models/plan-view-model';
-
 import { PlanCreateDTO } from '../dto/planCreateDTO';
+import { AuthGuardAccess } from '@modules/auth/guards/auth_guard_access';
 
 @ApiTags('Plan')
 @ApiBearerAuth('access-token')
-@UseGuards(AuthGuard, RolesGuard, SuperUserGuard)
+@UseGuards(AuthGuardAccess, RolesGuard, SuperUserGuard)
 @TokenTypeRequired(TokenType.ACCESS)
 @Roles(MemberRole.ADMINISTRADOR)
 @Controller('plan')
@@ -73,7 +63,6 @@ export class PlanCreateController {
       price: data.price,
       description: data.description ? data.description : null,
     });
-
     return PlanViewModel.toHttp(result);
   }
 }
