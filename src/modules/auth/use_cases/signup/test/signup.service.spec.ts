@@ -8,6 +8,7 @@ import { InMemoryProfileRepository } from '@modules/auth/profile/shared/reposito
 import { PrismaService } from 'infra/database/prisma/prisma.service';
 import { InMemoryEntityMembershipRepository } from '@modules/business/entity_membership/shared/repositories/test/in-memory-entitymembership-repository';
 import { InMemoryIdentityCredentialRepository } from '@modules/auth/identity_credential/shared/repositories/test/in-memory-identity-credential-repository';
+import { InMemoryAddressRepository } from '@modules/auth/address/shared/repositories/test/in-memory-address-repository';
 
 describe('Test in route signup', () => {
   let entity_repository: InMemoryEntityRepository;
@@ -15,6 +16,7 @@ describe('Test in route signup', () => {
   let profile_repository: InMemoryProfileRepository;
   let entity_membership_repository: InMemoryEntityMembershipRepository;
   let identity_credential_repository: InMemoryIdentityCredentialRepository;
+  let address_repository: InMemoryAddressRepository;
   const prismaMock = {
     getPrismaClient: jest.fn().mockReturnValue({
       $transaction: jest.fn(async (callback) => callback({})),
@@ -22,6 +24,12 @@ describe('Test in route signup', () => {
   } as unknown as PrismaService;
   const email_service_mock = {
     send: jest.fn().mockResolvedValue(undefined),
+  };
+  const geocoding_service_mock = {
+    geocode: jest.fn().mockResolvedValue({
+      latitude: -10.9472,
+      longitude: -37.0731,
+    }),
   };
   beforeEach(() => {
     jest.clearAllMocks();
@@ -31,6 +39,7 @@ describe('Test in route signup', () => {
     profile_repository = new InMemoryProfileRepository();
     entity_membership_repository = new InMemoryEntityMembershipRepository();
     identity_credential_repository = new InMemoryIdentityCredentialRepository();
+    address_repository = new InMemoryAddressRepository();
   });
 
   it('should not add signup, because password is invalid', async () => {
@@ -42,6 +51,8 @@ describe('Test in route signup', () => {
       entity_membership_repository,
       identity_credential_repository,
       email_service_mock,
+      address_repository,
+      geocoding_service_mock,
     );
     expect(
       signUpService.execute({
@@ -54,6 +65,14 @@ describe('Test in route signup', () => {
         name: 'Luis',
         photo: null,
         document: '2324242',
+        city: 'Aracaju',
+        complement: 'opa',
+        country: 'Brazil',
+        neighborhood: 'opaaa',
+        number: '34',
+        state: 'SP',
+        street: 'rua',
+        zip_code: '5656569565',
       }),
     ).rejects.toThrow(new AppError('Senha inválida', 400));
   });
@@ -80,6 +99,8 @@ describe('Test in route signup', () => {
       entity_membership_repository,
       identity_credential_repository,
       email_service_mock,
+      address_repository,
+      geocoding_service_mock,
     );
     expect(
       signUpService.execute({
@@ -92,6 +113,14 @@ describe('Test in route signup', () => {
         entity_type: 'barbershop',
         phone: '3224343434',
         photo: null,
+        city: 'Aracaju',
+        complement: 'opa',
+        country: 'Brazil',
+        neighborhood: 'opaaa',
+        number: '34',
+        state: 'SP',
+        street: 'rua',
+        zip_code: '5656569565',
       }),
     ).rejects.toThrow(new AppError('Usuário já cadastrado no sistema', 400));
   });
@@ -109,6 +138,8 @@ describe('Test in route signup', () => {
       entity_membership_repository,
       identity_credential_repository,
       email_service_mock,
+      address_repository,
+      geocoding_service_mock,
     );
     expect(
       signUpService.execute({
@@ -121,6 +152,14 @@ describe('Test in route signup', () => {
         entity_type: 'barbershop',
         phone: '3224343434',
         photo: null,
+        city: 'Aracaju',
+        complement: 'opa',
+        country: 'Brazil',
+        neighborhood: 'opaaa',
+        number: '34',
+        state: 'SP',
+        street: 'rua',
+        zip_code: '5656569565',
       }),
     ).rejects.toThrow(
       new AppError(
@@ -139,6 +178,8 @@ describe('Test in route signup', () => {
       entity_membership_repository,
       identity_credential_repository,
       email_service_mock,
+      address_repository,
+      geocoding_service_mock,
     );
     const msg = await signUpService.execute({
       email: 'luisfoco@gmail.com',
@@ -150,6 +191,14 @@ describe('Test in route signup', () => {
       entity_type: 'barbershop',
       phone: '3224343434',
       photo: null,
+      city: 'Aracaju',
+      complement: 'opa',
+      country: 'Brazil',
+      neighborhood: 'opaaa',
+      number: '34',
+      state: 'SP',
+      street: 'rua',
+      zip_code: '5656569565',
     });
     expect(msg).toBe('Usuário cadastrado com sucesso');
     expect(entity_repository.list_entity).toHaveLength(1);

@@ -61,6 +61,10 @@ import { IIdentityCredentialRepository } from '../identity_credential/shared/rep
 import { IdentityCredentialRepository } from '../identity_credential/shared/repositories/identity-credential-repository';
 import { IEmailService } from 'infra/email/abstract class/IEmailService';
 import { ResendEmailService } from 'infra/email/services/resend_email_service';
+import { GeoapifyGeocodingService } from 'infra/geolocalization/service/geoapify_geocoding.service';
+import { IAddressRepository } from '../address/shared/repositories/abstract_class/iaddress-repository';
+import { AddressRepository } from '../address/shared/repositories/address-repository';
+import { IGeocodingService } from 'infra/geolocalization/interface/IGeocoding.service';
 
 @Module({
   imports: [
@@ -135,6 +139,10 @@ import { ResendEmailService } from 'infra/email/services/resend_email_service';
       provide: IRefreshTokensRepository,
       useClass: RefreshTokensRepository,
     },
+    {
+      provide: IAddressRepository,
+      useClass: AddressRepository,
+    },
     IdentityProviderService,
     GoogleProviderService,
     GoogleOAuthClientService,
@@ -157,6 +165,10 @@ import { ResendEmailService } from 'infra/email/services/resend_email_service';
     EntityMembershipUpdateService,
     EntityMembershipGetAllService,
     EntityMembershipGetOneService,
+    {
+      provide: IGeocodingService,
+      useClass: GeoapifyGeocodingService,
+    },
   ],
   exports: [JwtModule, AuthModule],
 })

@@ -84,7 +84,7 @@ export class SignInService {
       } else {
         entitiesMap.set(customer.entity_id, {
           id: customer.entity_id,
-          entity_name: customer.name,
+          entity_name: customer.entity_name,
           roles: ['cliente'],
         });
       }

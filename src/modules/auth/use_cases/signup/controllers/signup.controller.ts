@@ -36,6 +36,14 @@ export class SignUpController {
       photo: data.photo,
       entity_type: data.entity_type,
       document: data.document,
+      city: data.city,
+      complement: data.complement,
+      country: data.country,
+      neighborhood: data.neighborhood,
+      number: data.number,
+      state: data.state,
+      street: data.street,
+      zip_code: data.zip_code,
     });
   }
 }

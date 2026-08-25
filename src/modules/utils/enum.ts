@@ -42,9 +42,9 @@ export enum MembershipStatus {
 }
 
 export enum TokenType {
-  LOGIN = 'login_token',
-  MFA = 'mfa_token',
-  ACCESS = 'access_token',
+  LOGIN = 'login',
+  MFA = 'mfa',
+  ACCESS = 'access',
   CHALLENGE = 'challenge',
   REFRESH = 'refresh',
 }

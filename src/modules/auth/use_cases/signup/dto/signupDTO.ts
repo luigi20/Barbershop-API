@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsEmail, IsString } from 'class-validator';
+import { IsDateString, IsEmail, IsOptional, IsString } from 'class-validator';
 
 export class SignUpDTO {
   @ApiProperty({
@@ -64,4 +64,62 @@ export class SignUpDTO {
   })
   @IsString()
   document: string;
+
+  @ApiProperty({
+    description: 'CEP do endereço da entidade.',
+    example: '49000-000',
+  })
+  @IsString()
+  zip_code: string;
+
+  @ApiProperty({
+    description: 'Rua do endereço da entidade.',
+    example: 'Rua João Pessoa',
+  })
+  @IsString()
+  street: string;
+
+  @ApiProperty({
+    description: 'Número do endereço da entidade.',
+    example: '123',
+  })
+  @IsString()
+  number: string;
+
+  @ApiProperty({
+    description: 'Complemento do endereço da entidade.',
+    example: 'Sala 2',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  complement?: string;
+
+  @ApiProperty({
+    description: 'Bairro do endereço da entidade.',
+    example: 'Centro',
+  })
+  @IsString()
+  neighborhood: string;
+
+  @ApiProperty({
+    description: 'Cidade do endereço da entidade.',
+    example: 'Aracaju',
+  })
+  @IsString()
+  city: string;
+
+  @ApiProperty({
+    description: 'Estado do endereço da entidade.',
+    example: 'SE',
+  })
+  @IsString()
+  state: string;
+
+  @ApiProperty({
+    description: 'País do endereço da entidade.',
+    example: 'BR',
+  })
+  @IsString()
+  country: string;
 }

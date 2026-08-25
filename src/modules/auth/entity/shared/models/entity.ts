@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 import { Replace } from '@utils/helper';
-import { EntityStatus, EntityType } from '@modules/utils/enum';
+import { Address } from '@modules/auth/address/shared/models/address';
 
 export interface Entity_Props {
   email: string;
@@ -12,6 +12,7 @@ export interface Entity_Props {
   phone: string;
   photo: string;
   status: string;
+  address: Address;
 }
 
 export class Entity {
@@ -28,6 +29,7 @@ export class Entity {
         email?: string;
         phone?: string;
         photo?: string;
+        address?: Address;
       }
     >,
     id?: string,
@@ -41,11 +43,20 @@ export class Entity {
       email: props.email ?? null,
       phone: props.phone ?? null,
       photo: props.photo ?? null,
+      address: props.address ?? null,
     };
   }
 
   public get _id() {
     return this.id;
+  }
+
+  public get address(): Address {
+    return this.props.address;
+  }
+
+  public set address(address: Address) {
+    this.props.address = address;
   }
 
   public get email(): string {

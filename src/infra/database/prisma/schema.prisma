@@ -21,6 +21,25 @@ model Entity {
   entityCustomers   EntityCustomer[]
   subscriptions     Subscription[]
   mfaCodes          MfaCode[]
+  address           Address?
+}
+
+model Address {
+  id           String   @id @db.Uuid()
+  entity_id    String   @unique @db.Uuid()
+  zip_code     String   @db.VarChar()
+  street       String   @db.VarChar()
+  number       String   @db.VarChar()
+  complement   String?  @db.VarChar()
+  neighborhood String   @db.VarChar()
+  city         String   @db.VarChar()
+  state        String   @db.VarChar()
+  country      String   @db.VarChar()
+  latitude     Decimal  @db.Decimal(10, 7)
+  longitude    Decimal  @db.Decimal(10, 7)
+  created_at   DateTime
+  updated_at   DateTime
+  entity       Entity   @relation(fields: [entity_id], references: [id], onDelete: Cascade)
 }
 
 model Identity {
