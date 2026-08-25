@@ -22,8 +22,7 @@ export class MeProfileService {
     profile_id,
     entity_id,
   }: IMeProfileRequest): Promise<Profile> {
-    const profile_exists =
-      await this.profile_repository.find_identity_id(profile_id);
+    const profile_exists = await this.profile_repository.find_one(profile_id);
     if (!profile_exists) throw new AppError('Perfil não existe', 404);
     const membership = await this.entity_membership_repository.find_one(
       entity_id,
