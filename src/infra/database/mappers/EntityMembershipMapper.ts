@@ -44,7 +44,7 @@ export class EntityMembershipMapper {
     return new Entity_Membership({
       entity_id: raw.entity_id,
       profile_id: raw.profile_id,
-      name: raw?.entity?.name ? raw.entity.name : null,
+      entity_name: raw?.entity?.name ? raw.entity.name : null,
       roles: raw.roles,
       status: raw.status,
       created_at: raw.created_at,

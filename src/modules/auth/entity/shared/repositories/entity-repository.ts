@@ -74,9 +74,10 @@ class EntityRepository implements IEntityRepository {
       data: raw,
     });
   }
-  async update(data: Entity): Promise<void> {
+  async update(data: Entity, tx?: Prisma.TransactionClient): Promise<void> {
     const raw = EntityMapper.toPrisma(data);
-    await this.prisma.getPrismaClient().entity.update({
+    const client = tx ?? this.prisma;
+    await client.entity.update({
       where: {
         id: data._id,
       },

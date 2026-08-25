@@ -13,6 +13,6 @@ abstract class IEntityRepository {
   ): Promise<Entity | null>;
   abstract findByDocument(document: string): Promise<Entity | null>;
   abstract list(): Promise<Entity[]>;
-  abstract update(data: Entity): Promise<void>;
+  abstract update(data: Entity, tx?: Prisma.TransactionClient): Promise<void>;
 }
 export { IEntityRepository };

@@ -68,7 +68,15 @@ export class EntityUpdateController {
       name: data.name,
       photo: data.photo,
       type: data.type,
-      id,
+      id: id,
+      city: data.city,
+      complement: data.complement,
+      country: data.country,
+      neighborhood: data.neighborhood,
+      number: data.number,
+      state: data.state,
+      street: data.street,
+      zip_code: data.zip_code,
     });
 
     return EntityViewModel.toHttp(result);

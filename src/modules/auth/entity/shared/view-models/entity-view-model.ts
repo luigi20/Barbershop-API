@@ -10,6 +10,16 @@ export class EntityViewModel {
       photo: entity.photo ? entity.photo : null,
       status: entity.status,
       type: entity.type,
+      city: entity.address.city,
+      country: entity.address.country,
+      latitude: entity.address.latitude,
+      longitude: entity.address.longitude,
+      neighborhood: entity.address.neighborhood,
+      number: entity.address.number,
+      state: entity.address.state,
+      street: entity.address.street,
+      zip_code: entity.address.zip_code,
+      complement: entity?.address?.complement ?? null,
     };
   }
 }

@@ -97,7 +97,7 @@ class EntityMembershipRepository implements IEntityMembershipRepository {
         },
       });
     return list_entity_membership.map((item) =>
-      EntityMembershipMapper.toDomain(item),
+      EntityMembershipMapper.toDomainWithProfEntityName(item),
     );
   }
 }

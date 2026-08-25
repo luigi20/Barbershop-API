@@ -48,6 +48,10 @@ import { IIdentityCredentialRepository } from '@modules/auth/identity_credential
 import { IdentityCredentialRepository } from '@modules/auth/identity_credential/shared/repositories/identity-credential-repository';
 import { IEmailService } from 'infra/email/abstract class/IEmailService';
 import { ResendEmailService } from 'infra/email/services/resend_email_service';
+import { IAddressRepository } from '@modules/auth/address/shared/repositories/abstract_class/iaddress-repository';
+import { AddressRepository } from '@modules/auth/address/shared/repositories/address-repository';
+import { GeoapifyGeocodingService } from 'infra/geolocalization/service/geoapify_geocoding.service';
+import { IGeocodingService } from 'infra/geolocalization/interface/IGeocoding.service';
 
 @Module({
   imports: [
@@ -93,6 +97,14 @@ import { ResendEmailService } from 'infra/email/services/resend_email_service';
     EntityGetAllService,
     EntityGetOneService,
     EntityUpdateService,
+    {
+      provide: IGeocodingService,
+      useClass: GeoapifyGeocodingService,
+    },
+    {
+      provide: IAddressRepository,
+      useClass: AddressRepository,
+    },
     {
       provide: IIdentityCredentialRepository,
       useClass: IdentityCredentialRepository,

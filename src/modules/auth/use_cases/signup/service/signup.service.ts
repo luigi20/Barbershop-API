@@ -1,3 +1,5 @@
+import { Address } from '@modules/auth/address/shared/models/address';
+import { IAddressRepository } from '@modules/auth/address/shared/repositories/abstract_class/iaddress-repository';
 import { Entity } from '@modules/auth/entity/shared/models/entity';
 import { IEntityRepository } from '@modules/auth/entity/shared/repositories/abstract_class/ientity-repository';
 import { Identity } from '@modules/auth/identity/shared/models/identity';
@@ -24,9 +26,18 @@ interface ISignUpRequest {
   entity_name: string;
   entity_type: string;
   document: string;
+  zip_code: string;
+  street: string;
+  number: string;
+  neighborhood: string;
+  city: string;
+  state: string;
+  complement: string;
+  country: string;
 }
 import { PrismaService } from 'infra/database/prisma/prisma.service';
 import { IEmailService } from 'infra/email/abstract class/IEmailService';
+import { IGeocodingService } from 'infra/geolocalization/interface/IGeocoding.service';
 
 @Injectable()
 export class SignUpService {
@@ -38,6 +49,8 @@ export class SignUpService {
     private readonly entity_membership_repository: IEntityMembershipRepository,
     private readonly identity_credential_repository: IIdentityCredentialRepository,
     private readonly email_service: IEmailService,
+    private readonly address_repository: IAddressRepository,
+    private readonly geocoding_service: IGeocodingService,
   ) {}
 
   public async execute({
@@ -50,6 +63,14 @@ export class SignUpService {
     birth_date,
     entity_type,
     document,
+    zip_code,
+    street,
+    number,
+    neighborhood,
+    city,
+    state,
+    complement,
+    country,
   }: ISignUpRequest): Promise<string> {
     // 1. Validações e regras de negócio prévias (Fora da transação)
     const password_validator = userPasswordValidator();
@@ -93,10 +114,32 @@ export class SignUpService {
       roles: [MemberRole.ADMINISTRADOR],
       status: 'ATIVO',
     });
+    const geolocalization = await this.geocoding_service.geocode({
+      city,
+      country,
+      number,
+      state,
+      street,
+      zip_code,
+    });
+    const address = new Address({
+      city: city,
+      country: country,
+      entity_id: entity._id,
+      latitude: geolocalization.latitude,
+      longitude: geolocalization.longitude,
+      neighborhood: neighborhood,
+      number: number,
+      state: state,
+      street: street,
+      zip_code: zip_code,
+      complement: complement ?? null,
+    });
     const prisma = this.prisma.getPrismaClient();
     try {
       await prisma.$transaction(async (tx) => {
         await this.entity_repository.create(entity, tx);
+        await this.address_repository.create(address, tx);
         await this.identity_repository.create(identity, tx);
         await this.identity_credential_repository.create(
           identity_credential,
