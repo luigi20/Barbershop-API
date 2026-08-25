@@ -1,4 +1,3 @@
-import { IEntityRepository } from '@modules/auth/entity/shared/repositories/abstract_class/ientity-repository';
 import { IIdentityRepository } from '@modules/auth/identity/shared/repositories/abstract_class/iidentity-repository';
 import { IIdentityCredentialRepository } from '@modules/auth/identity_credential/shared/repositories/abstract_class/iidentitycredential-repository';
 import { IProfileRepository } from '@modules/auth/profile/shared/repositories/abstract_class/iprofile-repository';
@@ -24,7 +23,6 @@ export class SignInService {
     private readonly entity_membership_repository: IEntityMembershipRepository,
     private readonly jwt_service: JwtService,
     private readonly identity_credential_repository: IIdentityCredentialRepository,
-    private readonly entity_repository: IEntityRepository,
   ) {}
 
   public async execute({ email, password }: ISignInRequest): Promise<{
