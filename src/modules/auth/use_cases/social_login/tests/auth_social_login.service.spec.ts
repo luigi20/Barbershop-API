@@ -15,6 +15,8 @@ import { makeEntityMembershipCustomer } from '@modules/business/entity_customer/
 import { makeEntityMembership } from '@modules/business/entity_membership/shared/models/test/entity-membership-factory';
 import { InMemoryIdentityCredentialRepository } from '@modules/auth/identity_credential/shared/repositories/test/in-memory-identity-credential-repository';
 import { PrismaService } from 'infra/database/prisma/prisma.service';
+import { InMemoryCustomerRepository } from '@modules/business/customer/shared/repositories/test/in-memory-customer-repository';
+import { makeCustomer } from '@modules/business/customer/shared/models/test/customer-factory';
 
 describe('Test in route auth social login', () => {
   let entity_repository: InMemoryEntityRepository;
@@ -24,6 +26,7 @@ describe('Test in route auth social login', () => {
   let entity_membership_repository: InMemoryEntityMembershipRepository;
   let entity_customer_repository: InMemoryEntityCustomerRepository;
   let identity_credential_repository: InMemoryIdentityCredentialRepository;
+  let customer_repository: InMemoryCustomerRepository;
   const prismaMock = {
     getPrismaClient: jest.fn().mockReturnValue({
       $transaction: jest.fn(async (callback) => callback({})),
@@ -42,6 +45,7 @@ describe('Test in route auth social login', () => {
     entity_membership_repository = new InMemoryEntityMembershipRepository();
     entity_customer_repository = new InMemoryEntityCustomerRepository();
     identity_credential_repository = new InMemoryIdentityCredentialRepository();
+    customer_repository = new InMemoryCustomerRepository();
   });
 
   it('should not auth social login, because email is invalid', async () => {
@@ -65,6 +69,7 @@ describe('Test in route auth social login', () => {
       identity_provider_service as any,
       prismaMock,
       identity_credential_repository,
+      customer_repository,
     );
     expect(
       auth_social_login_service.execute({
@@ -119,6 +124,7 @@ describe('Test in route auth social login', () => {
       identity_provider_service as any,
       prismaMock,
       identity_credential_repository,
+      customer_repository,
     );
     expect(
       auth_social_login_service.execute({
@@ -162,6 +168,7 @@ describe('Test in route auth social login', () => {
       identity_provider_service as any,
       prismaMock,
       identity_credential_repository,
+      customer_repository,
     );
     expect(
       auth_social_login_service.execute({
@@ -182,6 +189,43 @@ describe('Test in route auth social login', () => {
         type: 'google',
       }),
     };
+    entity_repository.list_entity.push(
+      makeEntity({
+        id: '123',
+      }),
+    );
+    identity_repository.list_identity.push(
+      makeIdentity({
+        id: '123',
+        props: {
+          email: 'luisfoco@gmail.com',
+        },
+      }),
+    );
+    profile_repository.list_profile.push(
+      makeProfile({
+        id: '123',
+        props: {
+          identity_id: identity_repository.list_identity[0].id,
+        },
+      }),
+    );
+    customer_repository.list_customer.push(
+      makeCustomer({
+        props: {
+          profile_id: profile_repository.list_profile[0].id,
+        },
+      }),
+    );
+    entity_customer_repository.list_customer.push(
+      makeEntityMembershipCustomer({
+        id: '123',
+        props: {
+          entity_id: entity_repository.list_entity[0]._id,
+          customer_id: customer_repository.list_customer[0]._id,
+        },
+      }),
+    );
     const auth_social_login_service = new AuthSocialLoginService(
       identity_repository,
       profile_repository,
@@ -192,6 +236,7 @@ describe('Test in route auth social login', () => {
       identity_provider_service as any,
       prismaMock,
       identity_credential_repository,
+      customer_repository,
     );
     expect(
       auth_social_login_service.execute({
@@ -225,6 +270,22 @@ describe('Test in route auth social login', () => {
         },
       }),
     );
+    customer_repository.list_customer.push(
+      makeCustomer({
+        props: {
+          profile_id: profile_repository.list_profile[0].id,
+        },
+      }),
+    );
+    entity_customer_repository.list_customer.push(
+      makeEntityMembershipCustomer({
+        id: '123',
+        props: {
+          entity_id: entity_repository.list_entity[0]._id,
+          customer_id: customer_repository.list_customer[0]._id,
+        },
+      }),
+    );
     const identity_provider_service = {
       validate: jest.fn().mockReturnValue({
         id: randomUUID(),
@@ -245,6 +306,7 @@ describe('Test in route auth social login', () => {
       identity_provider_service as any,
       prismaMock,
       identity_credential_repository,
+      customer_repository,
     );
     expect(
       auth_social_login_service.execute({
@@ -311,6 +373,7 @@ describe('Test in route auth social login', () => {
       identity_provider_service as any,
       prismaMock,
       identity_credential_repository,
+      customer_repository,
     );
     const result = await auth_social_login_service.execute({
       provider: 'google',
@@ -361,11 +424,18 @@ describe('Test in route auth social login', () => {
         },
       }),
     );
+    customer_repository.list_customer.push(
+      makeCustomer({
+        props: {
+          profile_id: profile_repository.list_profile[0].id,
+        },
+      }),
+    );
     entity_customer_repository.list_customer.push(
       makeEntityMembershipCustomer({
         id: '123',
         props: {
-          profile_id: profile_repository.list_profile[0].id,
+          customer_id: customer_repository.list_customer[0]._id,
           entity_id: entity_repository.list_entity[0]._id,
         },
       }),
@@ -380,6 +450,7 @@ describe('Test in route auth social login', () => {
       identity_provider_service as any,
       prismaMock,
       identity_credential_repository,
+      customer_repository,
     );
     const result = await auth_social_login_service.execute({
       provider: 'google',
@@ -430,12 +501,19 @@ describe('Test in route auth social login', () => {
         },
       }),
     );
+    customer_repository.list_customer.push(
+      makeCustomer({
+        props: {
+          profile_id: profile_repository.list_profile[0].id,
+        },
+      }),
+    );
     entity_customer_repository.list_customer.push(
       makeEntityMembershipCustomer({
         id: '123',
         props: {
-          profile_id: profile_repository.list_profile[0].id,
           entity_id: entity_repository.list_entity[0]._id,
+          customer_id: customer_repository.list_customer[0]._id,
         },
       }),
     );
@@ -458,6 +536,7 @@ describe('Test in route auth social login', () => {
       identity_provider_service as any,
       prismaMock,
       identity_credential_repository,
+      customer_repository,
     );
     const result = await auth_social_login_service.execute({
       provider: 'google',
@@ -527,6 +606,7 @@ describe('Test in route auth social login', () => {
       identity_provider_service as any,
       prismaMock,
       identity_credential_repository,
+      customer_repository,
     );
     const result = await auth_social_login_service.execute({
       provider: 'google',
@@ -577,12 +657,19 @@ describe('Test in route auth social login', () => {
         },
       }),
     );
+    customer_repository.list_customer.push(
+      makeCustomer({
+        props: {
+          profile_id: profile_repository.list_profile[0].id,
+        },
+      }),
+    );
     entity_customer_repository.list_customer.push(
       makeEntityMembershipCustomer({
         id: '123',
         props: {
-          profile_id: profile_repository.list_profile[0].id,
           entity_id: entity_repository.list_entity[0]._id,
+          customer_id: customer_repository.list_customer[0]._id,
         },
       }),
     );
@@ -596,6 +683,7 @@ describe('Test in route auth social login', () => {
       identity_provider_service as any,
       prismaMock,
       identity_credential_repository,
+      customer_repository,
     );
     const result = await auth_social_login_service.execute({
       provider: 'google',
@@ -646,11 +734,18 @@ describe('Test in route auth social login', () => {
         },
       }),
     );
+    customer_repository.list_customer.push(
+      makeCustomer({
+        props: {
+          profile_id: profile_repository.list_profile[0].id,
+        },
+      }),
+    );
     entity_customer_repository.list_customer.push(
       makeEntityMembershipCustomer({
         id: '123',
         props: {
-          profile_id: profile_repository.list_profile[0].id,
+          customer_id: customer_repository.list_customer[0]._id,
           entity_id: entity_repository.list_entity[0]._id,
         },
       }),
@@ -674,6 +769,7 @@ describe('Test in route auth social login', () => {
       identity_provider_service as any,
       prismaMock,
       identity_credential_repository,
+      customer_repository,
     );
     const result = await auth_social_login_service.execute({
       provider: 'google',

@@ -10,6 +10,8 @@ import { randomUUID } from 'crypto';
 import { EntityCustomerCreateService } from '../services/entity_customer_create.service';
 import { InMemoryEntityCustomerRepository } from '@modules/business/entity_customer/shared/repositories/test/in-memory-entitycustomer-repository';
 import { InMemoryIdentityCredentialRepository } from '@modules/auth/identity_credential/shared/repositories/test/in-memory-identity-credential-repository';
+import { InMemoryCustomerRepository } from '@modules/business/customer/shared/repositories/test/in-memory-customer-repository';
+import { makeCustomer } from '@modules/business/customer/shared/models/test/customer-factory';
 
 jest.mock('argon2');
 describe('Test in route create customer', () => {
@@ -18,6 +20,7 @@ describe('Test in route create customer', () => {
   let identity_repository: InMemoryIdentityRepository;
   let entity_member_customer_repository: InMemoryEntityCustomerRepository;
   let identity_credential_repository: InMemoryIdentityCredentialRepository;
+  let customer_repository: InMemoryCustomerRepository;
   const prismaMock = {
     getPrismaClient: jest.fn().mockReturnValue({
       $transaction: jest.fn(async (callback) => callback({})),
@@ -31,6 +34,7 @@ describe('Test in route create customer', () => {
     entity_member_customer_repository = new InMemoryEntityCustomerRepository();
     identity_repository = new InMemoryIdentityRepository();
     identity_credential_repository = new InMemoryIdentityCredentialRepository();
+    customer_repository = new InMemoryCustomerRepository();
   });
 
   it('should not create member, because tenant not exists', async () => {
@@ -41,6 +45,7 @@ describe('Test in route create customer', () => {
       identity_repository,
       prismaMock,
       identity_credential_repository,
+      customer_repository,
     );
     expect(
       entityCustomerCreateService.execute({
@@ -65,6 +70,7 @@ describe('Test in route create customer', () => {
       identity_repository,
       prismaMock,
       identity_credential_repository,
+      customer_repository,
     );
     expect(
       entityCustomerCreateService.execute({
@@ -98,6 +104,7 @@ describe('Test in route create customer', () => {
       identity_repository,
       prismaMock,
       identity_credential_repository,
+      customer_repository,
     );
     expect(
       entityCustomerCreateService.execute({
@@ -132,6 +139,7 @@ describe('Test in route create customer', () => {
       identity_repository,
       prismaMock,
       identity_credential_repository,
+      customer_repository,
     );
     const result = await entityCustomerCreateService.execute({
       birth_date: '08/09/2000',
@@ -172,6 +180,13 @@ describe('Test in route create customer', () => {
         },
       }),
     );
+    customer_repository.list_customer.push(
+      makeCustomer({
+        props: {
+          profile_id: profile_repository.list_profile[0].id,
+        },
+      }),
+    );
     const entityCustomerCreateService = new EntityCustomerCreateService(
       entity_member_customer_repository,
       profile_repository,
@@ -179,6 +194,7 @@ describe('Test in route create customer', () => {
       identity_repository,
       prismaMock,
       identity_credential_repository,
+      customer_repository,
     );
     const result = await entityCustomerCreateService.execute({
       birth_date: '16/08/1987',

@@ -12,6 +12,8 @@ import { IEntityCustomerRepository } from '@modules/business/entity_customer/sha
 import { Entity_Customer } from '@modules/business/entity_customer/shared/models/entity_customer';
 import { Identity_Credential } from '@modules/auth/identity_credential/shared/models/identity_credential';
 import { IIdentityCredentialRepository } from '@modules/auth/identity_credential/shared/repositories/abstract_class/iidentitycredential-repository';
+import { Customer } from '@modules/business/customer/shared/models/customer';
+import { ICustomerRepository } from '@modules/business/customer/shared/repositories/abstract_class/icustomer-repository';
 
 interface IMembersRequest {
   entity_id: string;
@@ -34,6 +36,7 @@ export class EntityCustomerCreateService {
     private readonly identity_repository: IIdentityRepository,
     private readonly prisma: PrismaService,
     private readonly identity_credential_repository: IIdentityCredentialRepository,
+    private readonly customer_repository: ICustomerRepository,
   ) {}
 
   public async execute({
@@ -77,9 +80,12 @@ export class EntityCustomerCreateService {
         photo: photo,
         status: 'ativo',
       });
+      const customer = new Customer({
+        profile_id: profile.id,
+      });
       entity_member_customer = new Entity_Customer({
         entity_id: entity_id,
-        profile_id: profile.id,
+        customer_id: customer._id,
         notes: notes,
         status: 'ativo',
         birth_date: new Date(birth_date),
@@ -98,6 +104,7 @@ export class EntityCustomerCreateService {
             tx,
           );
           await this.profile_repository.create(profile, tx);
+          await this.customer_repository.create(customer, tx);
           await this.entity_customer_repository.create(
             entity_member_customer,
             tx,
@@ -114,9 +121,13 @@ export class EntityCustomerCreateService {
         identity_exists.id,
       );
       if (!profile) return;
+      const customer = await this.customer_repository.find_profile_id(
+        profile.id,
+      );
+      if (!customer) return;
       entity_member_customer = new Entity_Customer({
         entity_id: entity_id,
-        profile_id: profile.id,
+        customer_id: customer._id,
         notes: notes,
         status: 'ativo',
         birth_date: new Date(birth_date),

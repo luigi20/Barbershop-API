@@ -4,8 +4,8 @@ import { Customer } from '../../models/customer';
 
 @Injectable()
 export class InMemoryCustomerRepository implements ICustomerRepository {
-  async find_all(): Promise<Customer[]> {
-    return this.list_customer;
+  async find_all(): Promise<string[]> {
+    return this.list_customer.map((item) => item._id);
   }
   async find_profile_id(profile_id: string): Promise<Customer> {
     const customer = this.list_customer.find(

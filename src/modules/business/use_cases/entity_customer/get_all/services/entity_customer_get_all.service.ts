@@ -5,6 +5,7 @@ import { AppError } from '@modules/utils/app_error';
 import { IdAndName } from '@modules/utils/types/types';
 import { IEntityCustomerRepository } from '@modules/business/entity_customer/shared/repositories/abstract_class/ientitycustomer-repository';
 import { Entity_Customer } from '@modules/business/entity_customer/shared/models/entity_customer';
+import { ICustomerRepository } from '@modules/business/customer/shared/repositories/abstract_class/icustomer-repository';
 
 interface IMembersRequest {
   entity_id: string;
@@ -17,6 +18,7 @@ export class EntityCustomerGetAllService {
     private readonly entity_customer_repository: IEntityCustomerRepository,
     private readonly profile_repository: IProfileRepository,
     private readonly entity_repository: IEntityRepository,
+    private readonly customer_repository: ICustomerRepository,
   ) {}
 
   public async execute({
@@ -36,8 +38,12 @@ export class EntityCustomerGetAllService {
     if (members.length === 0) return [];
     await Promise.all(
       members.map(async (member) => {
+        const customer = await this.customer_repository.find_one(
+          member.customer_id,
+        );
+        if (!customer) return;
         const profile = await this.profile_repository.find_one(
-          member.profile_id,
+          customer.profile_id,
         );
         if (!profile) return;
         member.profile_name = profile.name;

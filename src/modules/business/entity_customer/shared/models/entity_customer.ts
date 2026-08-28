@@ -3,7 +3,7 @@ import { Replace } from '@modules/utils/helper';
 export interface Entity_Customer_Props {
   entity_id: string;
   name: string;
-  profile_id: string;
+  customer_id: string;
   notes: string;
   status: string;
   created_at: Date;
@@ -97,12 +97,12 @@ export class Entity_Customer {
     this.props.profile_name = profile_name;
   }
 
-  public get profile_id(): string {
-    return this.props.profile_id;
+  public get customer_id(): string {
+    return this.props.customer_id;
   }
 
-  public set profile_id(profile_id: string) {
-    this.props.profile_id = profile_id;
+  public set customer_id(customer_id: string) {
+    this.props.customer_id = customer_id;
   }
 
   public get name(): string {

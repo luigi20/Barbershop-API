@@ -11,6 +11,8 @@ import { EntityCustomerUpdateService } from '../services/entity_customer_update.
 import { InMemoryEntityCustomerRepository } from '@modules/business/entity_customer/shared/repositories/test/in-memory-entitycustomer-repository';
 import { makeEntityMembershipCustomer } from '@modules/business/entity_customer/shared/models/test/entity-customer-factory';
 import { InMemoryIdentityCredentialRepository } from '@modules/auth/identity_credential/shared/repositories/test/in-memory-identity-credential-repository';
+import { InMemoryCustomerRepository } from '@modules/business/customer/shared/repositories/test/in-memory-customer-repository';
+import { makeCustomer } from '@modules/business/customer/shared/models/test/customer-factory';
 
 jest.mock('argon2');
 describe('Test in route update customer', () => {
@@ -19,6 +21,7 @@ describe('Test in route update customer', () => {
   let identity_repository: InMemoryIdentityRepository;
   let entity_customer_repository: InMemoryEntityCustomerRepository;
   let identity_credential_repository: InMemoryIdentityCredentialRepository;
+  let customer_repository: InMemoryCustomerRepository;
   const prismaMock = {
     getPrismaClient: jest.fn().mockReturnValue({
       $transaction: jest.fn(async (callback) => callback({})),
@@ -32,6 +35,7 @@ describe('Test in route update customer', () => {
     entity_customer_repository = new InMemoryEntityCustomerRepository();
     identity_repository = new InMemoryIdentityRepository();
     identity_credential_repository = new InMemoryIdentityCredentialRepository();
+    customer_repository = new InMemoryCustomerRepository();
   });
 
   it('should not update member, because tenant not exists', async () => {
@@ -41,6 +45,7 @@ describe('Test in route update customer', () => {
       entity_repository,
       identity_repository,
       prismaMock,
+      customer_repository,
     );
     expect(
       entityCustomerUpdateService.execute({
@@ -69,6 +74,7 @@ describe('Test in route update customer', () => {
       entity_repository,
       identity_repository,
       prismaMock,
+      customer_repository,
     );
     expect(
       entityCustomerUpdateService.execute({
@@ -105,6 +111,7 @@ describe('Test in route update customer', () => {
       entity_repository,
       identity_repository,
       prismaMock,
+      customer_repository,
     );
     expect(
       entityCustomerUpdateService.execute({
@@ -143,12 +150,20 @@ describe('Test in route update customer', () => {
         },
       }),
     );
+    customer_repository.list_customer.push(
+      makeCustomer({
+        props: {
+          profile_id: profile_repository.list_profile[0].id,
+        },
+      }),
+    );
     const entityCustomerUpdateService = new EntityCustomerUpdateService(
       entity_customer_repository,
       profile_repository,
       entity_repository,
       identity_repository,
       prismaMock,
+      customer_repository,
     );
     expect(
       entityCustomerUpdateService.execute({
@@ -193,10 +208,17 @@ describe('Test in route update customer', () => {
         },
       }),
     );
+    customer_repository.list_customer.push(
+      makeCustomer({
+        props: {
+          profile_id: profile_repository.list_profile[0].id,
+        },
+      }),
+    );
     entity_customer_repository.list_customer.push(
       makeEntityMembershipCustomer({
         props: {
-          profile_id: '123',
+          customer_id: '123',
           entity_id: '123',
         },
       }),
@@ -207,6 +229,7 @@ describe('Test in route update customer', () => {
       entity_repository,
       identity_repository,
       prismaMock,
+      customer_repository,
     );
     expect(
       entityCustomerUpdateService.execute({
@@ -255,10 +278,17 @@ describe('Test in route update customer', () => {
         },
       }),
     );
+    customer_repository.list_customer.push(
+      makeCustomer({
+        props: {
+          profile_id: profile_repository.list_profile[0].id,
+        },
+      }),
+    );
     entity_customer_repository.list_customer.push(
       makeEntityMembershipCustomer({
         props: {
-          profile_id: '123',
+          customer_id: '123',
           entity_id: '123',
         },
       }),
@@ -269,6 +299,7 @@ describe('Test in route update customer', () => {
       entity_repository,
       identity_repository,
       prismaMock,
+      customer_repository,
     );
     const result = await entityCustomerUpdateService.execute({
       birth_date: '12/06/1965',

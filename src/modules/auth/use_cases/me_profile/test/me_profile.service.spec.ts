@@ -11,6 +11,8 @@ import { InMemoryEntityMembershipRepository } from '@modules/business/entity_mem
 import { InMemoryEntityCustomerRepository } from '@modules/business/entity_customer/shared/repositories/test/in-memory-entitycustomer-repository';
 import { makeEntityMembership } from '@modules/business/entity_membership/shared/models/test/entity-membership-factory';
 import { makeEntityMembershipCustomer } from '@modules/business/entity_customer/shared/models/test/entity-customer-factory';
+import { InMemoryCustomerRepository } from '@modules/business/customer/shared/repositories/test/in-memory-customer-repository';
+import { makeCustomer } from '@modules/business/customer/shared/models/test/customer-factory';
 
 describe('Test in route Me Profile', () => {
   let profile_repository: InMemoryProfileRepository;
@@ -18,6 +20,7 @@ describe('Test in route Me Profile', () => {
   let entity_customer_repository: InMemoryEntityCustomerRepository;
   let entity_repository: InMemoryEntityRepository;
   let identity_repository: InMemoryIdentityRepository;
+  let customer_repository: InMemoryCustomerRepository;
   beforeEach(() => {
     jest.clearAllMocks();
     // Populando os repositórios com dados iniciais
@@ -26,6 +29,7 @@ describe('Test in route Me Profile', () => {
     entity_customer_repository = new InMemoryEntityCustomerRepository();
     entity_repository = new InMemoryEntityRepository();
     identity_repository = new InMemoryIdentityRepository();
+    customer_repository = new InMemoryCustomerRepository();
   });
 
   it('should not get profile, because profile not exists', async () => {
@@ -33,6 +37,7 @@ describe('Test in route Me Profile', () => {
       profile_repository,
       entity_membership_repository,
       entity_customer_repository,
+      customer_repository,
     );
     expect(
       me_profile_service.execute({
@@ -64,6 +69,7 @@ describe('Test in route Me Profile', () => {
       profile_repository,
       entity_membership_repository,
       entity_customer_repository,
+      customer_repository,
     );
     expect(
       me_profile_service.execute({
@@ -107,6 +113,7 @@ describe('Test in route Me Profile', () => {
       profile_repository,
       entity_membership_repository,
       entity_customer_repository,
+      customer_repository,
     );
 
     const result = await me_profile_service.execute({
@@ -140,12 +147,19 @@ describe('Test in route Me Profile', () => {
         },
       }),
     );
+    customer_repository.list_customer.push(
+      makeCustomer({
+        props: {
+          profile_id: profile_repository.list_profile[0].id,
+        },
+      }),
+    );
     entity_customer_repository.list_customer.push(
       makeEntityMembershipCustomer({
         id: '123',
         props: {
           entity_id: entity_repository.list_entity[0]._id,
-          profile_id: profile_repository.list_profile[0].id,
+          customer_id: customer_repository.list_customer[0]._id,
         },
       }),
     );
@@ -153,6 +167,7 @@ describe('Test in route Me Profile', () => {
       profile_repository,
       entity_membership_repository,
       entity_customer_repository,
+      customer_repository,
     );
 
     const result = await me_profile_service.execute({
@@ -186,12 +201,19 @@ describe('Test in route Me Profile', () => {
         },
       }),
     );
+    customer_repository.list_customer.push(
+      makeCustomer({
+        props: {
+          profile_id: profile_repository.list_profile[0].id,
+        },
+      }),
+    );
     entity_customer_repository.list_customer.push(
       makeEntityMembershipCustomer({
         id: '123',
         props: {
           entity_id: entity_repository.list_entity[0]._id,
-          profile_id: profile_repository.list_profile[0].id,
+          customer_id: customer_repository.list_customer[0]._id,
         },
       }),
     );
@@ -208,6 +230,7 @@ describe('Test in route Me Profile', () => {
       profile_repository,
       entity_membership_repository,
       entity_customer_repository,
+      customer_repository,
     );
 
     const result = await me_profile_service.execute({

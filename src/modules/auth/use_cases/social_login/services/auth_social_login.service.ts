@@ -13,6 +13,8 @@ import { IEntityCustomerRepository } from '@modules/business/entity_customer/sha
 import { PrismaService } from 'infra/database/prisma/prisma.service';
 import { IIdentityCredentialRepository } from '@modules/auth/identity_credential/shared/repositories/abstract_class/iidentitycredential-repository';
 import { Identity_Credential } from '@modules/auth/identity_credential/shared/models/identity_credential';
+import { ICustomerRepository } from '@modules/business/customer/shared/repositories/abstract_class/icustomer-repository';
+import { Entity_Customer } from '@modules/business/entity_customer/shared/models/entity_customer';
 
 export interface IRequest_Login_Social {
   provider: string;
@@ -37,6 +39,7 @@ export class AuthSocialLoginService {
     private readonly identity_provider_service: IdentityProviderService,
     private readonly prisma: PrismaService,
     private readonly identity_credential_repository: IIdentityCredentialRepository,
+    private readonly customer_repository: ICustomerRepository,
   ) {}
 
   async execute({
@@ -96,16 +99,21 @@ export class AuthSocialLoginService {
     if (!profile) throw new AppError('Perfil não encontrado', 404);
     const memberships =
       await this.entity_membership_repository.find_list_profile_id(profile.id);
-    const customers =
-      await this.entity_membercustomer_repository.find_list_profile_id(
-        profile.id,
-      );
+    const customers = await this.customer_repository.find_profile_id(
+      profile.id,
+    );
+    let entity_customers: Entity_Customer[] = [];
+    if (customers)
+      entity_customers =
+        await this.entity_membercustomer_repository.find_customer_id(
+          customers._id,
+        );
     const entity_ids = new Set<string>();
     for (const membership of memberships ?? []) {
       if (membership.status?.toLowerCase() === 'ativo')
         entity_ids.add(membership.entity_id);
     }
-    for (const customer of customers ?? []) {
+    for (const customer of entity_customers ?? []) {
       if (customer.status?.toLowerCase() === 'ativo')
         entity_ids.add(customer.entity_id);
     }
@@ -119,7 +127,7 @@ export class AuthSocialLoginService {
           item.entity_id === entity_id &&
           item.status?.toLowerCase() === 'ativo',
       );
-      const customer = customers?.find(
+      const customer = entity_customers?.find(
         (item) =>
           item.entity_id === entity_id &&
           item.status?.toLowerCase() === 'ativo',

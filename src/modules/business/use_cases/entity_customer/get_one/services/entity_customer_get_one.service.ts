@@ -4,6 +4,7 @@ import { IEntityRepository } from '@modules/auth/entity/shared/repositories/abst
 import { AppError } from '@modules/utils/app_error';
 import { IEntityCustomerRepository } from '@modules/business/entity_customer/shared/repositories/abstract_class/ientitycustomer-repository';
 import { Entity_Customer } from '@modules/business/entity_customer/shared/models/entity_customer';
+import { ICustomerRepository } from '@modules/business/customer/shared/repositories/abstract_class/icustomer-repository';
 interface IMembersRequest {
   entity_id: string;
   profile_id: string;
@@ -17,6 +18,7 @@ export class EntityCustomerGetOneService {
     private readonly entity_customer_repository: IEntityCustomerRepository,
     private readonly profile_repository: IProfileRepository,
     private readonly entity_repository: IEntityRepository,
+    private readonly customer_repository: ICustomerRepository,
   ) {}
 
   public async execute({
@@ -30,12 +32,19 @@ export class EntityCustomerGetOneService {
         'Usuário não tem permissão de acessar dados de usuários de outra empresa',
         400,
       );
+    const customer_exists =
+      await this.customer_repository.find_profile_id(profile_id);
+    if (!customer_exists) throw new AppError('Cliente não existe', 404);
     const member = await this.entity_customer_repository.find_one(
       entity_id,
-      profile_id,
+      customer_exists._id,
     );
     if (!member) throw new AppError('Usuário não existe', 404);
-    const profile = await this.profile_repository.find_one(member.profile_id);
+    const customer = await this.customer_repository.find_one(
+      member.customer_id,
+    );
+    if (!customer) throw new AppError('Cliente não existe', 404);
+    const profile = await this.profile_repository.find_one(customer.profile_id);
     if (!profile) return;
     member.profile_name = profile.name;
     member.phone = profile.phone;

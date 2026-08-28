@@ -14,7 +14,7 @@ export class EntityCustomerMapper {
   static toPrisma(entity_customer: Entity_Customer) {
     return {
       entity_id: entity_customer.entity_id,
-      profile_id: entity_customer.profile_id,
+      customer_id: entity_customer.customer_id,
       notes: entity_customer.notes ? entity_customer.notes : null,
       status: entity_customer.status,
       created_at: entity_customer.created_at,
@@ -25,7 +25,7 @@ export class EntityCustomerMapper {
   static toDomain(raw: PrismaEntityCustomer): Entity_Customer {
     return new Entity_Customer({
       entity_id: raw.entity_id,
-      profile_id: raw.profile_id,
+      customer_id: raw.customer_id,
       notes: raw.notes ? raw.notes : null,
       status: raw.status,
       created_at: raw.created_at,
@@ -38,7 +38,7 @@ export class EntityCustomerMapper {
   ): Entity_Customer {
     return new Entity_Customer({
       entity_id: raw.entity_id,
-      profile_id: raw.profile_id,
+      customer_id: raw.customer_id,
       entity_name: raw?.entity?.name ? raw.entity.name : null,
       notes: raw.notes ? raw.notes : null,
       status: raw.status,

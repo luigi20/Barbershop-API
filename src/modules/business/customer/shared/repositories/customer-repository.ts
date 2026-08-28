@@ -28,7 +28,7 @@ class CustomerRepository implements ICustomerRepository {
     return CustomerMapper.toDomain(customer);
   }
   async find_one(id: string): Promise<Customer | null> {
-    const customer = await this.prisma.getPrismaClient().customer.findUnique({
+    const customer = await this.prisma.getPrismaClient().customer.findFirst({
       where: {
         id: id,
       },
@@ -37,11 +37,11 @@ class CustomerRepository implements ICustomerRepository {
     return CustomerMapper.toDomain(customer);
   }
 
-  async find_all(): Promise<Customer[]> {
+  async find_all(): Promise<string[]> {
     const list_customer = await this.prisma
       .getPrismaClient()
       .customer.findMany();
-    return list_customer.map((item) => CustomerMapper.toDomain(item));
+    return list_customer.map((item) => item.id);
   }
 
   async create(data: Customer, tx?: Prisma.TransactionClient): Promise<void> {

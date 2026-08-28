@@ -10,13 +10,15 @@ import { InMemoryEntityMembershipRepository } from '@modules/business/entity_mem
 import { InMemoryEntityCustomerRepository } from '@modules/business/entity_customer/shared/repositories/test/in-memory-entitycustomer-repository';
 import { makeEntityMembership } from '@modules/business/entity_membership/shared/models/test/entity-membership-factory';
 import { makeEntityMembershipCustomer } from '@modules/business/entity_customer/shared/models/test/entity-customer-factory';
+import { InMemoryCustomerRepository } from '@modules/business/customer/shared/repositories/test/in-memory-customer-repository';
+import { makeCustomer } from '@modules/business/customer/shared/models/test/customer-factory';
 describe('Test in route Refresh Token', () => {
   let identity_repository: InMemoryIdentityRepository;
   let refresh_token_repository: InMemoryRefreshTokensRepository;
   let profile_repository: InMemoryProfileRepository;
   let entity_customer_repository: InMemoryEntityCustomerRepository;
   let entity_membership_repository: InMemoryEntityMembershipRepository;
-
+  let customer_repository: InMemoryCustomerRepository;
   beforeEach(() => {
     // Populando os repositórios com dados iniciais
     identity_repository = new InMemoryIdentityRepository();
@@ -24,6 +26,7 @@ describe('Test in route Refresh Token', () => {
     profile_repository = new InMemoryProfileRepository();
     entity_customer_repository = new InMemoryEntityCustomerRepository();
     entity_membership_repository = new InMemoryEntityMembershipRepository();
+    customer_repository = new InMemoryCustomerRepository();
   });
 
   it('should not send access token, because token is invalid or expired', async () => {
@@ -40,6 +43,7 @@ describe('Test in route Refresh Token', () => {
       profile_repository,
       entity_customer_repository,
       entity_membership_repository,
+      customer_repository,
     );
     expect(
       refresh_token_service.execute(
@@ -64,6 +68,7 @@ describe('Test in route Refresh Token', () => {
       profile_repository,
       entity_customer_repository,
       entity_membership_repository,
+      customer_repository,
     );
     expect(
       refresh_token_service.execute(
@@ -88,6 +93,7 @@ describe('Test in route Refresh Token', () => {
       profile_repository,
       entity_customer_repository,
       entity_membership_repository,
+      customer_repository,
     );
     expect(
       refresh_token_service.execute(
@@ -117,6 +123,7 @@ describe('Test in route Refresh Token', () => {
       profile_repository,
       entity_customer_repository,
       entity_membership_repository,
+      customer_repository,
     );
     expect(
       refresh_token_service.execute(
@@ -138,6 +145,13 @@ describe('Test in route Refresh Token', () => {
         },
       }),
     );
+    customer_repository.list_customer.push(
+      makeCustomer({
+        props: {
+          profile_id: profile_repository.list_profile[0].id,
+        },
+      }),
+    );
     const jwt_service = {
       sign: jest.fn().mockReturnValue('fake-jwt-token'),
       verify: jest.fn().mockReturnValue({
@@ -153,6 +167,7 @@ describe('Test in route Refresh Token', () => {
       profile_repository,
       entity_customer_repository,
       entity_membership_repository,
+      customer_repository,
     );
     expect(
       refresh_token_service.execute(
@@ -189,6 +204,13 @@ describe('Test in route Refresh Token', () => {
         },
       }),
     );
+    customer_repository.list_customer.push(
+      makeCustomer({
+        props: {
+          profile_id: profile_repository.list_profile[0].id,
+        },
+      }),
+    );
     entity_membership_repository.list_membership.push(
       makeEntityMembership({
         props: {
@@ -203,6 +225,7 @@ describe('Test in route Refresh Token', () => {
       profile_repository,
       entity_customer_repository,
       entity_membership_repository,
+      customer_repository,
     );
     const result = await refresh_token_service.execute(
       '$argon2id$v=19$m=65536,t=3,p=4$c29tZXNhbHR2YWx1ZQ$7sH1QxYk6dJ6z9K8Yf5rW1qK9VwV8bTz1CkGm3nQp9I',
@@ -237,11 +260,19 @@ describe('Test in route Refresh Token', () => {
         },
       }),
     );
+    customer_repository.list_customer.push(
+      makeCustomer({
+        props: {
+          profile_id: profile_repository.list_profile[0].id,
+        },
+      }),
+    );
+
     entity_customer_repository.list_customer.push(
       makeEntityMembershipCustomer({
         props: {
           entity_id: 'entity-id',
-          profile_id: profile_repository.list_profile[0].id,
+          customer_id: customer_repository.list_customer[0]._id,
         },
       }),
     );
@@ -251,6 +282,7 @@ describe('Test in route Refresh Token', () => {
       profile_repository,
       entity_customer_repository,
       entity_membership_repository,
+      customer_repository,
     );
     const result = await refresh_token_service.execute(
       '$argon2id$v=19$m=65536,t=3,p=4$c29tZXNhbHR2YWx1ZQ$7sH1QxYk6dJ6z9K8Yf5rW1qK9VwV8bTz1CkGm3nQp9I',

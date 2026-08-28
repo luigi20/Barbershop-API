@@ -8,6 +8,9 @@ import { IRefreshTokensRepository } from '@modules/auth/refresh_token/shared/rep
 import { Refresh_Tokens } from '@modules/auth/refresh_token/shared/models/refresh-tokens';
 import { IEntityCustomerRepository } from '@modules/business/entity_customer/shared/repositories/abstract_class/ientitycustomer-repository';
 import { IEntityMembershipRepository } from '@modules/business/entity_membership/shared/repositories/abstract_class/ientitymembership-repository';
+import { ICustomerRepository } from '@modules/business/customer/shared/repositories/abstract_class/icustomer-repository';
+import { Entity_Customer } from '@modules/business/entity_customer/shared/models/entity_customer';
+import { IEntityRepository } from '@modules/auth/entity/shared/repositories/abstract_class/ientity-repository';
 
 export interface ISelectEntityRequest {
   login_token: string;
@@ -38,6 +41,8 @@ export class SelectEntityService {
     private readonly entity_customer_repository: IEntityCustomerRepository,
     private readonly refresh_token_repository: IRefreshTokensRepository,
     private readonly jwt_service: JwtService,
+    private readonly customer_repository: ICustomerRepository,
+    private readonly entity_repository: IEntityRepository,
   ) {}
 
   async execute({
@@ -52,6 +57,8 @@ export class SelectEntityService {
     }
     if (payload.type !== 'challenge')
       throw new AppError('Token de login inválido', 401);
+    const entity_exists = await this.entity_repository.findById(entity_id);
+    if (!entity_exists) throw new AppError('Empresa não encontrada', 404);
     const identity = await this.identity_repository.find_by_id(payload.sub);
     if (!identity) throw new AppError('Identidade não encontrada', 404);
     const profile = await this.profile_repository.find_identity_id(identity.id);
@@ -61,12 +68,16 @@ export class SelectEntityService {
       entity_id,
       profile.id,
     );
-    const customer = await this.entity_customer_repository.find_one(
-      entity_id,
-      profile.id,
-    );
+    const customer = await this.customer_repository.find_profile_id(profile.id);
+    let entity_customer: Entity_Customer = null;
+    if (customer)
+      entity_customer = await this.entity_customer_repository.find_one(
+        entity_id,
+        customer._id,
+      );
     const isMember = membership && membership.status.toLowerCase() === 'ativo';
-    const isCustomer = customer && customer.status.toLowerCase() === 'ativo';
+    const isCustomer =
+      entity_customer && entity_customer?.status?.toLowerCase() === 'ativo';
     if (!isMember && !isCustomer)
       throw new AppError(
         'Usuário não pertence a esta organização ou não está ativo',

@@ -11,6 +11,8 @@ import { InMemoryEntityMembershipRepository } from '@modules/business/entity_mem
 import { InMemoryEntityCustomerRepository } from '@modules/business/entity_customer/shared/repositories/test/in-memory-entitycustomer-repository';
 import { makeEntityMembershipCustomer } from '@modules/business/entity_customer/shared/models/test/entity-customer-factory';
 import { makeEntityMembership } from '@modules/business/entity_membership/shared/models/test/entity-membership-factory';
+import { makeCustomer } from '@modules/business/customer/shared/models/test/customer-factory';
+import { InMemoryCustomerRepository } from '@modules/business/customer/shared/repositories/test/in-memory-customer-repository';
 
 jest.mock('argon2');
 describe('Test in route select entity', () => {
@@ -20,6 +22,8 @@ describe('Test in route select entity', () => {
   let entity_membership_repository: InMemoryEntityMembershipRepository;
   let entity_membercustomer_repository: InMemoryEntityCustomerRepository;
   let profile_repository: InMemoryProfileRepository;
+  let customer_repository: InMemoryCustomerRepository;
+
   const jwt_service = {
     sign: jest.fn().mockReturnValue('fake-jwt-token'),
   };
@@ -32,6 +36,7 @@ describe('Test in route select entity', () => {
     profile_repository = new InMemoryProfileRepository();
     entity_membership_repository = new InMemoryEntityMembershipRepository();
     entity_membercustomer_repository = new InMemoryEntityCustomerRepository();
+    customer_repository = new InMemoryCustomerRepository();
   });
 
   it('should not signin, because token invalid or expired', async () => {
@@ -48,6 +53,8 @@ describe('Test in route select entity', () => {
       entity_membercustomer_repository,
       refresh_token_repository,
       jwt_service as any,
+      customer_repository,
+      entity_repository,
     );
     expect(
       selectEntityService.execute({
@@ -73,6 +80,8 @@ describe('Test in route select entity', () => {
       entity_membercustomer_repository,
       refresh_token_repository,
       jwt_service as any,
+      customer_repository,
+      entity_repository,
     );
     expect(
       selectEntityService.execute({
@@ -82,7 +91,7 @@ describe('Test in route select entity', () => {
     ).rejects.toThrow(new AppError('Token de login inválido', 401));
   });
 
-  it('should not signin, because identity not exists', async () => {
+  it('should not signin, because entity not exists', async () => {
     const jwt_service = {
       sign: jest.fn().mockReturnValue('fake-jwt-token'),
       verify: jest.fn().mockReturnValue({
@@ -98,6 +107,40 @@ describe('Test in route select entity', () => {
       entity_membercustomer_repository,
       refresh_token_repository,
       jwt_service as any,
+      customer_repository,
+      entity_repository,
+    );
+    expect(
+      selectEntityService.execute({
+        entity_id: '123',
+        login_token: '14343',
+      }),
+    ).rejects.toThrow(new AppError('Empresa não encontrada', 404));
+  });
+
+  it('should not signin, because identity not exists', async () => {
+    const jwt_service = {
+      sign: jest.fn().mockReturnValue('fake-jwt-token'),
+      verify: jest.fn().mockReturnValue({
+        sub: 'entity-id',
+        context_id: 'academia',
+        type: 'challenge',
+      }),
+    };
+    entity_repository.list_entity.push(
+      makeEntity({
+        id: '123',
+      }),
+    );
+    const selectEntityService = new SelectEntityService(
+      identity_repository,
+      profile_repository,
+      entity_membership_repository,
+      entity_membercustomer_repository,
+      refresh_token_repository,
+      jwt_service as any,
+      customer_repository,
+      entity_repository,
     );
     expect(
       selectEntityService.execute({
@@ -108,6 +151,11 @@ describe('Test in route select entity', () => {
   });
 
   it('should not signin, because profile not exists', async () => {
+    entity_repository.list_entity.push(
+      makeEntity({
+        id: '123',
+      }),
+    );
     identity_repository.list_identity.push(
       makeIdentity({
         id: '123',
@@ -131,6 +179,8 @@ describe('Test in route select entity', () => {
       entity_membercustomer_repository,
       refresh_token_repository,
       jwt_service as any,
+      customer_repository,
+      entity_repository,
     );
     expect(
       selectEntityService.execute({
@@ -141,6 +191,11 @@ describe('Test in route select entity', () => {
   });
 
   it('should not signin, because user not tenant', async () => {
+    entity_repository.list_entity.push(
+      makeEntity({
+        id: '123',
+      }),
+    );
     identity_repository.list_identity.push(
       makeIdentity({
         id: '123',
@@ -173,6 +228,8 @@ describe('Test in route select entity', () => {
       entity_membercustomer_repository,
       refresh_token_repository,
       jwt_service as any,
+      customer_repository,
+      entity_repository,
     );
     expect(
       selectEntityService.execute({
@@ -219,11 +276,20 @@ describe('Test in route select entity', () => {
         },
       }),
     );
+
+    customer_repository.list_customer.push(
+      makeCustomer({
+        props: {
+          profile_id: profile_repository.list_profile[0].id,
+        },
+      }),
+    );
+
     entity_membercustomer_repository.list_customer.push(
       makeEntityMembershipCustomer({
         props: {
           entity_id: entity_repository.list_entity[0]._id,
-          profile_id: profile_repository.list_profile[0].id,
+          customer_id: customer_repository.list_customer[0]._id,
           name: 'Profit',
         },
       }),
@@ -235,6 +301,8 @@ describe('Test in route select entity', () => {
       entity_membercustomer_repository,
       refresh_token_repository,
       jwt_service as any,
+      customer_repository,
+      entity_repository,
     );
     const result = await selectEntityService.execute({
       entity_id: '123',
@@ -278,11 +346,19 @@ describe('Test in route select entity', () => {
         },
       }),
     );
+    customer_repository.list_customer.push(
+      makeCustomer({
+        props: {
+          profile_id: profile_repository.list_profile[0].id,
+        },
+      }),
+    );
+
     entity_membercustomer_repository.list_customer.push(
       makeEntityMembershipCustomer({
         props: {
           entity_id: entity_repository.list_entity[0]._id,
-          profile_id: profile_repository.list_profile[0].id,
+          customer_id: customer_repository.list_customer[0]._id,
           name: 'Profit',
         },
       }),
@@ -294,6 +370,8 @@ describe('Test in route select entity', () => {
       entity_membercustomer_repository,
       refresh_token_repository,
       jwt_service as any,
+      customer_repository,
+      entity_repository,
     );
     const result = await selectEntityService.execute({
       entity_id: '123',
@@ -351,6 +429,8 @@ describe('Test in route select entity', () => {
       entity_membercustomer_repository,
       refresh_token_repository,
       jwt_service as any,
+      customer_repository,
+      entity_repository,
     );
     const result = await selectEntityService.execute({
       entity_id: '123',
@@ -409,6 +489,8 @@ describe('Test in route select entity', () => {
       entity_membercustomer_repository,
       refresh_token_repository,
       jwt_service as any,
+      customer_repository,
+      entity_repository,
     );
     const result = await selectEntityService.execute({
       entity_id: '123',
@@ -452,11 +534,19 @@ describe('Test in route select entity', () => {
         },
       }),
     );
+    customer_repository.list_customer.push(
+      makeCustomer({
+        props: {
+          profile_id: profile_repository.list_profile[0].id,
+        },
+      }),
+    );
+
     entity_membercustomer_repository.list_customer.push(
       makeEntityMembershipCustomer({
         props: {
           entity_id: entity_repository.list_entity[0]._id,
-          profile_id: profile_repository.list_profile[0].id,
+          customer_id: customer_repository.list_customer[0]._id,
           name: 'Profit',
         },
       }),
@@ -476,6 +566,8 @@ describe('Test in route select entity', () => {
       entity_membercustomer_repository,
       refresh_token_repository,
       jwt_service as any,
+      customer_repository,
+      entity_repository,
     );
     const result = await selectEntityService.execute({
       entity_id: '123',
@@ -519,11 +611,19 @@ describe('Test in route select entity', () => {
         },
       }),
     );
+    customer_repository.list_customer.push(
+      makeCustomer({
+        props: {
+          profile_id: profile_repository.list_profile[0].id,
+        },
+      }),
+    );
+
     entity_membercustomer_repository.list_customer.push(
       makeEntityMembershipCustomer({
         props: {
           entity_id: entity_repository.list_entity[0]._id,
-          profile_id: profile_repository.list_profile[0].id,
+          customer_id: customer_repository.list_customer[0]._id,
           name: 'Profit',
         },
       }),
@@ -543,6 +643,8 @@ describe('Test in route select entity', () => {
       entity_membercustomer_repository,
       refresh_token_repository,
       jwt_service as any,
+      customer_repository,
+      entity_repository,
     );
     const result = await selectEntityService.execute({
       entity_id: '123',

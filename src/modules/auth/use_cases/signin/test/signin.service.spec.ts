@@ -14,6 +14,8 @@ import { makeEntityMembership } from '@modules/business/entity_membership/shared
 import { makeEntityMembershipCustomer } from '@modules/business/entity_customer/shared/models/test/entity-customer-factory';
 import { InMemoryIdentityCredentialRepository } from '@modules/auth/identity_credential/shared/repositories/test/in-memory-identity-credential-repository';
 import { makeIdentityCredential } from '@modules/auth/identity_credential/shared/models/test/identity_credential-factory';
+import { InMemoryCustomerRepository } from '@modules/business/customer/shared/repositories/test/in-memory-customer-repository';
+import { makeCustomer } from '@modules/business/customer/shared/models/test/customer-factory';
 
 jest.mock('argon2');
 describe('Test in route signin', () => {
@@ -24,6 +26,7 @@ describe('Test in route signin', () => {
   let entity_membercustomer_repository: InMemoryEntityCustomerRepository;
   let profile_repository: InMemoryProfileRepository;
   let identity_credential_repository: InMemoryIdentityCredentialRepository;
+  let customer_repository: InMemoryCustomerRepository;
   const jwt_service = {
     sign: jest.fn().mockReturnValue('fake-jwt-token'),
   };
@@ -37,6 +40,7 @@ describe('Test in route signin', () => {
     entity_membership_repository = new InMemoryEntityMembershipRepository();
     entity_membercustomer_repository = new InMemoryEntityCustomerRepository();
     identity_credential_repository = new InMemoryIdentityCredentialRepository();
+    customer_repository = new InMemoryCustomerRepository();
   });
 
   it('should not signin, because identity not exists', async () => {
@@ -47,6 +51,7 @@ describe('Test in route signin', () => {
       entity_membership_repository,
       jwt_service as any,
       identity_credential_repository,
+      customer_repository,
     );
     expect(
       signInService.execute({
@@ -78,6 +83,7 @@ describe('Test in route signin', () => {
       entity_membership_repository,
       jwt_service as any,
       identity_credential_repository,
+      customer_repository,
     );
     expect(
       signInService.execute({
@@ -118,6 +124,7 @@ describe('Test in route signin', () => {
       entity_membership_repository,
       jwt_service as any,
       identity_credential_repository,
+      customer_repository,
     );
     expect(
       signInService.execute({
@@ -158,6 +165,7 @@ describe('Test in route signin', () => {
       entity_membership_repository,
       jwt_service as any,
       identity_credential_repository,
+      customer_repository,
     );
     expect(
       signInService.execute({
@@ -197,6 +205,7 @@ describe('Test in route signin', () => {
       entity_membership_repository,
       jwt_service as any,
       identity_credential_repository,
+      customer_repository,
     );
     expect(
       signInService.execute({
@@ -242,6 +251,7 @@ describe('Test in route signin', () => {
       entity_membership_repository,
       jwt_service as any,
       identity_credential_repository,
+      customer_repository,
     );
     expect(
       signInService.execute({
@@ -282,11 +292,19 @@ describe('Test in route signin', () => {
         },
       }),
     );
+    customer_repository.list_customer.push(
+      makeCustomer({
+        props: {
+          profile_id: profile_repository.list_profile[0].id,
+        },
+      }),
+    );
+
     entity_membercustomer_repository.list_customer.push(
       makeEntityMembershipCustomer({
         props: {
           entity_id: entity_repository.list_entity[0]._id,
-          profile_id: profile_repository.list_profile[0].id,
+          customer_id: customer_repository.list_customer[0]._id,
           name: 'Profit',
         },
       }),
@@ -298,6 +316,7 @@ describe('Test in route signin', () => {
       entity_membership_repository,
       jwt_service as any,
       identity_credential_repository,
+      customer_repository,
     );
     const result = await signInService.execute({
       email: 'luisfoco@gmail.com',
@@ -353,6 +372,7 @@ describe('Test in route signin', () => {
       entity_membership_repository,
       jwt_service as any,
       identity_credential_repository,
+      customer_repository,
     );
     const result = await signInService.execute({
       email: 'luisfoco@gmail.com',
@@ -392,11 +412,19 @@ describe('Test in route signin', () => {
         },
       }),
     );
+    customer_repository.list_customer.push(
+      makeCustomer({
+        props: {
+          profile_id: profile_repository.list_profile[0].id,
+        },
+      }),
+    );
+
     entity_membercustomer_repository.list_customer.push(
       makeEntityMembershipCustomer({
         props: {
           entity_id: entity_repository.list_entity[0]._id,
-          profile_id: profile_repository.list_profile[0].id,
+          customer_id: customer_repository.list_customer[0]._id,
           name: 'Profit',
         },
       }),
@@ -417,6 +445,7 @@ describe('Test in route signin', () => {
       entity_membership_repository,
       jwt_service as any,
       identity_credential_repository,
+      customer_repository,
     );
     const result = await signInService.execute({
       email: 'luisfoco@gmail.com',
@@ -461,21 +490,30 @@ describe('Test in route signin', () => {
         },
       }),
     );
-    entity_membercustomer_repository.list_customer.push(
-      makeEntityMembershipCustomer({
-        props: {
-          entity_id: entity_repository.list_entity[1]._id,
-          profile_id: profile_repository.list_profile[0].id,
-          name: 'Pague Menos',
-        },
-      }),
-    );
+
     entity_membership_repository.list_membership.push(
       makeEntityMembership({
         props: {
           entity_id: entity_repository.list_entity[0]._id,
           profile_id: profile_repository.list_profile[0].id,
           entity_name: 'Profit',
+        },
+      }),
+    );
+
+    customer_repository.list_customer.push(
+      makeCustomer({
+        props: {
+          profile_id: profile_repository.list_profile[0].id,
+        },
+      }),
+    );
+    entity_membercustomer_repository.list_customer.push(
+      makeEntityMembershipCustomer({
+        id: '123',
+        props: {
+          entity_id: entity_repository.list_entity[1]._id,
+          customer_id: customer_repository.list_customer[0]._id,
         },
       }),
     );
@@ -486,6 +524,7 @@ describe('Test in route signin', () => {
       entity_membership_repository,
       jwt_service as any,
       identity_credential_repository,
+      customer_repository,
     );
     const result = await signInService.execute({
       email: 'luisfoco@gmail.com',
