@@ -52,6 +52,8 @@ import { IAddressRepository } from '@modules/auth/address/shared/repositories/ab
 import { AddressRepository } from '@modules/auth/address/shared/repositories/address-repository';
 import { GeoapifyGeocodingService } from 'infra/geolocalization/service/geoapify_geocoding.service';
 import { IGeocodingService } from 'infra/geolocalization/interface/IGeocoding.service';
+import { ICustomerRepository } from './customer/shared/repositories/abstract_class/icustomer-repository';
+import { CustomerRepository } from './customer/shared/repositories/customer-repository';
 
 @Module({
   imports: [
@@ -108,6 +110,10 @@ import { IGeocodingService } from 'infra/geolocalization/interface/IGeocoding.se
     {
       provide: IIdentityCredentialRepository,
       useClass: IdentityCredentialRepository,
+    },
+    {
+      provide: ICustomerRepository,
+      useClass: CustomerRepository,
     },
     {
       provide: IPlanRepository,
