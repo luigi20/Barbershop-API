@@ -15,7 +15,7 @@ class EntityCustomerRepository implements IEntityCustomerRepository {
   ): Promise<void> {
     const raw = EntityCustomerMapper.toPrisma(data);
     const client = tx ?? this.prisma;
-    await client.identity.update({
+    await client.entityCustomer.update({
       where: {
         entity_id_profile_id: {
           entity_id: data.entity_id,
@@ -77,7 +77,7 @@ class EntityCustomerRepository implements IEntityCustomerRepository {
   ): Promise<void> {
     const raw = EntityCustomerMapper.toPrisma(data);
     const client = tx ?? this.prisma;
-    await client.entityMembership.update({
+    await client.entityCustomer.create({
       data: raw,
     });
   }

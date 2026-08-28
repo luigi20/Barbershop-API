@@ -72,6 +72,15 @@ model IdentityCredential {
   @@unique([identity_id, provider])
 }
 
+model Customer {
+  id               String           @id @db.Uuid()
+  profile_id       String?          @unique @db.Uuid()
+  created_at       DateTime
+  updated_at       DateTime
+  profile          Profile?         @relation(fields: [profile_id], references: [id])
+  entity_customers EntityCustomer[]
+}
+
 model Profile {
   id          String    @id @db.Uuid()
   identity_id String    @unique @db.Uuid()
@@ -85,6 +94,7 @@ model Profile {
 
   entityMemberships EntityMembership[]
   entityCustomers   EntityCustomer[]
+  customer          Customer?
 }
 
 model MfaCode {
@@ -145,14 +155,16 @@ model EntityMembership {
 }
 
 model EntityCustomer {
-  entity_id  String   @db.Uuid
-  profile_id String   @db.Uuid
-  status     String   @db.VarChar()
-  notes      String?  @db.VarChar()
+  entity_id  String    @db.Uuid
+  profile_id String    @db.Uuid
+  status     String    @db.VarChar()
+  notes      String?   @db.VarChar()
   created_at DateTime
   updated_at DateTime
-  entity     Entity   @relation(fields: [entity_id], references: [id], onDelete: Cascade)
-  profile    Profile  @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+  entity     Entity    @relation(fields: [entity_id], references: [id], onDelete: Cascade)
+  profile    Profile   @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+  customer   Customer? @relation(fields: [customerId], references: [id])
+  customerId String?   @db.Uuid()
 
   @@unique([entity_id, profile_id])
 }
