@@ -93,7 +93,6 @@ model Profile {
   updated_at  DateTime
 
   entityMemberships EntityMembership[]
-  entityCustomers   EntityCustomer[]
   customer          Customer?
 }
 
@@ -155,18 +154,18 @@ model EntityMembership {
 }
 
 model EntityCustomer {
-  entity_id  String    @db.Uuid
-  profile_id String    @db.Uuid
-  status     String    @db.VarChar()
-  notes      String?   @db.VarChar()
-  created_at DateTime
-  updated_at DateTime
-  entity     Entity    @relation(fields: [entity_id], references: [id], onDelete: Cascade)
-  profile    Profile   @relation(fields: [profile_id], references: [id], onDelete: Cascade)
-  customer   Customer? @relation(fields: [customerId], references: [id])
-  customerId String?   @db.Uuid()
+  customer_id String   @db.Uuid()
+  entity_id   String   @db.Uuid()
+  notes       String?
+  status      String   @db.VarChar()
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  customer    Customer @relation(fields: [customer_id], references: [id])
+  entity      Entity   @relation(fields: [entity_id], references: [id])
 
-  @@unique([entity_id, profile_id])
+  @@unique([customer_id, entity_id])
+  @@unique([entity_id, customer_id])
+  @@index([entity_id])
 }
 
 model Subscription {

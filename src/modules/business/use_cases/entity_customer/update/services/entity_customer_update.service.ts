@@ -8,6 +8,8 @@ import { Profile } from '@modules/auth/profile/shared/models/profile';
 import { PrismaService } from 'infra/database/prisma/prisma.service';
 import { IEntityCustomerRepository } from '@modules/business/entity_customer/shared/repositories/abstract_class/ientitycustomer-repository';
 import { Entity_Customer } from '@modules/business/entity_customer/shared/models/entity_customer';
+import { ICustomerRepository } from '@modules/business/customer/shared/repositories/abstract_class/icustomer-repository';
+import { Customer } from '@modules/business/customer/shared/models/customer';
 
 interface IMembersRequest {
   entity_id: string;
@@ -29,6 +31,7 @@ export class EntityCustomerUpdateService {
     private readonly entity_repository: IEntityRepository,
     private readonly identity_repository: IIdentityRepository,
     private readonly prisma: PrismaService,
+    private readonly customer_repository: ICustomerRepository,
   ) {}
 
   public async execute({
@@ -51,6 +54,10 @@ export class EntityCustomerUpdateService {
       identity_exists.id,
     );
     if (!profile_exists) throw new AppError('Perfil não existe', 404);
+    const customer_exists = await this.customer_repository.find_profile_id(
+      profile_exists.id,
+    );
+    if (!customer_exists) throw new AppError('Cliente não existe', 404);
     const entity_customer_exists =
       await this.entity_customer_repository.find_one(
         info_entity.id,
@@ -81,9 +88,15 @@ export class EntityCustomerUpdateService {
       },
       profile_exists.id,
     );
+    const customer = new Customer(
+      {
+        profile_id: profile.id,
+      },
+      customer_exists._id,
+    );
     const entity_customer = new Entity_Customer({
       entity_id: entity_customer_exists.entity_id,
-      profile_id: profile.id,
+      customer_id: customer._id,
       notes: notes,
       status: status,
       birth_date: new Date(birth_date),
@@ -98,6 +111,7 @@ export class EntityCustomerUpdateService {
       await prisma.$transaction(async (tx) => {
         await this.identity_repository.update(identity, tx);
         await this.profile_repository.update(profile, tx);
+        await this.customer_repository.update(customer, tx);
         await this.entity_customer_repository.update(entity_customer, tx);
       });
     } catch (error) {

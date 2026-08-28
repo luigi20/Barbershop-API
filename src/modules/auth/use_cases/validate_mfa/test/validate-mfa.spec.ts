@@ -386,7 +386,7 @@ describe('Test in route validate mfa', () => {
       makeEntityMembershipCustomer({
         props: {
           entity_id: 'entity-id',
-          profile_id: 'profile-id',
+          customer_id: 'profile-id',
         },
       }),
     );
@@ -447,7 +447,7 @@ describe('Test in route validate mfa', () => {
       makeEntityMembershipCustomer({
         props: {
           entity_id: 'entity-id',
-          profile_id: 'profile-id',
+          customer_id: 'profile-id',
         },
       }),
     );

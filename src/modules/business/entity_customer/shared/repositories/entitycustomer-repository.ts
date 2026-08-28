@@ -17,20 +17,20 @@ class EntityCustomerRepository implements IEntityCustomerRepository {
     const client = tx ?? this.prisma;
     await client.entityCustomer.update({
       where: {
-        entity_id_profile_id: {
+        entity_id_customer_id: {
           entity_id: data.entity_id,
-          profile_id: data.profile_id,
+          customer_id: data.customer_id,
         },
       },
       data: raw,
     });
   }
-  async find_list_profile_id(profile_id: string): Promise<Entity_Customer[]> {
+  async find_customer_id(customer_id: string): Promise<Entity_Customer[]> {
     const list_entity_customer = await this.prisma
       .getPrismaClient()
       .entityCustomer.findMany({
         where: {
-          profile_id: profile_id,
+          customer_id: customer_id,
         },
         include: {
           entity: {
@@ -46,15 +46,15 @@ class EntityCustomerRepository implements IEntityCustomerRepository {
   }
   async find_one(
     entity_id: string,
-    profile_id: string,
+    customer_id: string,
   ): Promise<Entity_Customer | null> {
     const entity_customer = await this.prisma
       .getPrismaClient()
       .entityCustomer.findUnique({
         where: {
-          entity_id_profile_id: {
+          entity_id_customer_id: {
             entity_id: entity_id,
-            profile_id: profile_id,
+            customer_id: customer_id,
           },
         },
       });

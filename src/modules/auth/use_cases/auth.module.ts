@@ -65,6 +65,8 @@ import { GeoapifyGeocodingService } from 'infra/geolocalization/service/geoapify
 import { IAddressRepository } from '../address/shared/repositories/abstract_class/iaddress-repository';
 import { AddressRepository } from '../address/shared/repositories/address-repository';
 import { IGeocodingService } from 'infra/geolocalization/interface/IGeocoding.service';
+import { ICustomerRepository } from '@modules/business/customer/shared/repositories/abstract_class/icustomer-repository';
+import { CustomerRepository } from '@modules/business/customer/shared/repositories/customer-repository';
 
 @Module({
   imports: [
@@ -142,6 +144,10 @@ import { IGeocodingService } from 'infra/geolocalization/interface/IGeocoding.se
     {
       provide: IAddressRepository,
       useClass: AddressRepository,
+    },
+    {
+      provide: ICustomerRepository,
+      useClass: CustomerRepository,
     },
     IdentityProviderService,
     GoogleProviderService,

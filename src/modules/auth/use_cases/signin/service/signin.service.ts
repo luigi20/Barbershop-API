@@ -1,6 +1,8 @@
 import { IIdentityRepository } from '@modules/auth/identity/shared/repositories/abstract_class/iidentity-repository';
 import { IIdentityCredentialRepository } from '@modules/auth/identity_credential/shared/repositories/abstract_class/iidentitycredential-repository';
 import { IProfileRepository } from '@modules/auth/profile/shared/repositories/abstract_class/iprofile-repository';
+import { ICustomerRepository } from '@modules/business/customer/shared/repositories/abstract_class/icustomer-repository';
+import { Entity_Customer } from '@modules/business/entity_customer/shared/models/entity_customer';
 import { IEntityCustomerRepository } from '@modules/business/entity_customer/shared/repositories/abstract_class/ientitycustomer-repository';
 import { IEntityMembershipRepository } from '@modules/business/entity_membership/shared/repositories/abstract_class/ientitymembership-repository';
 import { AppError } from '@modules/utils/app_error';
@@ -23,6 +25,7 @@ export class SignInService {
     private readonly entity_membership_repository: IEntityMembershipRepository,
     private readonly jwt_service: JwtService,
     private readonly identity_credential_repository: IIdentityCredentialRepository,
+    private readonly customer_repository: ICustomerRepository,
   ) {}
 
   public async execute({ email, password }: ISignInRequest): Promise<{
@@ -56,10 +59,13 @@ export class SignInService {
     // 4. Busca os vínculos dessa Identity
     const memberships =
       await this.entity_membership_repository.find_list_profile_id(profile.id);
-    const customers =
-      await this.entity_membercustomer_repository.find_list_profile_id(
-        profile.id,
-      );
+    const customer = await this.customer_repository.find_profile_id(profile.id);
+    let entity_customers: Entity_Customer[] = [];
+    if (customer)
+      entity_customers =
+        await this.entity_membercustomer_repository.find_customer_id(
+          customer._id,
+        );
     // 5. Monta a lista de empresas
     // 5. Agrupa por Entity
     const entitiesMap = new Map<string, entity_name>();
@@ -76,15 +82,15 @@ export class SignInService {
         });
       }
     }
-    for (const customer of customers) {
-      if (customer.status.toLowerCase() !== 'ativo') continue;
-      const existing = entitiesMap.get(customer.entity_id);
+    for (const entity_customer of entity_customers) {
+      if (entity_customer.status.toLowerCase() !== 'ativo') continue;
+      const existing = entitiesMap.get(entity_customer.entity_id);
       if (existing) {
         existing.roles.push('cliente');
       } else {
-        entitiesMap.set(customer.entity_id, {
-          id: customer.entity_id,
-          entity_name: customer.entity_name,
+        entitiesMap.set(entity_customer.entity_id, {
+          id: entity_customer.entity_id,
+          entity_name: entity_customer.entity_name,
           roles: ['cliente'],
         });
       }

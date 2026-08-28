@@ -8,19 +8,22 @@ import { AppError } from '@modules/utils/app_error';
 import { EntityCustomerGetAllService } from '../services/entity_customer_get_all.service';
 import { InMemoryEntityCustomerRepository } from '@modules/business/entity_customer/shared/repositories/test/in-memory-entitycustomer-repository';
 import { makeEntityMembershipCustomer } from '@modules/business/entity_customer/shared/models/test/entity-customer-factory';
+import { InMemoryCustomerRepository } from '@modules/business/customer/shared/repositories/test/in-memory-customer-repository';
+import { makeCustomer } from '@modules/business/customer/shared/models/test/customer-factory';
 
 describe('Test in route get all member customer', () => {
   let entity_repository: InMemoryEntityRepository;
   let profile_repository: InMemoryProfileRepository;
   let identity_repository: InMemoryIdentityRepository;
   let entity_customer_repository: InMemoryEntityCustomerRepository;
-
+  let customer_repository: InMemoryCustomerRepository;
   beforeEach(() => {
     // Populando os repositórios com dados iniciais
     entity_repository = new InMemoryEntityRepository();
     profile_repository = new InMemoryProfileRepository();
     entity_customer_repository = new InMemoryEntityCustomerRepository();
     identity_repository = new InMemoryIdentityRepository();
+    customer_repository = new InMemoryCustomerRepository();
   });
 
   it('should not get customers, because tenant not exists', async () => {
@@ -28,6 +31,7 @@ describe('Test in route get all member customer', () => {
       entity_customer_repository,
       profile_repository,
       entity_repository,
+      customer_repository,
     );
     expect(
       entityCustomerGetAllService.execute({
@@ -47,6 +51,7 @@ describe('Test in route get all member customer', () => {
       entity_customer_repository,
       profile_repository,
       entity_repository,
+      customer_repository,
     );
     const result = await entityCustomerGetAllService.execute({
       entity_id: '123',
@@ -74,12 +79,19 @@ describe('Test in route get all member customer', () => {
         },
       }),
     );
+    customer_repository.list_customer.push(
+      makeCustomer({
+        props: {
+          profile_id: profile_repository.list_profile[0].id,
+        },
+      }),
+    );
     entity_customer_repository.list_customer.push(
       makeEntityMembershipCustomer({
         id: '123',
         props: {
           entity_id: entity_repository.list_entity[0]._id,
-          profile_id: profile_repository.list_profile[0].id,
+          customer_id: customer_repository.list_customer[0]._id,
         },
       }),
     );
@@ -87,6 +99,7 @@ describe('Test in route get all member customer', () => {
       entity_customer_repository,
       profile_repository,
       entity_repository,
+      customer_repository,
     );
     const result = await entityCustomerGetAllService.execute({
       entity_id: '123',
@@ -114,12 +127,19 @@ describe('Test in route get all member customer', () => {
         },
       }),
     );
+    customer_repository.list_customer.push(
+      makeCustomer({
+        props: {
+          profile_id: profile_repository.list_profile[0].id,
+        },
+      }),
+    );
     entity_customer_repository.list_customer.push(
       makeEntityMembershipCustomer({
         id: '123',
         props: {
           entity_id: entity_repository.list_entity[0]._id,
-          profile_id: profile_repository.list_profile[0].id,
+          customer_id: customer_repository.list_customer[0]._id,
         },
       }),
     );
@@ -147,7 +167,7 @@ describe('Test in route get all member customer', () => {
         id: '124',
         props: {
           entity_id: entity_repository.list_entity[1]._id,
-          profile_id: profile_repository.list_profile[1].id,
+          customer_id: customer_repository.list_customer[0]._id,
         },
       }),
     );
@@ -155,6 +175,7 @@ describe('Test in route get all member customer', () => {
       entity_customer_repository,
       profile_repository,
       entity_repository,
+      customer_repository,
     );
     const result = await entityCustomerGetAllService.execute({
       entity_id: '123',

@@ -8,18 +8,21 @@ import { AppError } from '@modules/utils/app_error';
 import { EntityCustomerGetOneService } from '../services/entity_customer_get_one.service';
 import { InMemoryEntityCustomerRepository } from '@modules/business/entity_customer/shared/repositories/test/in-memory-entitycustomer-repository';
 import { makeEntityMembershipCustomer } from '@modules/business/entity_customer/shared/models/test/entity-customer-factory';
+import { InMemoryCustomerRepository } from '@modules/business/customer/shared/repositories/test/in-memory-customer-repository';
+import { makeCustomer } from '@modules/business/customer/shared/models/test/customer-factory';
 describe('Test in route get one customer', () => {
   let entity_repository: InMemoryEntityRepository;
   let profile_repository: InMemoryProfileRepository;
   let identity_repository: InMemoryIdentityRepository;
   let entity_customer_repository: InMemoryEntityCustomerRepository;
-
+  let customer_repository: InMemoryCustomerRepository;
   beforeEach(() => {
     // Populando os repositórios com dados iniciais
     entity_repository = new InMemoryEntityRepository();
     profile_repository = new InMemoryProfileRepository();
     entity_customer_repository = new InMemoryEntityCustomerRepository();
     identity_repository = new InMemoryIdentityRepository();
+    customer_repository = new InMemoryCustomerRepository();
   });
 
   it('should not get members, because user not permission', async () => {
@@ -27,6 +30,7 @@ describe('Test in route get one customer', () => {
       entity_customer_repository,
       profile_repository,
       entity_repository,
+      customer_repository,
     );
     expect(
       entityCustomerGetOneService.execute({
@@ -43,11 +47,54 @@ describe('Test in route get one customer', () => {
     );
   });
 
+  it('should not get members, because client not exists', async () => {
+    const entityCustomerGetOneService = new EntityCustomerGetOneService(
+      entity_customer_repository,
+      profile_repository,
+      entity_repository,
+      customer_repository,
+    );
+    expect(
+      entityCustomerGetOneService.execute({
+        entity_id: '343',
+        entity_id_user: '343',
+        profile_id: '123',
+        is_superuser: false,
+      }),
+    ).rejects.toThrow(new AppError('Cliente não existe', 404));
+  });
+
   it('should not get members, because user not exists', async () => {
     const entityCustomerGetOneService = new EntityCustomerGetOneService(
       entity_customer_repository,
       profile_repository,
       entity_repository,
+      customer_repository,
+    );
+    entity_repository.list_entity.push(
+      makeEntity({
+        id: '123',
+      }),
+    );
+    identity_repository.list_identity.push(
+      makeIdentity({
+        id: '123',
+      }),
+    );
+    profile_repository.list_profile.push(
+      makeProfile({
+        id: '123',
+        props: {
+          identity_id: identity_repository.list_identity[0].id,
+        },
+      }),
+    );
+    customer_repository.list_customer.push(
+      makeCustomer({
+        props: {
+          profile_id: profile_repository.list_profile[0].id,
+        },
+      }),
     );
     expect(
       entityCustomerGetOneService.execute({
@@ -78,12 +125,19 @@ describe('Test in route get one customer', () => {
         },
       }),
     );
+    customer_repository.list_customer.push(
+      makeCustomer({
+        props: {
+          profile_id: profile_repository.list_profile[0].id,
+        },
+      }),
+    );
     entity_customer_repository.list_customer.push(
       makeEntityMembershipCustomer({
         id: '123',
         props: {
           entity_id: entity_repository.list_entity[0]._id,
-          profile_id: profile_repository.list_profile[0].id,
+          customer_id: customer_repository.list_customer[0]._id,
         },
       }),
     );
@@ -106,12 +160,19 @@ describe('Test in route get one customer', () => {
         },
       }),
     );
+    customer_repository.list_customer.push(
+      makeCustomer({
+        props: {
+          profile_id: profile_repository.list_profile[1].id,
+        },
+      }),
+    );
     entity_customer_repository.list_customer.push(
       makeEntityMembershipCustomer({
         id: '124',
         props: {
           entity_id: entity_repository.list_entity[1]._id,
-          profile_id: profile_repository.list_profile[1].id,
+          customer_id: customer_repository.list_customer[1]._id,
         },
       }),
     );
@@ -119,6 +180,7 @@ describe('Test in route get one customer', () => {
       entity_customer_repository,
       profile_repository,
       entity_repository,
+      customer_repository,
     );
     const result = await entityCustomerGetOneService.execute({
       entity_id: '123',
