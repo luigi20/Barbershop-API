@@ -1,98 +1,564 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 💈 Barber SaaS API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API backend para uma plataforma SaaS de gerenciamento de barbearias, desenvolvida com **Node.js, NestJS, TypeScript, PostgreSQL, Prisma e Docker**.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+O projeto foi pensado para atender múltiplas barbearias em uma mesma plataforma, utilizando uma arquitetura multi-tenant baseada em **entities**, permitindo que cada estabelecimento tenha seus próprios usuários, clientes, configurações e dados isolados.
 
-## Description
+> 🚧 Projeto em desenvolvimento
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+---
 
-## Project setup
+## 📌 Sobre o projeto
 
-```bash
-$ yarn install
+O **Barber SaaS** é uma API para gerenciamento de barbearias, desenvolvida com foco em organização de domínio, segurança, escalabilidade e separação de dados entre diferentes estabelecimentos.
+
+A aplicação utiliza containers Docker para padronizar o ambiente de desenvolvimento e facilitar a execução dos serviços necessários, como banco de dados e cache.
+
+A proposta é disponibilizar uma base backend para funcionalidades como:
+
+- 👤 Gerenciamento de usuários e perfis
+- 🏪 Gerenciamento de barbearias
+- 👥 Gerenciamento de clientes
+- 💇 Profissionais e membros da equipe
+- 🔐 Autenticação e autorização
+- 📅 Agendamento de serviços
+- 💈 Serviços oferecidos pela barbearia
+- 📍 Endereço e localização dos estabelecimentos
+- 💳 Planos e estrutura SaaS
+- 🔑 Controle de acesso baseado em papéis
+- 🔗 Integrações com serviços externos
+
+---
+
+## 🏗️ Arquitetura
+
+O projeto segue uma arquitetura modular utilizando os recursos do NestJS, buscando manter responsabilidades bem definidas entre os diferentes domínios da aplicação.
+
+A aplicação utiliza o conceito de **multi-tenancy**, onde os dados relacionados a uma barbearia são vinculados a uma `Entity`.
+
+Os serviços de infraestrutura podem ser executados em containers Docker, mantendo o ambiente padronizado entre diferentes máquinas e ambientes.
+
+Exemplo simplificado:
+
+```text
+                    ┌─────────────────┐
+                    │      Client     │
+                    └────────┬────────┘
+                             │
+                             ▼
+                    ┌─────────────────┐
+                    │      API        │
+                    │    NestJS       │
+                    └────────┬────────┘
+                             │
+              ┌──────────────┼──────────────┐
+              ▼              ▼              ▼
+        ┌──────────┐   ┌──────────┐   ┌──────────┐
+        │  Auth    │   │  Entity  │   │ Customer │
+        └──────────┘   └──────────┘   └──────────┘
+              │              │              │
+              └──────────────┼──────────────┘
+                             ▼
+                    ┌─────────────────┐
+                    │   PostgreSQL    │
+                    │    Docker       │
+                    └─────────────────┘
 ```
 
-## Compile and run the project
+---
 
-```bash
-# development
-$ yarn run start
+## 🧰 Tecnologias
 
-# watch mode
-$ yarn run start:dev
+### Backend
 
-# production mode
-$ yarn run start:prod
+- **Node.js**
+- **NestJS**
+- **TypeScript**
+- **Prisma ORM**
+- **PostgreSQL**
+
+### Infraestrutura e ferramentas
+
+- **Docker**
+- **Docker Compose**
+- **Redis**
+- **JWT**
+- **Git**
+- **ESLint**
+- **Prettier**
+
+---
+
+## 🔐 Autenticação
+
+A API possui uma estrutura de autenticação baseada em tokens, com separação entre diferentes tipos de credenciais e níveis de acesso.
+
+Entre os conceitos utilizados estão:
+
+- Access Token
+- Refresh Token
+- Challenge Token
+- MFA
+- Controle de sessão
+- Roles e permissões
+- Proteção de rotas
+- Identificação da entidade do usuário autenticado
+
+A estrutura permite que um mesmo usuário possa estar relacionado a diferentes entidades, mantendo o contexto da barbearia durante a utilização da API.
+
+---
+
+## 👥 Controle de acesso
+
+O sistema utiliza **Role-Based Access Control (RBAC)** para controlar as funcionalidades disponíveis para cada usuário.
+
+Entre os papéis previstos estão:
+
+```text
+DONO
+ADMINISTRADOR
+RECEPCIONISTA
+BARBEIRO
+CLIENTE
 ```
 
-## Run tests
+Também existe uma camada de **Super User**, destinada ao gerenciamento administrativo da plataforma.
 
-```bash
-# unit tests
-$ yarn run test
+---
 
-# e2e tests
-$ yarn run test:e2e
+## 🏪 Multi-tenancy
 
-# test coverage
-$ yarn run test:cov
+Um dos principais objetivos arquiteturais do projeto é permitir que a mesma aplicação atenda diversas barbearias.
+
+A estrutura utiliza uma `Entity` como contexto do estabelecimento.
+
+Exemplo:
+
+```text
+Entity
+ ├── Members
+ ├── Customers
+ ├── Services
+ ├── Appointments
+ ├── Address
+ └── Settings
 ```
 
-## Deployment
+Isso permite manter os dados de diferentes estabelecimentos separados dentro da mesma infraestrutura.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+---
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+## 🗄️ Banco de dados
 
-```bash
-$ yarn install -g @nestjs/mau
-$ mau deploy
+O projeto utiliza **PostgreSQL** como banco de dados relacional e **Prisma** como ORM.
+
+O PostgreSQL pode ser executado em um container Docker, evitando a necessidade de instalar e configurar o banco diretamente na máquina local.
+
+O schema é organizado utilizando relacionamentos entre entidades, perfis, identidades, membros e clientes.
+
+Exemplo simplificado:
+
+```text
+Identity
+   │
+   └── Profile
+          │
+          └── Member
+                 │
+                 └── Entity
+                        │
+                        ├── Customer
+                        ├── Address
+                        └── ...
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+---
 
-## Resources
+## 📍 Localização
 
-Check out a few resources that may come in handy when working with NestJS:
+As barbearias possuem informações de endereço e localização, permitindo trabalhar futuramente com funcionalidades como:
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+- Busca de barbearias próximas
+- Exibição em mapas
+- Cálculo de distância
+- Filtros por localização
 
-## Support
+A estrutura de endereço suporta informações como:
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```text
+CEP
+Rua
+Número
+Bairro
+Cidade
+Estado
+País
+Complemento
+Latitude
+Longitude
+```
 
-## Stay in touch
+---
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## 🚀 Funcionalidades
 
-## License
+### Implementadas
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+- [x] Estrutura inicial da API
+- [x] Autenticação
+- [x] Access Token
+- [x] Refresh Token
+- [x] Challenge Token
+- [x] Estrutura de MFA
+- [x] Controle de acesso por roles
+- [x] Estrutura multi-tenant
+- [x] Gerenciamento de entidades
+- [x] Perfis de usuário
+- [x] Estrutura de membros
+- [x] Clientes
+- [x] Endereço e localização
+- [x] Configuração da infraestrutura com Docker
+
+### Em desenvolvimento
+
+- [ ] Agendamentos
+- [ ] Serviços
+- [ ] Profissionais
+- [ ] Disponibilidade de horários
+- [ ] Notificações
+- [ ] Planos SaaS
+- [ ] Integração com pagamentos
+- [ ] Integrações externas
+- [ ] Dashboard administrativo
+
+---
+
+## 📂 Estrutura do projeto
+
+Uma visão simplificada da organização:
+
+```text
+src/
+├── modules/
+│   ├── auth/
+│   ├── customer/
+│   ├── entity/
+│   ├── member/
+│   ├── profile/
+│   └── ...
+│
+├── shared/
+│   ├── errors/
+│   ├── guards/
+│   ├── decorators/
+│   └── ...
+│
+├── infra/
+│   └── database/
+│       └── prisma/
+│
+└── main.ts
+
+docker-compose.yml
+Dockerfile
+.env.example
+```
+
+A organização pode evoluir conforme novos domínios forem adicionados ao sistema.
+
+---
+
+## ⚙️ Requisitos
+
+Antes de executar o projeto, você precisará ter instalado:
+
+- Docker
+- Docker Compose
+- Git
+
+Para executar a aplicação diretamente fora de um container, também será necessário:
+
+- Node.js
+- Yarn ou npm
+
+O PostgreSQL e o Redis podem ser executados através do Docker Compose.
+
+---
+
+## 🚀 Executando o projeto com Docker
+
+Clone o repositório:
+
+```bash
+git clone <repository-url>
+
+cd barber-saas-api
+```
+
+Configure as variáveis de ambiente:
+
+```bash
+cp .env.example .env
+```
+
+Revise as variáveis do arquivo `.env`, especialmente a URL de conexão com o banco de dados:
+
+```env
+DATABASE_URL="postgresql://postgres:postgres@postgres:5432/barber_saas"
+```
+
+Suba os containers da aplicação e da infraestrutura:
+
+```bash
+docker compose up -d
+```
+
+Verifique o status dos containers:
+
+```bash
+docker compose ps
+```
+
+Execute as migrations dentro do container da aplicação:
+
+```bash
+docker compose exec app yarn prisma migrate deploy
+```
+
+Gere o Prisma Client:
+
+```bash
+docker compose exec app yarn prisma generate
+```
+
+A aplicação estará disponível conforme a porta configurada no `docker-compose.yml`.
+
+Para acompanhar os logs:
+
+```bash
+docker compose logs -f app
+```
+
+---
+
+## 🐳 Docker
+
+O projeto utiliza Docker para executar a aplicação e seus serviços de infraestrutura de forma isolada e padronizada.
+
+Serviços previstos no Docker Compose:
+
+```text
+app
+├── API NestJS
+├── PostgreSQL
+└── Redis
+```
+
+Iniciar os serviços:
+
+```bash
+docker compose up -d
+```
+
+Iniciar reconstruindo as imagens:
+
+```bash
+docker compose up -d --build
+```
+
+Parar os serviços:
+
+```bash
+docker compose down
+```
+
+Parar os serviços e remover os volumes:
+
+```bash
+docker compose down -v
+```
+
+Verificar os containers em execução:
+
+```bash
+docker compose ps
+```
+
+Visualizar os logs de todos os serviços:
+
+```bash
+docker compose logs -f
+```
+
+Visualizar os logs de um serviço específico:
+
+```bash
+docker compose logs -f app
+```
+
+A execução com volumes permite preservar os dados do PostgreSQL e do Redis entre reinicializações dos containers.
+
+---
+
+## 🚀 Executando localmente sem Docker
+
+Caso prefira executar apenas a aplicação diretamente na máquina, instale as dependências:
+
+```bash
+yarn install
+```
+
+Configure as variáveis de ambiente:
+
+```bash
+cp .env.example .env
+```
+
+Nesse caso, o PostgreSQL e o Redis deverão estar disponíveis localmente ou em containers separados.
+
+Execute as migrations:
+
+```bash
+yarn prisma migrate dev
+```
+
+Inicie a aplicação em modo de desenvolvimento:
+
+```bash
+yarn start:dev
+```
+
+Para produção:
+
+```bash
+yarn start:prod
+```
+
+---
+
+## 🧪 Testes
+
+Executar testes unitários:
+
+```bash
+yarn test
+```
+
+Executar testes E2E:
+
+```bash
+yarn test:e2e
+```
+
+Executar testes com coverage:
+
+```bash
+yarn test:cov
+```
+
+Para executar os testes dentro do container da aplicação:
+
+```bash
+docker compose exec app yarn test
+```
+
+---
+
+## 🔄 Migrations
+
+Criar uma nova migration localmente:
+
+```bash
+yarn prisma migrate dev --name nome_da_migration
+```
+
+Criar uma nova migration dentro do container:
+
+```bash
+docker compose exec app yarn prisma migrate dev --name nome_da_migration
+```
+
+Aplicar migrations em um ambiente de produção:
+
+```bash
+docker compose exec app yarn prisma migrate deploy
+```
+
+Gerar o Prisma Client:
+
+```bash
+yarn prisma generate
+```
+
+Ou, utilizando Docker:
+
+```bash
+docker compose exec app yarn prisma generate
+```
+
+Visualizar o banco através do Prisma Studio:
+
+```bash
+yarn prisma studio
+```
+
+Para acessar o Prisma Studio utilizando o container:
+
+```bash
+docker compose exec app yarn prisma studio --hostname 0.0.0.0
+```
+
+---
+
+## 🎯 Objetivos do projeto
+
+Além de ser uma aplicação voltada para gerenciamento de barbearias, o projeto também tem como objetivo explorar na prática conceitos de desenvolvimento backend, como:
+
+- Arquitetura modular
+- Multi-tenancy
+- Autenticação segura
+- RBAC
+- Modelagem relacional
+- APIs REST
+- Processamento assíncrono
+- Integração entre serviços
+- Containerização com Docker
+- Orquestração com Docker Compose
+- Escalabilidade
+- Boas práticas de desenvolvimento
+- Organização de domínio
+
+---
+
+## 🗺️ Roadmap
+
+```text
+[x] Estrutura base
+[x] Auth
+[x] Multi-tenancy
+[x] Profiles
+[x] Members
+[x] Customers
+[x] Docker
+[ ] Services
+[ ] Professionals
+[ ] Scheduling
+[ ] Notifications
+[ ] Payments
+[ ] SaaS Plans
+[ ] Production deployment
+```
+
+---
+
+## 👨‍💻 Autor
+
+Desenvolvido por **Luís Antônio dos Santos Silva**.
+
+Backend Developer focado em **Node.js, NestJS, TypeScript, APIs REST, PostgreSQL e Docker**.
+
+---
+
+## 📄 Licença
+
+Este projeto está sob a licença MIT.
