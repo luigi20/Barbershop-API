@@ -95,18 +95,33 @@ export class EntityMembershipUpdateService {
       },
       profile_exists.id,
     );
-    const entity_membership = new Entity_Membership({
-      entity_id: entity_membership_exists.entity_id,
-      profile_id: profile.id,
-      roles: roles,
-      status: status,
-      birth_date: new Date(birth_date),
-      phone: phone,
-      photo: photo,
-      name: name,
-      profile_name: profile.name,
-      entity_name: info_entity.name,
-    });
+    let entity_membership: Entity_Membership = null;
+    if (entity_membership_exists.roles.includes('administrador'))
+      entity_membership = new Entity_Membership({
+        entity_id: entity_membership_exists.entity_id,
+        profile_id: profile.id,
+        roles: [...entity_membership_exists.roles, ...roles],
+        status: status,
+        birth_date: new Date(birth_date),
+        phone: phone,
+        photo: photo,
+        name: name,
+        profile_name: profile.name,
+        entity_name: info_entity.name,
+      });
+    else
+      entity_membership = new Entity_Membership({
+        entity_id: entity_membership_exists.entity_id,
+        profile_id: profile.id,
+        roles: roles,
+        status: status,
+        birth_date: new Date(birth_date),
+        phone: phone,
+        photo: photo,
+        name: name,
+        profile_name: profile.name,
+        entity_name: info_entity.name,
+      });
     const prisma = this.prisma.getPrismaClient();
     try {
       await prisma.$transaction(async (tx) => {
