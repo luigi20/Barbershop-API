@@ -10,6 +10,7 @@ import { PrismaService } from 'infra/database/prisma/prisma.service';
 import { randomUUID } from 'crypto';
 import { InMemoryEntityMembershipRepository } from '@modules/business/entity_membership/shared/repositories/test/in-memory-entitymembership-repository';
 import { InMemoryIdentityCredentialRepository } from '@modules/auth/identity_credential/shared/repositories/test/in-memory-identity-credential-repository';
+import { makeEntityMembership } from '@modules/business/entity_membership/shared/models/test/entity-membership-factory';
 
 jest.mock('argon2');
 describe('Test in route create membership', () => {
@@ -153,7 +154,7 @@ describe('Test in route create membership', () => {
     expect(entity_membership_repository.list_membership.length).toEqual(1);
   });
 
-  it('should member', async () => {
+  it('should member and not membership before', async () => {
     entity_repository.list_entity.push(
       makeEntity({
         id: '123',
@@ -193,6 +194,62 @@ describe('Test in route create membership', () => {
       phone: '55793843738',
       photo: null,
       roles: ['recepcionista'],
+    });
+    expect(result).not.toBe(null);
+    expect(identity_repository.list_identity.length).toEqual(1);
+    expect(profile_repository.list_profile.length).toEqual(1);
+    expect(entity_membership_repository.list_membership.length).toEqual(1);
+  });
+
+  it('should member and membership before', async () => {
+    entity_repository.list_entity.push(
+      makeEntity({
+        id: '123',
+      }),
+    );
+    identity_repository.list_identity.push(
+      makeIdentity({
+        id: '123',
+        props: {
+          email: 'l@gmail.com',
+        },
+      }),
+    );
+    profile_repository.list_profile.push(
+      makeProfile({
+        id: '123',
+        props: {
+          identity_id: '123',
+        },
+      }),
+    );
+    entity_membership_repository.list_membership.push(
+      makeEntityMembership({
+        props: {
+          entity_id: entity_repository.list_entity[0]._id,
+          profile_id: profile_repository.list_profile[0].id,
+          roles: ['administrador'],
+        },
+      }),
+    );
+    const entityMembershipCreateService = new EntityMembershipCreateService(
+      entity_membership_repository,
+      profile_repository,
+      entity_repository,
+      identity_repository,
+      prismaMock,
+      identity_credential_repository,
+    );
+    const result = await entityMembershipCreateService.execute({
+      birth_date: '12/06/1965',
+      email: 'l@gmail.com',
+      entity_id: '123',
+      mfa_required: false,
+      name: 'Luis',
+      password: 'scsLCDCJDVDJ#4324343435',
+      phone: '55793843738',
+      photo: null,
+      roles: ['barbeiro'],
     });
     expect(result).not.toBe(null);
     expect(identity_repository.list_identity.length).toEqual(1);

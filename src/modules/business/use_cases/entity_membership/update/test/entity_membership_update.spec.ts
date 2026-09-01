@@ -200,7 +200,7 @@ describe('Test in route update membership', () => {
         props: {
           profile_id: '123',
           entity_id: '123',
-          roles: ['administrador'],
+          roles: ['barbeiro'],
         },
       }),
     );
@@ -222,13 +222,14 @@ describe('Test in route update membership', () => {
         phone: '55793843738',
         photo: null,
         roles: ['recepcionista'],
-        roles_auth: [MemberRole.RECEPCIONISTA],
+        roles_auth: [MemberRole.BARBEIRO],
         identity_id: '123',
       }),
     ).rejects.toThrow(
       new AppError('Usuário não tem permissão para mudar esse perfil', 400),
     );
   });
+
   it('should not update member, because transaction failed', async () => {
     const prismaMock = {
       getPrismaClient: jest.fn(),

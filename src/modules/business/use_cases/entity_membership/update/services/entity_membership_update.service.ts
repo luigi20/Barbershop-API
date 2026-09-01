@@ -64,14 +64,15 @@ export class EntityMembershipUpdateService {
       );
     if (!entity_membership_exists)
       throw new AppError('Usuário não pertence a essa organização', 404);
-    if (
-      entity_membership_exists.roles.includes('administrador') &&
-      !roles_auth.includes(MemberRole.ADMINISTRADOR)
-    )
+    const actor_can_update =
+      roles_auth.includes(MemberRole.ADMINISTRADOR) ||
+      roles_auth.includes(MemberRole.RECEPCIONISTA);
+    if (!actor_can_update) {
       throw new AppError(
         'Usuário não tem permissão para mudar esse perfil',
         400,
       );
+    }
     const identity = new Identity(
       {
         email: email,
