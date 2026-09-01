@@ -7,10 +7,11 @@ export class InMemoryCustomerRepository implements ICustomerRepository {
   async find_all(): Promise<string[]> {
     return this.list_customer.map((item) => item._id);
   }
-  async find_profile_id(profile_id: string): Promise<Customer> {
+  async find_profile_id(profile_id: string): Promise<Customer | null> {
     const customer = this.list_customer.find(
       (item) => item.profile_id === profile_id,
     );
+    if (!customer) return null;
     return customer;
   }
   async find_one(id: string): Promise<Customer | null> {

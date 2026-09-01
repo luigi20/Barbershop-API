@@ -19,12 +19,13 @@ class CustomerRepository implements ICustomerRepository {
       data: raw,
     });
   }
-  async find_profile_id(profile_id: string): Promise<Customer> {
+  async find_profile_id(profile_id: string): Promise<Customer | null> {
     const customer = await this.prisma.getPrismaClient().customer.findUnique({
       where: {
         profile_id: profile_id,
       },
     });
+    if (!customer) return null;
     return CustomerMapper.toDomain(customer);
   }
   async find_one(id: string): Promise<Customer | null> {
