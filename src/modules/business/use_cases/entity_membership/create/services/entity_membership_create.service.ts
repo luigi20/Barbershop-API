@@ -111,18 +111,34 @@ export class EntityMembershipCreateService {
         identity_exists.id,
       );
       if (!profile) return;
-      entity_membership = new Entity_Membership({
-        entity_id: entity_id,
-        profile_id: profile.id,
-        roles: roles,
-        status: 'ativo',
-        birth_date: new Date(birth_date),
-        phone: phone,
-        photo: photo,
-        name: name,
-        profile_name: profile.name,
-        entity_name: info_entity.name,
-      });
+      const entity_membership_exists =
+        await this.entity_membership_repository.find_one(entity_id, profile.id);
+      if (entity_membership_exists.roles.includes('administrador'))
+        entity_membership = new Entity_Membership({
+          entity_id: entity_id,
+          profile_id: profile.id,
+          roles: [...entity_membership_exists.roles, ...roles],
+          status: 'ativo',
+          birth_date: new Date(birth_date),
+          phone: phone,
+          photo: photo,
+          name: name,
+          profile_name: profile.name,
+          entity_name: info_entity.name,
+        });
+      else
+        entity_membership = new Entity_Membership({
+          entity_id: entity_id,
+          profile_id: profile.id,
+          roles: roles,
+          status: 'ativo',
+          birth_date: new Date(birth_date),
+          phone: phone,
+          photo: photo,
+          name: name,
+          profile_name: profile.name,
+          entity_name: info_entity.name,
+        });
       await this.entity_membership_repository.create(entity_membership);
     }
     return entity_membership;
