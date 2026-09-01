@@ -113,7 +113,7 @@ export class EntityMembershipCreateService {
       if (!profile) return;
       const entity_membership_exists =
         await this.entity_membership_repository.find_one(entity_id, profile.id);
-      if (entity_membership_exists.roles.includes('administrador'))
+      if (entity_membership_exists?.roles?.includes('administrador'))
         entity_membership = new Entity_Membership({
           entity_id: entity_id,
           profile_id: profile.id,
