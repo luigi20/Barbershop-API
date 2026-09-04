@@ -19,7 +19,9 @@ export class MFARequestService {
   ) {}
 
   public async execute({ email }: IMFARequest): Promise<string> {
-    const identity_exists = await this.identity_repository.find_by_email(email);
+    const identity_exists = await this.identity_repository.find_by_email(
+      email.toLowerCase().trim(),
+    );
     if (!identity_exists) throw new AppError('Credenciais inválidas');
     const generate_code = generateCode();
     const mfa_code = new MFA_Code({
