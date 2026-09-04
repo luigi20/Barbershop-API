@@ -1,24 +1,13 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { Body, Controller, Post } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PasswordResetDTO } from '../dto/password_resetDTO';
 import { PasswordResetService } from '../service/password_reset.service';
-import { TokenTypeRequired } from '@modules/auth/decorators/token-type.decorator';
-import { TokenType } from '@modules/utils/enum';
-import { AuthGuardChallenge } from '@modules/auth/guards/auth_guard_challenge';
 
 @ApiTags('Auth')
-@ApiBearerAuth('access-token')
 @Controller('auth')
 export class PasswordResetController {
   constructor(private readonly passwordResetService: PasswordResetService) {}
 
-  @UseGuards(AuthGuardChallenge)
-  @TokenTypeRequired(TokenType.CHALLENGE)
   @Post('passwordreset')
   @ApiOperation({
     summary: 'Redefinir senha',

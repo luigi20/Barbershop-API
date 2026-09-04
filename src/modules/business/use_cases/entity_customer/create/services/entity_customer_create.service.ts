@@ -57,7 +57,9 @@ export class EntityCustomerCreateService {
     const info_entity =
       await this.entity_repository.findByIdSelectIdAndName(entity_id);
     if (!info_entity) throw new AppError('Empresa não existe', 404);
-    const identity_exists = await this.identity_repository.find_by_email(email);
+    const identity_exists = await this.identity_repository.find_by_email(
+      email.toLowerCase().trim(),
+    );
     let entity_member_customer: Entity_Customer = null;
     if (!identity_exists) {
       const password_hash = await argon2.hash(password);

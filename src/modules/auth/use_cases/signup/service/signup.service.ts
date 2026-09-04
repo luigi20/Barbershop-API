@@ -77,7 +77,9 @@ export class SignUpService {
     const errors = password_validator.validate(password, { list: true });
     if (Array.isArray(errors) && errors.length > 0)
       throw new AppError('Senha inválida', 400);
-    const identity_exists = await this.identity_repository.find_by_email(email);
+    const identity_exists = await this.identity_repository.find_by_email(
+      email.toLowerCase().trim(),
+    );
     if (identity_exists)
       throw new AppError('Usuário já cadastrado no sistema', 400);
     const password_hash = await argon2.hash(password);

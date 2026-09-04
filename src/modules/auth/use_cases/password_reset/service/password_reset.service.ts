@@ -31,7 +31,9 @@ export class PasswordResetService {
     });
     if (Array.isArray(errors) && errors.length > 0)
       throw new AppError('Senha inválida', 400);
-    const identity = await this.identity_repository.find_by_email(email);
+    const identity = await this.identity_repository.find_by_email(
+      email.toLowerCase().trim(),
+    );
     if (!identity) throw new AppError('Email não encontrado', 404);
     const identity_credential =
       await this.identity_credential_repository.find_by_provider(

@@ -48,7 +48,9 @@ export class EntityCustomerUpdateService {
     const info_entity =
       await this.entity_repository.findByIdSelectIdAndName(entity_id);
     if (!info_entity) throw new AppError('Empresa não existe', 404);
-    const identity_exists = await this.identity_repository.find_by_email(email);
+    const identity_exists = await this.identity_repository.find_by_email(
+      email.toLowerCase().trim(),
+    );
     if (!identity_exists) throw new AppError('Credenciais inválidas', 400);
     const profile_exists = await this.profile_repository.find_identity_id(
       identity_exists.id,

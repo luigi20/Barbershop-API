@@ -76,7 +76,10 @@ class IdentityCredentialRepository implements IIdentityCredentialRepository {
   async update_password(identity_id: string, new_hash: string): Promise<void> {
     await this.prisma.getPrismaClient().identityCredential.update({
       where: {
-        id: identity_id,
+        identity_id_provider: {
+          identity_id,
+          provider: 'local',
+        },
       },
       data: {
         password_hash: new_hash,
