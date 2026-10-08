@@ -6,6 +6,8 @@ import { IEntityCustomerRepository } from '@modules/business/entity_customer/sha
 import { IEntityMembershipRepository } from '@modules/business/entity_membership/shared/repositories/abstract_class/ientitymembership-repository';
 import { AppError } from '@modules/utils/app_error';
 import { Injectable } from '@nestjs/common';
+import { Optional } from '@nestjs/common';
+import { IIdentityRepository } from '@modules/auth/identity/shared/repositories/abstract_class/iidentity-repository';
 
 interface IMeProfileRequest {
   profile_id: string;
@@ -19,6 +21,7 @@ export class MeProfileService {
     private readonly entity_membership_repository: IEntityMembershipRepository,
     private readonly entity_membercustomer_repository: IEntityCustomerRepository,
     private readonly customer_repository: ICustomerRepository,
+    @Optional() private readonly identity_repository?: IIdentityRepository,
   ) {}
 
   public async execute({
@@ -45,6 +48,13 @@ export class MeProfileService {
       entity_customer && entity_customer?.status?.toLowerCase() === 'ativo';
     if (!isMember && !isCustomer)
       throw new AppError('Usuário não pertence a esta organização', 403);
+    if (this.identity_repository) {
+      const identity = await this.identity_repository.find_by_id(
+        profile_exists.identity_id,
+      );
+      if (!identity) throw new AppError('Identidade não existe', 404);
+      profile_exists.identity = identity;
+    }
     profile_exists.roles =
       membership?.roles?.length > 0 ? [...membership.roles] : [];
     if (isCustomer) profile_exists.roles.push('cliente');

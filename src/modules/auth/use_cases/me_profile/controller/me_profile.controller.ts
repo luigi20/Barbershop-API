@@ -13,8 +13,11 @@ import { MemberRole, TokenType } from '@modules/utils/enum';
 import { RolesGuard } from '@modules/auth/guards/roles_guards';
 import { Roles } from '@modules/auth/decorators/roles.decorator';
 import { AuthGuardAccess } from '@modules/auth/guards/auth_guard_access';
+import { UseFilters } from '@nestjs/common';
+import { ManagementAppErrorFilter } from '@modules/business/use_cases/management-app-error.filter';
 
 @ApiTags('Profile')
+@UseFilters(ManagementAppErrorFilter)
 @ApiBearerAuth('access-token')
 @UseGuards(AuthGuardAccess, RolesGuard)
 @TokenTypeRequired(TokenType.ACCESS)

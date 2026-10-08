@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
+import { IIdentityRepository } from '@modules/auth/identity/shared/repositories/abstract_class/iidentity-repository';
 import { IProfileRepository } from '@modules/auth/profile/shared/repositories/abstract_class/iprofile-repository';
 import { IEntityRepository } from '@modules/auth/entity/shared/repositories/abstract_class/ientity-repository';
 import { AppError } from '@modules/utils/app_error';
@@ -7,7 +8,8 @@ import { Entity_Customer } from '@modules/business/entity_customer/shared/models
 import { ICustomerRepository } from '@modules/business/customer/shared/repositories/abstract_class/icustomer-repository';
 interface IMembersRequest {
   entity_id: string;
-  profile_id: string;
+  profile_id?: string;
+  customer_id?: string;
   is_superuser: boolean;
   entity_id_user: string;
 }
@@ -19,11 +21,13 @@ export class EntityCustomerGetOneService {
     private readonly profile_repository: IProfileRepository,
     private readonly entity_repository: IEntityRepository,
     private readonly customer_repository: ICustomerRepository,
+    @Optional() private readonly identity_repository?: IIdentityRepository,
   ) {}
 
   public async execute({
     entity_id,
     profile_id,
+    customer_id,
     entity_id_user,
     is_superuser,
   }: IMembersRequest): Promise<Entity_Customer> {
@@ -32,8 +36,11 @@ export class EntityCustomerGetOneService {
         'Usuário não tem permissão de acessar dados de usuários de outra empresa',
         400,
       );
-    const customer_exists =
-      await this.customer_repository.find_profile_id(profile_id);
+    if (!customer_id && !profile_id)
+      throw new AppError('customer_id obrigatório', 400);
+    const customer_exists = customer_id
+      ? await this.customer_repository.find_one(customer_id)
+      : await this.customer_repository.find_profile_id(profile_id);
     if (!customer_exists) throw new AppError('Cliente não existe', 404);
     const member = await this.entity_customer_repository.find_one(
       entity_id,
@@ -44,12 +51,18 @@ export class EntityCustomerGetOneService {
       member.customer_id,
     );
     if (!customer) throw new AppError('Cliente não existe', 404);
+    member.profile_id = customer.profile_id;
+    if (!customer.profile_id) return member;
     const profile = await this.profile_repository.find_one(customer.profile_id);
-    if (!profile) return;
+    if (!profile) return member;
     member.profile_name = profile.name;
     member.phone = profile.phone;
     member.photo = profile.photo;
     member.birth_date = profile.birth_date;
+    if (this.identity_repository)
+      member.email = (
+        await this.identity_repository.find_by_id(profile.identity_id)
+      )?.email;
     const entity = await this.entity_repository.findByIdSelectIdAndName(
       member.entity_id,
     );

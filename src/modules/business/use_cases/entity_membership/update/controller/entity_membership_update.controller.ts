@@ -1,3 +1,4 @@
+import { tenantId } from '@modules/auth/security/request-security';
 import { Body, Controller, Put, Req, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -15,8 +16,11 @@ import { EntityMembershipUpdateDTO } from '../dto/entity_membership_updateDTO';
 import { Entity_Membership_View_Model } from '@modules/business/entity_membership/shared/view-models/entity-membership-view-model';
 import { AuthRequest } from '@modules/utils/types/types';
 import { AuthGuardAccess } from '@modules/auth/guards/auth_guard_access';
+import { UseFilters } from '@nestjs/common';
+import { ManagementAppErrorFilter } from '../../../management-app-error.filter';
 
 @ApiTags('Entity Membership')
+@UseFilters(ManagementAppErrorFilter)
 @ApiBearerAuth('access-token')
 @UseGuards(AuthGuardAccess, RolesGuard)
 @TokenTypeRequired(TokenType.ACCESS)
@@ -60,14 +64,9 @@ export class EntityMembershipUpdateController {
     @Req() req: AuthRequest,
   ) {
     const result = await this.entityMembershipUpdateService.execute({
-      birth_date: data.birth_date,
-      email: data.email,
-      entity_id: data.entity_id,
+      entity_id: tenantId(req.auth, data.entity_id ?? req.auth.entity_id),
       identity_id: data.identity_id,
-      mfa_required: data.mfa_required,
-      name: data.name,
-      phone: data.phone,
-      photo: data.photo,
+      profile_id: data.profile_id,
       roles: data.roles,
       status: data.status,
       roles_auth: req.auth.roles,

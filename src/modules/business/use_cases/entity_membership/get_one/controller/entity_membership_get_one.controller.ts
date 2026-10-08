@@ -1,4 +1,11 @@
-import { Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  ParseUUIDPipe,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -14,8 +21,12 @@ import { Roles } from '@modules/auth/decorators/roles.decorator';
 import { EntityMembershipGetOneService } from '../services/entity_membership_get_one.service';
 import { Entity_Membership_View_Model } from '@modules/business/entity_membership/shared/view-models/entity-membership-view-model';
 import { AuthGuardAccess } from '@modules/auth/guards/auth_guard_access';
+import { UseFilters } from '@nestjs/common';
+import { ManagementAppErrorFilter } from '../../../management-app-error.filter';
+import { tenantId } from '@modules/auth/security/request-security';
 
 @ApiTags('Entity Membership')
+@UseFilters(ManagementAppErrorFilter)
 @ApiBearerAuth('access-token')
 @UseGuards(AuthGuardAccess, RolesGuard)
 @TokenTypeRequired(TokenType.ACCESS)
@@ -34,7 +45,7 @@ export class EntityMembershipGetOneController {
   })
   @ApiQuery({
     name: 'entity_id',
-    required: true,
+    required: false,
     description: 'ID da entidade.',
     example: '550e8400-e29b-41d4-a716-446655440000',
   })
@@ -64,12 +75,12 @@ export class EntityMembershipGetOneController {
   public async Members(
     @Req() req: AuthRequest,
     @Query('entity_id') entity_id: string,
-    @Query('profile_id') profile_id: string,
+    @Query('profile_id', new ParseUUIDPipe()) profile_id: string,
   ) {
     const result = await this.entityMembershipGetOneService.execute({
       entity_id_user: req.auth.entity_id,
-      is_superuser: req.auth.is_superuser,
-      entity_id,
+      is_superuser: false,
+      entity_id: tenantId(req.auth, entity_id ?? req.auth.entity_id),
       profile_id,
     });
     return Entity_Membership_View_Model.toHttp(result);

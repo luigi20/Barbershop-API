@@ -25,7 +25,7 @@ class AddressRepository implements IAddressRepository {
         entity_id: entity_id,
       },
     });
-    if (!entity_id) return null;
+    if (!address) return null;
     return AddressMapper.toDomain(address);
   }
 
@@ -41,7 +41,7 @@ class AddressRepository implements IAddressRepository {
 
   async create(data: Address, tx?: Prisma.TransactionClient): Promise<void> {
     const raw = AddressMapper.toPrisma(data);
-    const client = tx ?? this.prisma;
+    const client = tx ?? this.prisma.getPrismaClient();
     await client.address.create({
       data: {
         ...raw,
@@ -55,7 +55,7 @@ class AddressRepository implements IAddressRepository {
   }
   async update(data: Address, tx?: Prisma.TransactionClient): Promise<void> {
     const raw = AddressMapper.toPrisma(data);
-    const client = tx ?? this.prisma;
+    const client = tx ?? this.prisma.getPrismaClient();
     await client.address.update({
       where: {
         id: data._id,

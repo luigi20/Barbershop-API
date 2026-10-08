@@ -1,3 +1,5 @@
+import { Req as AuthenticatedRequest } from '@nestjs/common';
+import { AuthRequest } from '@modules/utils/types/types';
 import {
   Body,
   Controller,
@@ -57,8 +59,14 @@ export class LogoutController {
     status: HttpStatus.FORBIDDEN,
     description: 'Usuário não possui permissão para realizar esta operação.',
   })
-  public async Logout(@Body() data: LogoutDTO) {
-    const token = await this.logout_service.execute(data.refresh_token);
+  public async Logout(
+    @AuthenticatedRequest() req: AuthRequest,
+    @Body() data: LogoutDTO,
+  ) {
+    const token = await this.logout_service.execute(
+      data.refresh_token,
+      req.auth.identity_id,
+    );
     return token;
   }
 }

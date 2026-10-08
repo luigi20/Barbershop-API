@@ -54,6 +54,22 @@ import { GeoapifyGeocodingService } from 'infra/geolocalization/service/geoapify
 import { IGeocodingService } from 'infra/geolocalization/interface/IGeocoding.service';
 import { ICustomerRepository } from './customer/shared/repositories/abstract_class/icustomer-repository';
 import { CustomerRepository } from './customer/shared/repositories/customer-repository';
+import { ServiceCatalogController } from './use_cases/service/service-catalog.controller';
+import { ServiceCatalogService } from './use_cases/service/service-catalog.service';
+import { IServiceRepository } from './service/shared/repositories/iservice-repository';
+import { ServiceRepository } from './service/shared/repositories/service-repository';
+import { AvailabilityController } from './use_cases/availability/availability.controller';
+import { AvailabilityService } from './use_cases/availability/availability.service';
+import { AvailabilityRepository } from './use_cases/availability/availability.repository';
+import { AppointmentController } from './use_cases/appointment/appointment.controller';
+import { AppointmentService } from './use_cases/appointment/appointment.service';
+import { AppointmentRepository } from './use_cases/appointment/appointment.repository';
+import { DashboardController } from './use_cases/dashboard/dashboard.controller';
+import {
+  DashboardService,
+  DashboardClock,
+} from './use_cases/dashboard/dashboard.service';
+import { DashboardRepository } from './use_cases/dashboard/dashboard.repository';
 
 @Module({
   imports: [
@@ -82,6 +98,10 @@ import { CustomerRepository } from './customer/shared/repositories/customer-repo
     EntityGetAllController,
     EntityGetOneController,
     EntityUpdateController,
+    ServiceCatalogController,
+    AvailabilityController,
+    AppointmentController,
+    DashboardController,
   ],
   providers: [
     PlanCreateService,
@@ -99,6 +119,15 @@ import { CustomerRepository } from './customer/shared/repositories/customer-repo
     EntityGetAllService,
     EntityGetOneService,
     EntityUpdateService,
+    ServiceCatalogService,
+    AvailabilityService,
+    AvailabilityRepository,
+    AppointmentService,
+    AppointmentRepository,
+    DashboardService,
+    DashboardClock,
+    DashboardRepository,
+    { provide: IServiceRepository, useClass: ServiceRepository },
     {
       provide: IGeocodingService,
       useClass: GeoapifyGeocodingService,

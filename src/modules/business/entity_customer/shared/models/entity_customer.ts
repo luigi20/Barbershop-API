@@ -13,6 +13,8 @@ export interface Entity_Customer_Props {
   phone: string;
   photo: string;
   birth_date: Date;
+  profile_id?: string | null;
+  email?: string | null;
 }
 
 export class Entity_Customer {
@@ -51,6 +53,22 @@ export class Entity_Customer {
 
   public get birth_date(): Date {
     return this.props.birth_date;
+  }
+
+  public get profile_id(): string | null | undefined {
+    return this.props.profile_id;
+  }
+
+  public set profile_id(profile_id: string | null) {
+    this.props.profile_id = profile_id;
+  }
+
+  public get email(): string | null | undefined {
+    return this.props.email;
+  }
+
+  public set email(email: string | null) {
+    this.props.email = email;
   }
 
   public set birth_date(birth_date: Date) {
@@ -126,7 +144,7 @@ export class Entity_Customer {
   }
 
   public get created_at(): Date {
-    return this.props.updated_at;
+    return this.props.created_at;
   }
 
   public set created_at(created_at: Date) {

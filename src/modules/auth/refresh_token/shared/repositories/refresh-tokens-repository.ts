@@ -3,11 +3,44 @@ import { IRefreshTokensRepository } from './abstract_class/irefresh-tokens-repos
 import { Refresh_Tokens } from '../models/refresh-tokens';
 import { PrismaService } from 'infra/database/prisma/prisma.service';
 import { RefreshTokensMapper } from 'infra/database/mappers/RefreshTokensMapper';
-import { PasswordResetTokensMapper } from 'infra/database/mappers/PasswordResetTokensMapper';
 
 @Injectable()
 class RefreshTokensRepository implements IRefreshTokensRepository {
   constructor(private prisma: PrismaService) {}
+  async find_session(id: string): Promise<Refresh_Tokens | null> {
+    const row = await this.prisma
+      .getPrismaClient()
+      .refreshToken.findUnique({ where: { id } });
+    return row ? RefreshTokensMapper.toDomain(row) : null;
+  }
+
+  async rotate(
+    id: string,
+    previousHash: string,
+    nextHash: string,
+    now: Date,
+  ): Promise<boolean> {
+    // Compare-and-swap: only one concurrent request may consume the current token.
+    const result = await this.prisma.getPrismaClient().refreshToken.updateMany({
+      where: {
+        id,
+        token_hash: previousHash,
+        revoked_at: false,
+        expires_at: { gt: now },
+      },
+      data: { token_hash: nextHash, updated_at: now },
+    });
+    return result.count === 1;
+  }
+
+  async revoke_session(id: string, identity_id: string): Promise<boolean> {
+    const result = await this.prisma.getPrismaClient().refreshToken.updateMany({
+      where: { id, identity_id },
+      data: { revoked_at: true, updated_at: new Date() },
+    });
+    return result.count === 1;
+  }
+
   async create(data: Refresh_Tokens): Promise<void> {
     const raw = RefreshTokensMapper.toPrisma(data);
     await this.prisma.getPrismaClient().refreshToken.create({

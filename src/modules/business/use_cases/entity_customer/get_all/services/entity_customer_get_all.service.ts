@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
+import { IIdentityRepository } from '@modules/auth/identity/shared/repositories/abstract_class/iidentity-repository';
 import { IProfileRepository } from '@modules/auth/profile/shared/repositories/abstract_class/iprofile-repository';
 import { IEntityRepository } from '@modules/auth/entity/shared/repositories/abstract_class/ientity-repository';
 import { AppError } from '@modules/utils/app_error';
@@ -19,6 +20,7 @@ export class EntityCustomerGetAllService {
     private readonly profile_repository: IProfileRepository,
     private readonly entity_repository: IEntityRepository,
     private readonly customer_repository: ICustomerRepository,
+    @Optional() private readonly identity_repository?: IIdentityRepository,
   ) {}
 
   public async execute({
@@ -42,6 +44,8 @@ export class EntityCustomerGetAllService {
           member.customer_id,
         );
         if (!customer) return;
+        member.profile_id = customer.profile_id;
+        if (!customer.profile_id) return;
         const profile = await this.profile_repository.find_one(
           customer.profile_id,
         );
@@ -50,6 +54,10 @@ export class EntityCustomerGetAllService {
         member.phone = profile.phone;
         member.photo = profile.photo;
         member.birth_date = profile.birth_date;
+        if (this.identity_repository)
+          member.email = (
+            await this.identity_repository.find_by_id(profile.identity_id)
+          )?.email;
         if (is_superuser) {
           const entity = await this.entity_repository.findByIdSelectIdAndName(
             member.entity_id,

@@ -11,6 +11,7 @@ import { randomUUID } from 'crypto';
 import { InMemoryEntityMembershipRepository } from '@modules/business/entity_membership/shared/repositories/test/in-memory-entitymembership-repository';
 import { InMemoryIdentityCredentialRepository } from '@modules/auth/identity_credential/shared/repositories/test/in-memory-identity-credential-repository';
 import { makeEntityMembership } from '@modules/business/entity_membership/shared/models/test/entity-membership-factory';
+import { MemberRole } from '@modules/utils/enum';
 
 jest.mock('argon2');
 describe('Test in route create membership', () => {
@@ -57,6 +58,7 @@ describe('Test in route create membership', () => {
         phone: '55793843738',
         photo: null,
         roles: ['barbeiro'],
+        roles_auth: [MemberRole.ADMINISTRADOR],
       }),
     ).rejects.toThrow(new AppError('Empresa não existe', 404));
   });
@@ -81,6 +83,7 @@ describe('Test in route create membership', () => {
         phone: '55793843738',
         photo: null,
         roles: ['barbeiro'],
+        roles_auth: [MemberRole.ADMINISTRADOR],
       }),
     ).rejects.toThrow(new AppError('Senha inválida', 400));
   });
@@ -114,6 +117,7 @@ describe('Test in route create membership', () => {
         phone: '55793843738',
         photo: null,
         roles: ['barbeiro'],
+        roles_auth: [MemberRole.ADMINISTRADOR],
       }),
     ).rejects.toThrow(
       new AppError(
@@ -147,6 +151,7 @@ describe('Test in route create membership', () => {
       phone: '55793843738',
       photo: null,
       roles: ['barbeiro'],
+      roles_auth: [MemberRole.ADMINISTRADOR],
     });
     expect(result).not.toBe(null);
     expect(identity_repository.list_identity.length).toEqual(1);
@@ -194,6 +199,7 @@ describe('Test in route create membership', () => {
       phone: '55793843738',
       photo: null,
       roles: ['recepcionista'],
+      roles_auth: [MemberRole.ADMINISTRADOR],
     });
     expect(result).not.toBe(null);
     expect(identity_repository.list_identity.length).toEqual(1);
@@ -240,18 +246,20 @@ describe('Test in route create membership', () => {
       prismaMock,
       identity_credential_repository,
     );
-    const result = await entityMembershipCreateService.execute({
-      birth_date: '12/06/1965',
-      email: 'l@gmail.com',
-      entity_id: '123',
-      mfa_required: false,
-      name: 'Luis',
-      password: 'scsLCDCJDVDJ#4324343435',
-      phone: '55793843738',
-      photo: null,
-      roles: ['barbeiro'],
-    });
-    expect(result).not.toBe(null);
+    await expect(
+      entityMembershipCreateService.execute({
+        birth_date: '12/06/1965',
+        email: 'l@gmail.com',
+        entity_id: '123',
+        mfa_required: false,
+        name: 'Luis',
+        password: 'scsLCDCJDVDJ#4324343435',
+        phone: '55793843738',
+        photo: null,
+        roles: ['barbeiro'],
+        roles_auth: [MemberRole.ADMINISTRADOR],
+      }),
+    ).rejects.toThrow(new AppError('Membro ja cadastrado', 409));
     expect(identity_repository.list_identity.length).toEqual(1);
     expect(profile_repository.list_profile.length).toEqual(1);
     expect(entity_membership_repository.list_membership.length).toEqual(1);

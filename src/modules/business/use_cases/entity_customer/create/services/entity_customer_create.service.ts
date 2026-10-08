@@ -14,6 +14,7 @@ import { Identity_Credential } from '@modules/auth/identity_credential/shared/mo
 import { IIdentityCredentialRepository } from '@modules/auth/identity_credential/shared/repositories/abstract_class/iidentitycredential-repository';
 import { Customer } from '@modules/business/customer/shared/models/customer';
 import { ICustomerRepository } from '@modules/business/customer/shared/repositories/abstract_class/icustomer-repository';
+import { isUniqueConflict } from '../../../p1-unique-conflict';
 
 interface IMembersRequest {
   entity_id: string;
@@ -64,7 +65,7 @@ export class EntityCustomerCreateService {
     if (!identity_exists) {
       const password_hash = await argon2.hash(password);
       const identity = new Identity({
-        email: email,
+        email: email.toLowerCase().trim(),
         mfa_required: mfa_required,
         status: 'ativo',
         is_superuser: false,
@@ -96,6 +97,8 @@ export class EntityCustomerCreateService {
         name: name,
         profile_name: profile.name,
         entity_name: info_entity.name,
+        profile_id: profile.id,
+        email: identity.email,
       });
       const prisma = this.prisma.getPrismaClient();
       try {
@@ -113,6 +116,8 @@ export class EntityCustomerCreateService {
           );
         });
       } catch (error) {
+        if (isUniqueConflict(error))
+          throw new AppError('Cliente já cadastrado', 409);
         throw new AppError(
           'Não foi possível concluir o cadastro. Tente novamente.',
           500,
@@ -122,24 +127,49 @@ export class EntityCustomerCreateService {
       const profile = await this.profile_repository.find_identity_id(
         identity_exists.id,
       );
-      if (!profile) return;
-      const customer = await this.customer_repository.find_profile_id(
+      if (!profile) throw new AppError('Perfil nao existe', 404);
+      const existing_customer = await this.customer_repository.find_profile_id(
         profile.id,
       );
-      if (!customer) return;
+      const customer =
+        existing_customer ?? new Customer({ profile_id: profile.id });
+      if (
+        existing_customer &&
+        (await this.entity_customer_repository.find_one(
+          entity_id,
+          customer._id,
+        ))
+      ) {
+        throw new AppError('Cliente ja cadastrado', 409);
+      }
       entity_member_customer = new Entity_Customer({
         entity_id: entity_id,
         customer_id: customer._id,
         notes: notes,
         status: 'ativo',
-        birth_date: new Date(birth_date),
-        phone: phone,
-        photo: photo,
-        name: name,
+        birth_date: profile.birth_date,
+        phone: profile.phone,
+        photo: profile.photo,
+        name: profile.name,
         profile_name: profile.name,
         entity_name: info_entity.name,
+        profile_id: profile.id,
+        email: identity_exists.email,
       });
-      await this.entity_customer_repository.create(entity_member_customer);
+      try {
+        await this.prisma.getPrismaClient().$transaction(async (tx) => {
+          if (!existing_customer)
+            await this.customer_repository.create(customer, tx);
+          await this.entity_customer_repository.create(
+            entity_member_customer,
+            tx,
+          );
+        });
+      } catch (error) {
+        if (isUniqueConflict(error))
+          throw new AppError('Cliente já cadastrado', 409);
+        throw error;
+      }
     }
     return entity_member_customer;
   }

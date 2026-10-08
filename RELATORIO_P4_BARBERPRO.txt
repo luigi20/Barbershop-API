@@ -1,0 +1,223 @@
+RELATORIO P4 — APPOINTMENTS
+BarberPro Backend — 2026-10-05
+
+1. ESTADO INICIAL
+P0, P1, P2 e P3 estavam implementados. Nao existia Appointment em schema,
+codigo ou testes. A busca por appointment, booking, agenda, schedule e
+reservation encontrou apenas referencias a fase futura e Plan.max_appointments.
+O working tree P0-P3 preexistente foi preservado.
+
+2. CHECKPOINT P4
+Customer.id e customer_id; EntityCustomer(customer_id, entity_id) fornece o
+vinculo local. Profissional usa Profile.id como professional_profile_id e
+EntityMembership(entity_id, profile_id), com role barbeiro e status ativo.
+Service pertence a Entity, usa Decimal(10,2), duration_minutes inteiro e
+status ativo/inativo. P3 ja fornecia timezone IANA, horarios semanais em
+minutos e TimeBlocks em TIMESTAMPTZ. P3 tambem fornecia transacoes Serializable
+e row lock no banco. O checkpoint detalhado foi entregue antes das edicoes.
+
+3. MODELAGEM APPOINTMENT
+Appointment tem id, entity_id, customer_id, professional_profile_id,
+service_id, service_name_snapshot, price_snapshot, duration_minutes_snapshot,
+starts_at, ends_at, status, notes, cancellation_reason, cancelled_at,
+completed_at, created_at e updated_at.
+
+4. RELACOES
+FKs compostas preservam tenant para EntityCustomer, EntityMembership e
+Service. Service recebeu chave unica (id, entity_id), sem alterar seus IDs.
+Nao foi criado Professional paralelo a Membership. As FKs de Appointment
+usam ON DELETE RESTRICT para preservar historico.
+
+5. SNAPSHOTS
+O backend copia nome, preco Decimal(10,2) e duracao do Service ativo na
+criacao. O cliente nao envia snapshots nem ends_at. O fim e calculado pelo
+backend. Alteracoes posteriores do Service nao mudam Appointment. Reagendar
+tambem preserva todos os snapshots, inclusive se o catalogo mudar.
+
+6. STATUS E TRANSICOES
+Estados: agendado, cancelado, concluido. Agendado pode ser cancelado,
+concluido ou reagendado (sem mudar status). Cancelado e concluido sao
+terminais. Cancelar novamente e idempotente; concluir novamente retorna 409.
+
+7. TIMEZONE
+P4 reutiliza Entity.timezone e a validacao ISO com Z/offset do P3. Instantes
+reais sao TIMESTAMPTZ(3), retornados em ISO UTC. A data da consulta de slots
+e local da Entity. A conversao nao usa o timezone do browser ou servidor.
+
+8. ALGORITMO DE AVAILABILITY
+Gera inicios locais a partir da jornada, converte para instantes UTC e
+mantem apenas os candidatos em que toda a duracao cabe no expediente e na
+jornada, sem TimeBlock ou Appointment bloqueante. A verificacao percorre os
+minutos civis no timezone da Entity, inclusive transicoes de horario de
+verao. Appointments agendados/concluidos bloqueiam; cancelados nao.
+
+9. SLOT INTERVAL
+Constante SLOT_INTERVAL_MINUTES=15, isolada em appointment-time.ts. E padrao
+V1, A CONFIRMAR como configuracao futura de produto.
+
+10. CREATE
+POST /appointments usa customer_id, professional_profile_id, service_id,
+starts_at e notes opcional. Revalida tenant, Customer ativo, barbeiro ativo,
+Service ativo, timezone, horario futuro, P3 e overlap dentro da transacao.
+Retorna 201. Body com entity_id, snapshots, ends_at ou status e rejeitado.
+
+11. LIST E DETAIL
+GET /appointments exige from/to ISO, intervalo positivo de ate 31 dias,
+aceita filtros profissionais, customer e status, ordena por starts_at e
+permanece tenant-scoped. GET /appointments/:id consulta id+entity_id.
+Os nomes atuais de Customer e profissional sao carregados em lote, sem N+1;
+Service name/price/duration refletem o snapshot.
+
+12. RESCHEDULE
+PUT /appointments/:id/reschedule aceita starts_at e profissional opcional.
+Revalida agenda, blocks, appointments e profissional. Preserva snapshot e
+exclui o proprio Appointment da verificacao de overlap.
+
+13. CANCEL
+PUT /appointments/:id/cancel aceita reason opcional, grava status,
+cancellation_reason e cancelled_at. Nao apaga a linha. Operacao repetida
+retorna o cancelamento original. O slot deixa de estar bloqueado.
+
+14. COMPLETE
+PUT /appointments/:id/complete grava concluido e completed_at. Apenas
+Appointment agendado pode ser concluido. Nao ha faturamento nesta fase.
+
+15. ESTRATEGIA ANTI-DOUBLE-BOOKING
+Overlap e existing.start < candidate.end AND existing.end > candidate.start.
+Intervalos adjacentes sao permitidos. A consulta de conflito acontece dentro
+da mesma transacao do INSERT/UPDATE, apos o lock do profissional.
+
+16. LOCKS E TRANSACOES
+CREATE e RESCHEDULE usam Prisma Serializable. O repository bloqueia com
+SELECT ... FOR UPDATE a EntityMembership do profissional. Em troca de
+profissional, bloqueia as Memberships em ordem de profile_id. RESCHEDULE
+tambem bloqueia a propria linha do Appointment. P2034/P2028 viram 409.
+
+17. TESTE CONCORRENTE
+PGlite isolado: 2 corridas passaram, cada uma com 1 sucesso, 1 conflito e
+1 Appointment no intervalo. Como o socket PGlite serializa transacoes,
+houve teste adicional em PostgreSQL 16 real e descartavel: uma conexao
+esperou o FOR UPDATE da outra; as duas corridas tiveram 1 sucesso, 1 erro
+409 e exatamente 1 Appointment no horario. Resultado PostgreSQL: 3/3 testes.
+
+18. SCHEMA
+src/infra/database/prisma/schema.prisma recebeu Appointment, relacoes e
+indice por Entity/data, profissional/data e Customer/data. Prisma validate
+passou; o Prisma Client foi gerado localmente.
+
+19. MIGRATION
+src/infra/database/prisma/migrations/20261006000000_p4_appointments/
+migration.sql depende de P2 e P3. Foi aplicada somente em PGlite isolado e
+PostgreSQL temporario em memoria, nunca no banco de desenvolvimento.
+
+20. REPOSITORY
+appointment.repository.ts centraliza transacao Serializable, traducao de
+conflitos de concorrencia e locks reais de Appointment/Membership.
+
+21. MAPPER
+appointment.mapper.ts transforma registro Prisma em JSON, com preco string
+decimal, instantes UTC, nomes e snapshots, preservando o ID.
+
+22. CONTROLLER E USE CASES
+appointment.controller.ts e appointment.service.ts implementam availability,
+create, list, detail, reschedule, cancel e complete. business.module.ts
+registra controller, service e repository.
+
+23. RBAC
+Administrador e recepcionista operam seu tenant. Barbeiro pode consultar
+apenas sua agenda e disponibilidade; profile_id da sessao prevalece sobre
+query. Cliente nao possui acesso administrativo P4.
+
+24. CONTRATOS HTTP
+GET /appointments/availability?date=...&professional_profile_id=...&service_id=...
+GET /appointments?from=...&to=...&professional_profile_id=...&customer_id=...&status=...
+GET /appointments/:id
+POST /appointments
+PUT /appointments/:id/reschedule
+PUT /appointments/:id/cancel
+PUT /appointments/:id/complete
+Contratos completos, body, response e status: docs/P4_APPOINTMENT_CONTRACTS.md.
+
+25. TESTES CRIADOS
+src/infra/database/p4-appointments.spec.ts: 11 testes PGlite cobrindo
+dominio, tenant, snapshots, horarios, blocks, slots, lista, detalhe, estados,
+RBAC e corridas. src/infra/database/p4-postgres-concurrency.spec.ts: 3 testes
+opcionais em PostgreSQL real, com schema exclusivo por execucao. Nao leem
+DATABASE_URL.
+
+26. RESULTADO P4
+PGlite: 11/11 passaram. PostgreSQL 16 descartavel: 3/3 passaram. Container
+temporario encerrado apos os testes.
+
+27. REGRESSAO P0/P1/P2/P3
+npm run test:p0: 9 suites, 46 testes passaram. Integracoes P1/P2/P3:
+3 suites, 22 testes passaram. P0-P3 tambem foram exercitados pela suite total.
+
+28. SUITE COMPLETA
+npm test: 56 suites passaram, 211 testes passaram; 1 suite/3 testes do
+PostgreSQL opcional foram ignorados sem o container. Com o container e flag
+explicitamente habilitada, a suite total passou com 57 suites e 213 testes
+antes da adicao de 1 teste P4 de validacao. Esse teste adicional passou
+isoladamente e na suite padrao final. O script npm test passou a usar
+--runInBand para evitar timeout de inicializacao P2 sob varios workers.
+
+29. BUILD
+npm run build passou.
+
+30. PRISMA VALIDATE
+npx prisma validate passou.
+
+31. LINT P4
+ESLint sem --fix nos arquivos P4 e arquivos compartilhados alterados:
+zero erros e zero avisos. Prettier check nos arquivos P4 passou.
+
+32. GIT DIFF CHECK
+git diff --check passou. Avisos de conversao LF/CRLF do Git nao sao erros.
+
+33. FINDINGS
+GET availability e informativo; CREATE pode retornar 409 depois que outro
+usuario reserva o slot. Alteracoes P3 posteriores podem mudar regras de
+agenda sem alterar appointments historicos existentes. A migration real ainda
+nao foi aplicada. A ordem exigida e P2 -> P3 -> P4.
+
+34. A CONFIRMAR
+slot_interval_minutes=15 como configuracao de produto futura. No-show,
+confirmacao e self-booking permanecem fora de P4.
+
+35. ARQUIVOS MODIFICADOS NESTA FASE
+package.json; src/modules/utils/enum.ts; src/modules/business/business.module.ts;
+src/infra/database/prisma/schema.prisma;
+src/infra/database/prisma/migrations/20261006000000_p4_appointments/migration.sql;
+src/modules/business/use_cases/appointment/appointment-time.ts;
+appointment.controller.ts; appointment.dto.ts; appointment.mapper.ts;
+appointment.repository.ts; appointment.service.ts;
+src/infra/database/p4-appointments.spec.ts;
+src/infra/database/p4-postgres-concurrency.spec.ts;
+docs/P4_APPOINTMENT_CONTRACTS.md; RELATORIO_P4_BARBERPRO.txt.
+
+36. CHECKLIST DOS 32 CRITERIOS
+01 Entity: ATENDIDO.                 17 Reschedule concorrente: ATENDIDO.
+02 Customer tenant: ATENDIDO.       18 Cancel libera slot: ATENDIDO.
+03 Barbeiro tenant/ativo: ATENDIDO. 19 Complete: ATENDIDO.
+04 Service tenant/ativo: ATENDIDO.  20 Estados terminais: ATENDIDO.
+05 Snapshot: ATENDIDO.              21 List/detail tenant: ATENDIDO.
+06 Snapshot estavel: ATENDIDO.      22 RBAC admin/recep: ATENDIDO.
+07 Instantes inequívocos: ATENDIDO. 23 Barbeiro proprio: ATENDIDO.
+08 Availability usa P3: ATENDIDO.   24 P0 verde: ATENDIDO.
+09 Considera appointments: ATENDIDO. 25 P1 verde: ATENDIDO.
+10 Duracao Service: ATENDIDO.       26 P2 verde: ATENDIDO.
+11 CREATE revalida: ATENDIDO.       27 P3 verde: ATENDIDO.
+12 Double booking seq.: ATENDIDO.   28 Suite completa: ATENDIDO.
+13 Double booking conc.: ATENDIDO.  29 Build: ATENDIDO.
+14 Banco com 1 linha: ATENDIDO.     30 Prisma validate: ATENDIDO.
+15 Adjacentes: ATENDIDO.            31 git diff --check: ATENDIDO.
+16 Reschedule revalida: ATENDIDO.   32 Lint P4: ATENDIDO.
+
+37. PROXIMO PASSO
+Aplicar migrations P2/P3/P4 em ambiente controlado apos verificacao de
+dados legados, integrar o frontend/BFF aos contratos e validar a agenda com
+usuarios reais. Self-booking, dashboard e fluxos financeiros ficam para fases
+posteriores.
+
+Nenhum commit, push, pull, merge, rebase, reset, clean, stash ou troca de
+branch foi realizado.

@@ -1,0 +1,90 @@
+BARBERPRO BACKEND - RELATORIO DE CONTINUACAO P0
+Data: 2026-09-25
+Escopo: P0A Tenant/RBAC; P0B Persistencia; P0C Sessao local.
+
+1. ESTADO INICIAL ENCONTRADO
+Branch atual: emmanuel. Nao houve troca de branch. O trabalho herdado ja tinha 58 arquivos rastreados modificados e o diretorio novo src/modules/auth/security/. Nao foi encontrado AGENTS.md aplicavel no repositorio ou ancestrais. README.md e schema.prisma foram lidos. Schema nao tinha alteracoes. O package.json herdado adicionava PGlite e um script test:p0 cuja configuracao ainda nao existia. A suite anterior falhava porque testes antigos usavam as assinaturas e os campos removidos dos updates; build inicial passava.
+
+2. CHECKPOINT P0 ANTES DAS EDICOES
+P0A concluido no diff herdado: comparacao de tenant em controllers de Entity, Membership, Customer e Subscription; validacao de roles; bloqueio de administrador para recepcionista; updates tenant-locais; propagacao de is_superuser.
+P0A parcial/faltando: helper permitia bypass generico de superuser; testes de cross-tenant, escalada e rotas de leitura/escrita precisavam de verificacao.
+P0B concluido no diff herdado: ProfileRepository.update em Profile; updates deterministas; Membership por chave composta; Customer.create; mapper com ID estavel; null handling e uso correto do Prisma client dentro/fora de transacao.
+P0B parcial/faltando: testes dos delegates Prisma e validacao em banco isolado.
+P0C concluido no diff herdado: sid/jti, refresh persistido e rotativo, logout por Identity, guards Bearer 401, igualdade header/body em challenge e refresh.
+P0C parcial/faltando: testes de ciclo completo, inatividade, rotacao/revogacao e contratos; testes antigos nao compilavam.
+Alteracoes fora do escopo herdadas: emissao de sid/jti no caminho de validacao MFA, necessaria para que o refresh compartilhado aceite sessoes emitidas por ele; correcoes pequenas em Plan mapper/repository. Nenhuma tentativa de concluir MFA, Google ou Reset.
+Riscos do diff inicial: bypass generico de superuser, script test:p0 incompleto, testes obsoletos, alteracoes de DTO nao documentadas, mensagens de erro com caracteres inconsistentes.
+
+3. ALTERACOES HERDADAS DO AGENTE ANTERIOR
+P0A: tenantId aplicado nos controllers; Membership e EntityCustomer updates limitados a dados locais; roles validadas elemento a elemento; recepcionista impedida de gerenciar administrador; Entity propria atualizavel por admin; Subscription protegida por tenant; is_superuser no req.auth.
+P0B: repositorios usam tx ou getPrismaClient(); Profile.update usa delegate Profile; Identity/Credential updates usam where; Membership usa entity_id + profile_id; Customer.create usa create; CustomerMapper preserva ID; lookups nulos retornam null; getters de created_at e setter de Profile.phone corrigidos.
+P0C: select-entity revalida identidade, entity e vinculo; sessao usa RefreshToken.id como sid; refresh verifica hash, revogacao, expiracao e vinculo e faz rotacao atomica; logout revoga a sessao da Identity autenticada.
+
+4. ALTERACOES CONCLUIDAS NESTA CONTINUACAO
+Removido o bypass generico de superuser no helper tenantId. Corrigido o repository in-memory de Entity usado nos testes, que ignorava o ID solicitado. Corrigido refresh com type incorreto para HTTP 401. Atualizados testes legados para o contrato tenant-local e para o status de Entity. Adicionados testes de controller/guard, sessao local, delegates Prisma e integracao Prisma com PostgreSQL isolado em memoria (PGlite). Completado test:p0, ajustado npm test para suportar import dinamico do PGlite e criada documentacao tecnica. Alteracoes automaticas do lint fora do escopo em email/MFA test foram restauradas semanticamente; nao houve alteracao funcional nesses arquivos.
+
+5. P0A - ESTADO FINAL
+Nos controllers auditados, body/path de Entity A nao consegue selecionar Entity B. Membership/Customer/Subscription nao executam o service quando ha divergencia. O superuser nao recebe bypass generico: rotas globais com SuperUserGuard permanecem separadas. Administrador opera a propria Entity; recepcionista nao cria/promove administrador nem modifica administrador existente. Membership.status e EntityCustomer.status sao locais; Identity.status e Identity.mfa_required nao sao alterados nesses updates. O access JWT propaga is_superuser para req.auth. Nao foi criada role dono.
+
+6. P0B - ESTADO FINAL
+ProfileRepository.update altera Profile e preserva identity_id/created_at. Identity e IdentityCredential updates tem where por ID; troca de senha local continua com seletor identity_id+provider=local. Membership update usa chave composta entity_id+profile_id. Customer.create chama Prisma create. CustomerMapper preserva o ID lido em ambos os sentidos. Customer ausente retorna null. EntityCustomer usa customer_id. Repositories corrigidos funcionam dentro e fora da transacao. Corrigidos getters/setter confirmados. Plan mapper conserva ID sem redesign. Teste real com Prisma + PostgreSQL em memoria cobriu Profile, Customer e Membership.
+
+7. P0C - ESTADO FINAL
+Fluxo local signin -> select-entity -> access/refresh -> refresh -> logout foi exercitado em teste. Refresh exige JWT tipo refresh, sid/jti, Identity ativa, Profile correto, Entity disponivel, vinculo ativo, registro persistido com hash correspondente, nao revogado e nao expirado. Rotacao invalida o token consumido via updateMany condicional. Logout usa access no header e refresh no body, exige mesma Identity e revoga somente a sessao dela; apos logout, o mesmo refresh e rejeitado. Access ja emitido permanece valido ate expirar. Challenge e refresh exigem igualdade exata entre token do header e do body. Bearer ausente/malformado retorna 401. MFA nao foi estabilizado nesta fase.
+
+8. ALTERACOES DE CONTRATO HTTP
+POST /auth/select-entity: Authorization Bearer login_token e body.login_token identicos; body.entity_id seleciona apenas vinculo ativo permitido.
+POST /auth/refreshtoken: Authorization Bearer refresh_token e body.refresh_token identicos; resposta inclui novos access_token e refresh_token; refresh anterior e consumido.
+POST /auth/logout: Authorization Bearer access_token; body.refresh_token da mesma Identity; resposta 200. Header/body sao tipos diferentes neste endpoint.
+PUT /entity_membership/update: body agora aceita entity_id, identity_id, roles e status; campos globais de Identity/Profile foram retirados.
+PUT /entity_customer/update: body agora aceita entity_id, email apenas como localizador, status e notes opcional; nao atualiza email/Identity/Profile.
+Entity/Membership/Customer/Subscription com entity_id em params/body/query rejeitam divergencia com req.auth.entity_id (403). Bearer ausente/malformado retorna 401.
+
+9. ALTERACOES PRISMA/SCHEMA
+schema.prisma nao foi alterado. RefreshToken.id existente e o sid persistido; jti fica apenas no JWT. Hash do refresh e rotacionado na mesma linha. yarn.lock ja continha as versoes exatas de PGlite declaradas em package.json.
+
+10. MIGRATIONS CRIADAS
+Nenhuma. Nenhuma migration foi executada. Nenhum banco de desenvolvimento foi acessado pelos testes P0.
+
+11. TESTES CRIADOS/ALTERADOS
+Novo request-security.spec.ts: tenant, controllers, RBAC, guard 401, superuser no req.auth e divergencia de tokens.
+Novo p0-repositories.spec.ts: delegates Prisma, where, create, IDs e transacao com client mockado.
+Novo p0-prisma-integration.spec.ts: Profile/Customer/Membership com Prisma real sobre PGlite isolado em memoria.
+Atualizados testes de refresh/logout para ciclo signin -> select -> refresh/rotacao -> logout/revogacao/inatividade; Membership/Customer update para dados locais; Membership create para roles_auth e duplicidade; select-entity para Entity ativa; Entity update para status sob superuser.
+test/jest-p0.json executa o conjunto P0 direcionado.
+
+12. RESULTADO DOS TESTES
+npm run test:p0: 9 suites, 46 testes, todos passaram.
+npm test: 51 suites, 168 testes, todos passaram.
+Teste Prisma isolado: 2 testes passaram; usa PGlite em memoria, socket local temporario e nao le DATABASE_URL.
+
+13. RESULTADO DO BUILD
+npm run build: passou.
+
+14. RESULTADO DO LINT
+npm run lint: falhou, 253 erros e 187 avisos. O script oficial varre o projeto inteiro e mostra erros tambem em app.module.ts, main.ts, geocoding, testes in-memory e outros arquivos fora do P0. Ha tambem erros de tipagem estrita em testes P0 novos/herdados. Nao foi feita supressao com --force nem expansao de escopo para saneamento geral. Portanto o gate lint permanece vermelho.
+
+15. RESULTADO DE GIT DIFF --CHECK
+Passou (exit code 0), sem erros de whitespace. Git avisa sobre LF/CRLF no Windows; isso nao e erro de diff --check.
+
+16. FINDINGS RESTANTES
+Lint nao passa; requer uma fase de higiene separada ou politica de lint para fixtures/testes. MFA, Google e Password Reset permanecem fora do P0 e nao devem ser considerados prontos. Tokens refresh antigos sem sid/jti exigem novo login apos deploy. Entity com status pendente continua podendo operar, refletindo o fluxo de signup atual; esta regra deve ser ratificada pelo produto em fase posterior. O README ainda descreve role DONO e funcionalidades futuras como implementadas, divergindo do codigo. A branch atual e emmanuel; a expectativa de fix/backend-core-stabilization apareceu em solicitacao anterior, mas nao houve troca de branch por proibicao explicita. Mensagens de erro herdadas ainda tem inconsistencias de acentuacao, sem impacto no fluxo de seguranca.
+
+17. CHECKLIST DAS 10 PERGUNTAS
+1. Admin da Entity A consegue criar admin na B? NAO.
+2. Recepcionista consegue promover alguem para administrador? NAO.
+3. Profile update altera Identity por engano? NAO.
+4. Customer create ainda chama update? NAO.
+5. Customer lido recebe ID diferente do banco? NAO.
+6. Membership update usa chave errada? NAO.
+7. Refresh usado apos logout continua funcionando? NAO.
+8. Identity inativa consegue renovar sessao? NAO.
+9. Missing Bearer vira 500? NAO.
+10. Body consegue escolher livremente outro tenant? NAO.
+As dez respostas esperadas foram demonstradas pelo codigo e testes P0. O P0 nao tem validacao totalmente verde enquanto o lint oficial falhar.
+
+18. ARQUIVOS MODIFICADOS E REVISAO DO DIFF
+Grupos rastreados: package.json; mappers Customer/Plan; PrismaService; repositories/models de Address, Entity, Identity, IdentityCredential, Profile, RefreshToken, Customer, EntityCustomer, EntityMembership, Plan e Subscription; guards; controllers/services/DTOs P0; testes legados relacionados. Novos: docs/P0_CORE_STABILIZATION.md, RELATORIO_P0_BARBERPRO.txt, src/modules/auth/security/request-security.ts e request-security.spec.ts, src/infra/database/p0-repositories.spec.ts e p0-prisma-integration.spec.ts, test/jest-p0.json. O diff foi revisado por grupos e git status foi conferido. Nao houve commit, push, pull, merge, rebase, reset, clean, stash ou migration.
+
+19. PROXIMA FASE RECOMENDADA
+Primeiro, resolver o gate de lint sem alterar a politica funcional P0. Depois seguir para Password Reset hardening, MFA e Google conforme dependencias de sessao e seguranca; CRUD de pessoas, catalogo e agenda permanecem fases posteriores. Revisar explicitamente a regra de Entity pendente e a documentacao geral antes de liberar contratos adicionais ao frontend.

@@ -1,0 +1,93 @@
+RELATORIO FINAL P2 - BARBERPRO BACKEND
+
+1. ESTADO INICIAL
+P0 e P1 estavam implementados e sem commit no working tree. A arvore ja tinha alteracoes rastreadas e arquivos nao rastreados; todos foram preservados. Nenhuma operacao Git de escrita foi feita.
+
+2. CHECKPOINT P2 ANTES DAS EDICOES
+SERVICE ATUAL: schema tinha Service(id UUID, name VARCHAR(100)); migration anterior criou a tabela. Nao havia controller, use case, repository, mapper, model, view-model ou testes de catalogo. Plan ja usava Decimal(10,2). P1 fornecia guards de access/roles, tenantId e ManagementAppErrorFilter.
+DECISOES: price decimal string com duas casas; duration_minutes 1..1440; read para papeis autenticados da Entity; write so administrador; list inclui ativos/inativos; nome duplicado permitido ate decisao de produto; migration impede atribuir tenant arbitrario a dados legados.
+PLANO EXECUTADO: schema/migration, dominio, repository, mapper, DTOs, API, testes PGlite isolados, contratos e regressoes.
+
+3. MODELAGEM FINAL DE SERVICE
+id UUID; entity_id UUID obrigatorio; name VARCHAR(100); description VARCHAR(500) nullable; price DECIMAL(10,2); duration_minutes INT; status VARCHAR(10), ativo/inativo; created_at/updated_at timestamp. Novos registros nascem ativo.
+
+4. RELACAO ENTITY -> SERVICE
+Entity.services e Service.entity formam 1:N. FK obrigatoria, indexada e com ON DELETE RESTRICT. Nao existe Service global.
+
+5. MIGRATION/SCHEMA
+schema.prisma atualizado. Migration 20261001000000_service_catalog preparada e testada somente em PGlite. Em tabela Service vazia, aplica colunas, FK, indice e checks de price/status/duration. Se houver linhas globais antigas, falha antes de alterar schema; exige migration de dados com mapeamento humano. Prisma Client gerado localmente. Nenhuma migration aplicada ao banco de desenvolvimento.
+
+6. REPOSITORY
+create, findByIdAndEntity, findManyByEntity e update; todos aceitam Prisma TransactionClient opcional. Detail/update incluem entity_id no filtro. UpdateMany condicional e releitura retornam registro real. Nao ha hard delete.
+
+7. MAPPER
+ServiceMapper preserva id, entity_id e timestamps. Prisma.Decimal e convertido explicitamente para string decimal fixa no dominio e de volta para Decimal na gravacao.
+
+8. DTOs
+Create valida name, description opcional, price decimal string e duration_minutes inteiro. Update parcial valida os mesmos campos e status por enum. UUID da rota validado por ParseUUIDPipe. O ValidationPipe global rejeita entity_id/id/timestamps no body.
+
+9. CONTROLLERS/USE CASES
+GET get_all, GET get_one/:id, POST create, PUT update/:id. Desativacao e reativacao usam update status. Controller toma tenant de req.auth.entity_id e exige contexto presente. Use case normaliza texto, valida tambem chamadas diretas e aplica 404 sem revelar outro tenant.
+
+10. RBAC
+AuthGuardAccess + RolesGuard. Read: administrador, recepcionista, barbeiro, cliente no proprio tenant. Write: administrador. Mesmo com role valida, repository restringe por entity_id. Filtro AppError P1 reutilizado.
+
+11. CONTRATOS HTTP FINAIS
+Tabela completa de METHOD, PATH, AUTH, ROLES, BODY, PARAMS, RESPONSE e STATUS em docs/P2_SERVICE_CONTRACTS.md. Todos usam Bearer access_token. GET/PUT 200, POST 201; validacao 400, autenticacao 401, autorizacao/contexto 403, recurso ausente/cross-tenant 404, inesperado 500. Nao existe conflito de nome conhecido para 409.
+
+12. FORMATO MONETARIO
+Banco: DECIMAL(10,2). API: string decimal de duas casas, exemplo "35.00", de "0.00" a "99999999.99". Nao ha Float no dominio/API.
+
+13. DURACAO
+duration_minutes inteiro de 1 a 1440; referencia futura para Appointment, sem snapshot implementado agora.
+
+14. STATUS/DEACTIVATE
+ativo/inativo. POST cria ativo; PUT {"status":"inativo"} desativa sem remover; PUT ativo reativa. Lista retorna ambos.
+
+15. TESTES CRIADOS
+src/infra/database/p2-service-catalog.spec.ts: 15 testes, Prisma/PGlite isolado, migration real, DTO, controller/guard, tenant A/B, CRUD, status, preco, duracao, mapper, transacao e bloqueio de migration com dados legados.
+
+16. TESTES P2: 1 suite / 15 testes / PASSOU.
+17. test:p0: 9 suites / 46 testes / PASSOU.
+18. SUITE COMPLETA: 54 suites / 194 testes / PASSOU.
+    Testes P1 especificos: 2 suites / 11 testes / PASSOU.
+19. BUILD: PASSOU.
+20. LINT P2: ESLint sem --fix em 12 arquivos TypeScript P2 / ZERO erros / ZERO avisos. Lint global com --fix nao foi executado.
+21. git diff --check: PASSOU (exit code 0). Git emitiu avisos de normalizacao LF/CRLF do working tree, sem erros de whitespace.
+
+22. FINDINGS
+Service antigo nao tem proprietario e nao pode ser migrado automaticamente se houver linhas. A migration interrompe nesse caso e preserva os dados. A API nao inclui filtro de status/paginacao e nao cria snapshots de Appointment nesta fase.
+
+23. A CONFIRMAR
+Politica de nomes duplicados dentro da mesma Entity e sensibilidade a caixa; eventual ampliacao de write a outros papeis. Se existirem Services globais legados em ambiente de destino, decisao humana sobre Entity, price e duration de cada um antes de adaptar/aplicar a migration.
+
+24. ARQUIVOS MODIFICADOS/CRIADOS NESTA RODADA
+Modificados: src/infra/database/prisma/schema.prisma; src/modules/business/business.module.ts; src/modules/utils/enum.ts.
+README.md tambem atualizado apenas para marcar o catalogo P2 concluido.
+Criados: src/infra/database/prisma/migrations/20261001000000_service_catalog/migration.sql; src/infra/database/mappers/ServiceMapper.ts; src/infra/database/p2-service-catalog.spec.ts; src/modules/business/service/shared/models/service.ts; src/modules/business/service/shared/repositories/iservice-repository.ts; src/modules/business/service/shared/repositories/service-repository.ts; src/modules/business/service/shared/view-models/service-view-model.ts; src/modules/business/use_cases/service/dto/service-create.dto.ts; src/modules/business/use_cases/service/dto/service-update.dto.ts; src/modules/business/use_cases/service/service-catalog.service.ts; src/modules/business/use_cases/service/service-catalog.controller.ts; docs/P2_SERVICE_CONTRACTS.md; este relatorio.
+
+25. CHECKLIST DOS 18 CRITERIOS
+[x] 1 Service pertence obrigatoriamente a Entity
+[x] 2 Tenant vem da sessao
+[x] 3 Entity A nao acessa Service privado de B
+[x] 4 Admin cria Service
+[x] 5 List funciona
+[x] 6 Detail funciona
+[x] 7 Update funciona
+[x] 8 Deactivate sem hard delete
+[x] 9 Price seguro em DECIMAL(10,2)
+[x] 10 Price HTTP explicito
+[x] 11 Duracao inteira positiva em minutos
+[x] 12 IDs estaveis
+[x] 13 P0 verde
+[x] 14 P1 funcional
+[x] 15 Suite completa verde
+[x] 16 Build verde
+[x] 17 git diff --check verde
+[x] 18 Zero novos erros lint P2
+
+26. PROXIMA FASE RECOMENDADA
+Integrar BFF/frontend aos contratos P2 e validar dados legados antes de aplicar a migration em qualquer ambiente. Appointment/Availability ficam para fase futura, com service_id e snapshots de price/duration.
+
+27. RELATORIO TXT
+Este arquivo e o relatorio .txt solicitado. P2 pronto para revisao humana. Nenhum commit, push, reset ou migration em banco real foi executado.

@@ -6,6 +6,37 @@ import { IRefreshTokensRepository } from '../abstract_class/irefresh-tokens-repo
 export class InMemoryRefreshTokensRepository implements IRefreshTokensRepository {
   public list_refresh_tokens: Refresh_Tokens[] = [];
 
+  find_session(id: string): Promise<Refresh_Tokens | null> {
+    return Promise.resolve(
+      this.list_refresh_tokens.find((item) => item.id === id) ?? null,
+    );
+  }
+  rotate(
+    id: string,
+    previousHash: string,
+    nextHash: string,
+    now: Date,
+  ): Promise<boolean> {
+    const row = this.list_refresh_tokens.find(
+      (item) =>
+        item.id === id &&
+        item.token_hash === previousHash &&
+        !item.revoked_at &&
+        item.expires_at > now,
+    );
+    if (!row) return Promise.resolve(false);
+    row.token_hash = nextHash;
+    row.updated_at = now;
+    return Promise.resolve(true);
+  }
+  revoke_session(id: string, identity_id: string): Promise<boolean> {
+    const row = this.list_refresh_tokens.find(
+      (item) => item.id === id && item.identity_id === identity_id,
+    );
+    if (!row) return Promise.resolve(false);
+    row.revoked_at = true;
+    return Promise.resolve(true);
+  }
   async create(data: Refresh_Tokens): Promise<void> {
     this.list_refresh_tokens.push(data);
   }

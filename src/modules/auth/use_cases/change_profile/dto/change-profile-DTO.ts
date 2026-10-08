@@ -1,32 +1,36 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsDateString, IsOptional, IsString } from 'class-validator';
 
 export class ChangeProfileDTO {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Nome do usuário',
     example: 'Luís Antonio',
   })
   @IsString()
-  name: string;
+  @IsOptional()
+  name?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'URL da foto do perfil',
     example: 'https://example.com/profile.jpg',
   })
   @IsString()
-  photo_url: string;
+  @IsOptional()
+  photo_url?: string | null;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Data de nascimento',
     example: '1995-05-20',
   })
-  @IsString()
-  birth_date: string;
+  @IsOptional()
+  @IsDateString()
+  birth_date?: string | null;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Telefone do usuário',
     example: '+5579999999999',
   })
   @IsString()
-  phone: string;
+  @IsOptional()
+  phone?: string | null;
 }

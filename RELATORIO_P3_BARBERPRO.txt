@@ -1,0 +1,210 @@
+RELATORIO P3 — WORKING HOURS & AVAILABILITY
+BarberPro Backend
+Data: 2026-10-05
+
+1. ESTADO INICIAL E CHECKPOINT
+
+P0 (Core/Security/Tenant/Session), P1 (Profile/Entity/Members/Customers) e P2
+(Service Catalog) estavam implementados e funcionais. Antes de editar, foram
+auditados a documentacao tecnica, o schema Prisma, Entity, EntityMembership,
+Service, enums, guards/RBAC, request-security.ts, padroes Prisma/PGlite e
+referencias a horarios, disponibilidade, bloqueios e timezone.
+
+TIMEZONE: Entity nao possuia timezone.
+BUSINESS HOURS: nao havia tabela, dominio ou rota de expediente semanal.
+PROFESSIONAL HOURS: nao havia jornada; EntityMembership ja representava o
+vinculo estavel (entity_id, profile_id). A role de atendimento e barbeiro.
+BLOCKED TIME: nao havia bloqueios pontuais.
+
+Dependencias aproveitadas: access token e req.auth.entity_id como autoridade
+do tenant, RolesGuard, filtro de AppError, Prisma com PostgreSQL e testes
+Prisma/PGlite isolados. As alteracoes P0/P1/P2 ja presentes no workspace
+foram preservadas.
+
+2. MODELAGEM ESCOLHIDA
+
+Entity.timezone: string IANA anulavel. A migration nao atribui um fuso por
+inferencia as Entities existentes. O administrador configura o timezone por
+endpoint proprio; escritas de horarios e bloqueios exigem que ele exista.
+
+EntityBusinessHour: id UUID, entity_id, weekday, start_minute, end_minute,
+created_at e updated_at. Aceita varios periodos para o mesmo dia.
+
+ProfessionalWorkingHour: mesmos campos semanais, com profile_id e FK composta
+para EntityMembership(entity_id, profile_id). Nao foi criado outro conceito
+de Professional.
+
+ProfessionalTimeBlock: id UUID, entity_id, profile_id, starts_at, ends_at,
+reason opcional e timestamps. Tambem referencia a Membership composta.
+
+Weekday: inteiro 0=domingo ate 6=sabado. Horarios semanais sao minutos desde
+meia-noite no banco e HH:mm na API. Sao intervalos semiabertos [inicio, fim).
+24:00 e permitido apenas como fim exclusivo. Intervalos que cruzam meia-noite
+devem ser divididos entre dois weekdays.
+
+3. TIMEZONE E UTC
+
+O backend valida identificadores IANA suportados com Intl.DateTimeFormat.
+Regras semanais usam o horario civil local da Entity. Bloqueios recebem ISO
+8601 com Z ou offset explicito, sao convertidos para instantes absolutos e
+persistidos em TIMESTAMPTZ(3); a resposta usa UTC (Z). Datetimes locais sem
+offset sao rejeitados. A operacao independe do timezone do browser e do
+servidor.
+
+Trocar o timezone preserva os instantes UTC ja armazenados nos bloqueios e
+muda a interpretacao dos horarios semanais. A agenda deve ser revisada antes
+de uma troca apos a configuracao dos horarios.
+
+4. REGRAS DE EXPEDIENTE, JORNADA E BLOQUEIOS
+
+Periodos semanais devem ter inicio anterior ao fim e nao podem se sobrepor
+na mesma colecao. Periodos adjacentes sao permitidos. A jornada profissional
+deve estar integralmente coberta pela uniao dos intervalos do expediente no
+mesmo weekday. Reduzir o expediente de modo a excluir uma jornada existente
+retorna conflito.
+
+Para criar jornada ou bloqueio, a Membership deve pertencer a Entity, estar
+ativa e conter a role barbeiro. Administrador e recepcionista nao sao tratados
+como barbeiros automaticamente. O administrador ainda pode ler e limpar uma
+jornada antiga com periods: [] apos a perda da role, evitando dados presos.
+
+Bloqueios sao pontuais, podem cobrir qualquer instante real e nao precisam
+estar dentro da jornada. Bloqueios sobrepostos do mesmo profissional sao
+rejeitados. Update preserva o ID; remocao usa hard delete, por se tratar de
+configuracao e nao de cancelamento de Appointment.
+
+5. SCHEMA, MIGRATION, REPOSITORY E MAPEAMENTO
+
+Schema: src/infra/database/prisma/schema.prisma
+Migration: src/infra/database/prisma/migrations/20261005000000_p3_availability/migration.sql
+
+A migration adiciona timezone nullable e as tres tabelas, com FKs, indices
+e checks basicos de weekday e ordem dos intervalos. O Prisma Client foi
+gerado localmente. A migration foi executada apenas em PGlite isolado nos
+testes; nenhum banco real ou de desenvolvimento foi migrado ou resetado.
+
+AvailabilityRepository fornece transacoes Prisma Serializable e bloqueio da
+linha da Entity com SELECT ... FOR UPDATE. As substituicoes em lote validam
+e gravam dentro da mesma transacao. Periodos que permanecem iguais conservam
+seus IDs e timestamps; periodos removidos sao apagados e novos periodos
+recebem UUID. As respostas sao mapeadas pelo service para HH:mm e ISO UTC.
+
+6. CONTROLLER, RBAC E CONTRATOS HTTP
+
+Todas as rotas exigem Authorization: Bearer <access_token> e role
+administrador. O tenant vem exclusivamente de req.auth.entity_id; entity_id
+enviado pelo browser nao e usado como autoridade. profileId e id de bloqueio
+no path sao UUIDs.
+
+GET    /availability/timezone
+PUT    /availability/timezone
+GET    /availability/business-hours
+PUT    /availability/business-hours
+GET    /availability/professionals/:profileId/hours
+PUT    /availability/professionals/:profileId/hours
+GET    /availability/professionals/:profileId/blocks?from=...&to=...
+POST   /availability/professionals/:profileId/blocks
+PUT    /availability/professionals/:profileId/blocks/:id
+DELETE /availability/professionals/:profileId/blocks/:id
+
+Exemplo de body para PUT de horarios:
+{
+  "periods": [
+    { "weekday": 1, "start_time": "09:00", "end_time": "12:00" },
+    { "weekday": 1, "start_time": "14:00", "end_time": "18:00" }
+  ]
+}
+
+PUT substitui a colecao inteira e aceita [] para limpa-la. O contrato de
+bloqueios usa starts_at e ends_at em ISO 8601 com Z ou offset e reason
+opcional. Status esperados: 400 para entrada/regra invalida, 401 para
+autenticacao, 403 para autorizacao/contexto, 404 para recurso ausente no
+tenant, 409 para sobreposicao/conflito e 500 para erro inesperado.
+
+Contrato detalhado: docs/P3_AVAILABILITY_CONTRACTS.md
+
+7. VALIDACOES E TESTES P3
+
+Validacoes implementadas: UUID nos paths, weekday 0..6, HH:mm estrito,
+start < end, rejeicao de sobreposicao, contencao da jornada no expediente,
+Membership no tenant com role/status adequados, bloqueio com start < end,
+timezone IANA suportado e timestamp ISO com offset. Datas impossiveis,
+como 2026-02-30, sao rejeitadas.
+
+Teste isolado: src/infra/database/p3-availability.spec.ts
+Resultado: 6 testes passaram. Os cenarios cobrem configuracao de timezone,
+isolamento de tenants, multiplos periodos, IDs estaveis, substituicao
+atomica, role e Membership, jornada fora do expediente, sobreposicoes,
+bloqueios, normalizacao UTC, limpeza de jornada apos perda da role e RBAC.
+
+8. REGRESSAO E VERIFICACOES
+
+npm run test:p0: 9 suites, 46 testes passaram.
+Testes de integracao P1/P2: 2 suites, 16 testes passaram.
+npm test: 55 suites, 200 testes passaram.
+npm run build: passou.
+npx prisma validate: passou.
+ESLint sem --fix nos arquivos P3: zero erros e zero avisos.
+git diff --check: passou.
+
+Uma execucao de npm test em paralelo com build e lint ultrapassou o timeout
+de inicializacao do teste P2. A suite foi repetida sozinha e passou por
+inteiro (55 suites, 200 testes). Nenhuma migration foi aplicada a banco real.
+
+9. FINDINGS E A CONFIRMAR
+
+Findings:
+- A migration P2 precisa estar aplicada antes da P3 no ambiente de destino.
+- Entities legadas permanecem com timezone null ate configuracao explicita.
+- A troca de timezone apos configuracao da agenda exige revisao operacional.
+- Nao ha endpoint de slots em P3: ele ignoraria appointments e poderia
+  comunicar disponibilidade enganosa.
+
+A CONFIRMAR:
+- Se o barbeiro podera administrar a propria jornada e seus bloqueios.
+- Qual politica de produto regera a troca de timezone apos existirem
+  appointments.
+
+10. ARQUIVOS DA FASE
+
+- src/infra/database/prisma/schema.prisma
+- src/infra/database/prisma/migrations/20261005000000_p3_availability/migration.sql
+- src/modules/business/business.module.ts
+- src/modules/business/use_cases/availability/availability.controller.ts
+- src/modules/business/use_cases/availability/availability.dto.ts
+- src/modules/business/use_cases/availability/availability.repository.ts
+- src/modules/business/use_cases/availability/availability.rules.ts
+- src/modules/business/use_cases/availability/availability.service.ts
+- src/infra/database/p3-availability.spec.ts
+- src/infra/database/p1-prisma-management.spec.ts (fixture PGlite)
+- src/infra/database/p2-service-catalog.spec.ts (fixture PGlite)
+- docs/P3_AVAILABILITY_CONTRACTS.md
+- RELATORIO_P3_BARBERPRO.txt (este relatorio)
+
+11. CHECKLIST DOS 17 CRITERIOS DE ACEITE
+
+01. Entity possui timezone explicito: ATENDIDO (nullable para legado).
+02. BusinessHours suportam multiplos periodos: ATENDIDO.
+03. ProfessionalWorkingHours usam profile_id estavel: ATENDIDO.
+04. TimeBlocks pontuais funcionam: ATENDIDO.
+05. Tenant A nao acessa dados de B: ATENDIDO.
+06. Sobreposicoes sao rejeitadas: ATENDIDO.
+07. Jornada respeita expediente: ATENDIDO.
+08. Professional pertence ao tenant: ATENDIDO.
+09. Regras de timezone documentadas: ATENDIDO.
+10. Writes em lote atomicos: ATENDIDO.
+11. P0 permanece verde: ATENDIDO.
+12. P1 permanece verde: ATENDIDO.
+13. P2 permanece verde: ATENDIDO.
+14. Suite completa passa: ATENDIDO.
+15. Build passa: ATENDIDO.
+16. git diff --check passa: ATENDIDO.
+17. Zero novos erros de lint P3: ATENDIDO.
+
+12. PROXIMA FASE
+
+P4 Appointment: calcular slots reais com as regras P3, duracao do Service e
+appointments persistidos. Nao foram implementados Appointment, booking,
+double booking ou calculo final de disponibilidade nesta fase.
+
+Nenhum commit ou push foi realizado.

@@ -11,7 +11,7 @@ class CustomerRepository implements ICustomerRepository {
 
   async update(data: Customer, tx?: Prisma.TransactionClient): Promise<void> {
     const raw = CustomerMapper.toPrisma(data);
-    const client = tx ?? this.prisma;
+    const client = tx ?? this.prisma.getPrismaClient();
     await client.customer.update({
       where: {
         id: data._id,
@@ -47,8 +47,8 @@ class CustomerRepository implements ICustomerRepository {
 
   async create(data: Customer, tx?: Prisma.TransactionClient): Promise<void> {
     const raw = CustomerMapper.toPrisma(data);
-    const client = tx ?? this.prisma;
-    await client.customer.update({
+    const client = tx ?? this.prisma.getPrismaClient();
+    await client.customer.create({
       data: raw,
     });
   }

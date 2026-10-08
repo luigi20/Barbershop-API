@@ -222,7 +222,7 @@ Longitude
 ### Em desenvolvimento
 
 - [ ] Agendamentos
-- [ ] Serviços
+- [x] Serviços (catálogo P2)
 - [ ] Profissionais
 - [ ] Disponibilidade de horários
 - [ ] Notificações
@@ -540,7 +540,7 @@ Além de ser uma aplicação voltada para gerenciamento de barbearias, o projeto
 [x] Members
 [x] Customers
 [x] Docker
-[ ] Services
+[x] Services catalog
 [ ] Professionals
 [ ] Scheduling
 [ ] Notifications

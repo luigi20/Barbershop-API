@@ -1,3 +1,6 @@
+import { Req as AuthenticatedRequest } from '@nestjs/common';
+import { AuthRequest } from '@modules/utils/types/types';
+import { tenantId } from '@modules/auth/security/request-security';
 import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -13,8 +16,11 @@ import { Roles } from '@modules/auth/decorators/roles.decorator';
 import { EntityGetOneService } from '../service/entity_get_one.service';
 import { EntityViewModel } from '@modules/auth/entity/shared/view-models/entity-view-model';
 import { AuthGuardAccess } from '@modules/auth/guards/auth_guard_access';
+import { UseFilters } from '@nestjs/common';
+import { ManagementAppErrorFilter } from '../../../management-app-error.filter';
 
 @ApiTags('Entity')
+@UseFilters(ManagementAppErrorFilter)
 @ApiBearerAuth('access-token')
 @UseGuards(AuthGuardAccess, RolesGuard)
 @TokenTypeRequired(TokenType.ACCESS)
@@ -27,6 +33,14 @@ import { AuthGuardAccess } from '@modules/auth/guards/auth_guard_access';
 @Controller('entity')
 export class EntityGetOneController {
   constructor(private readonly entityGetOneService: EntityGetOneService) {}
+
+  @Get('current')
+  public async Current(@AuthenticatedRequest() req: AuthRequest) {
+    const result = await this.entityGetOneService.execute({
+      id: req.auth.entity_id,
+    });
+    return EntityViewModel.toHttp(result);
+  }
 
   @Get('get_one/:id')
   @ApiOperation({
@@ -54,9 +68,12 @@ export class EntityGetOneController {
     status: 404,
     description: 'Entidade não encontrada.',
   })
-  public async EntityGetOne(@Param('id') id: string) {
+  public async EntityGetOne(
+    @AuthenticatedRequest() req: AuthRequest,
+    @Param('id') id: string,
+  ) {
     const result = await this.entityGetOneService.execute({
-      id,
+      id: tenantId(req.auth, id),
     });
     return EntityViewModel.toHttp(result);
   }

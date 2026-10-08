@@ -13,8 +13,11 @@ import { RolesGuard } from '@modules/auth/guards/roles_guards';
 import { Roles } from '@modules/auth/decorators/roles.decorator';
 import { Entity_Membership_View_Model } from '@modules/business/entity_membership/shared/view-models/entity-membership-view-model';
 import { AuthGuardAccess } from '@modules/auth/guards/auth_guard_access';
+import { UseFilters } from '@nestjs/common';
+import { ManagementAppErrorFilter } from '../../../management-app-error.filter';
 
 @ApiTags('Entity Membership')
+@UseFilters(ManagementAppErrorFilter)
 @ApiBearerAuth('access-token')
 @UseGuards(AuthGuardAccess, RolesGuard)
 @TokenTypeRequired(TokenType.ACCESS)
@@ -47,7 +50,7 @@ export class EntityMembershipGetAllController {
   public async Members(@Req() req: AuthRequest) {
     const result = await this.entityMembershipGetAllService.execute({
       entity_id: req.auth.entity_id,
-      is_superuser: req.auth.is_superuser,
+      is_superuser: false,
     });
     return result.map((item) => Entity_Membership_View_Model.toHttp(item));
   }

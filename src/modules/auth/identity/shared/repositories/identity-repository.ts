@@ -43,7 +43,7 @@ class IdentityRepository implements IIdentityRepository {
   }
   async create(data: Identity, tx?: Prisma.TransactionClient): Promise<void> {
     const raw = IdentityMapper.toPrisma(data);
-    const client = tx ?? this.prisma;
+    const client = tx ?? this.prisma.getPrismaClient();
     await client.identity.create({
       data: raw,
     });
@@ -51,8 +51,9 @@ class IdentityRepository implements IIdentityRepository {
 
   async update(data: Identity, tx?: Prisma.TransactionClient): Promise<void> {
     const raw = IdentityMapper.toPrisma(data);
-    const client = tx ?? this.prisma;
+    const client = tx ?? this.prisma.getPrismaClient();
     await client.identity.update({
+      where: { id: data.id },
       data: raw,
     });
   }

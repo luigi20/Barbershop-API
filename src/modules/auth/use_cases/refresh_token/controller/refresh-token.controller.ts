@@ -1,3 +1,6 @@
+import { Req as AuthenticatedRequest } from '@nestjs/common';
+import { AuthRequest } from '@modules/utils/types/types';
+import { matchingToken } from '@modules/auth/security/request-security';
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -37,8 +40,13 @@ export class RefreshTokenController {
     status: 400,
     description: 'Refresh token não informado ou inválido.',
   })
-  public async RefreshToken(@Body() data: RefreshTokenDTO) {
-    const token = await this.refresh_token_service.execute(data.refresh_token);
+  public async RefreshToken(
+    @AuthenticatedRequest() req: AuthRequest,
+    @Body() data: RefreshTokenDTO,
+  ) {
+    const token = await this.refresh_token_service.execute(
+      matchingToken(req, data.refresh_token),
+    );
     return token;
   }
 }

@@ -1,3 +1,6 @@
+import { Req as AuthenticatedRequest } from '@nestjs/common';
+import { AuthRequest } from '@modules/utils/types/types';
+import { tenantId } from '@modules/auth/security/request-security';
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -14,8 +17,11 @@ import { Roles } from '@modules/auth/decorators/roles.decorator';
 import { EntityMembershipCreateDTO } from '../dto/entity_membership_createDTO';
 import { Entity_Membership_View_Model } from '@modules/business/entity_membership/shared/view-models/entity-membership-view-model';
 import { AuthGuardAccess } from '@modules/auth/guards/auth_guard_access';
+import { UseFilters } from '@nestjs/common';
+import { ManagementAppErrorFilter } from '../../../management-app-error.filter';
 
 @ApiTags('Entity Membership')
+@UseFilters(ManagementAppErrorFilter)
 @ApiBearerAuth('access-token')
 @UseGuards(AuthGuardAccess, RolesGuard)
 @TokenTypeRequired(TokenType.ACCESS)
@@ -55,17 +61,21 @@ export class EntityMembershipCreateController {
     status: 409,
     description: 'Membro já cadastrado.',
   })
-  public async Members(@Body() data: EntityMembershipCreateDTO) {
+  public async Members(
+    @AuthenticatedRequest() req: AuthRequest,
+    @Body() data: EntityMembershipCreateDTO,
+  ) {
     const result = await this.entityMembershipCreateService.execute({
       birth_date: data.birth_date,
       email: data.email,
-      entity_id: data.entity_id,
+      entity_id: tenantId(req.auth, data.entity_id ?? req.auth.entity_id),
       mfa_required: data.mfa_required,
       name: data.name,
       password: data.password,
       phone: data.phone,
       photo: data.photo,
       roles: data.roles,
+      roles_auth: req.auth.roles,
     });
 
     return Entity_Membership_View_Model.toHttp(result);

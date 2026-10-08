@@ -5,6 +5,7 @@ export class Profile_View_Model {
     return {
       id: profile.id,
       identity_id: profile.identity_id,
+      email: profile.identity?.email ?? null,
       name: profile.name,
       photo: profile.photo,
       phone: profile.phone,

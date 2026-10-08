@@ -81,6 +81,7 @@ describe('Test in route update entity', () => {
       phone: '324242',
       photo: null,
       status: 'inativo',
+      is_superuser: true,
       type: 'barbearia',
       id: '123',
       city: 'Aracaju',

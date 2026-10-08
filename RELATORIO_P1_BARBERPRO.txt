@@ -1,0 +1,85 @@
+RELATORIO FINAL P1 - BARBERPRO BACKEND
+
+1. ESTADO INICIAL
+O usuario informou P0 mergeado, mas o workspace ainda apresentava 66 arquivos rastreados modificados e arquivos P0 nao rastreados. O P0 foi preservado; nenhuma operacao Git de escrita foi executada.
+
+2. CHECKPOINT ANTES DAS ALTERACOES
+PROFILE: GET/PUT existentes; faltavam email da Identity, validacao de data/nulos e resposta relida.
+ENTITY: GET/PUT tenant-safe com :id; faltavam rotas current e timestamps.
+MEMBERS: create novo/existente e chave composta; faltavam IDs/contato no response, list->detail direto e DTOs/status de conflito.
+CUSTOMERS: create multi-cenario e update local; faltavam customer_id publico, detail/update por ID e status 409 em corrida.
+
+3. PROFILE
+GET inclui email consultado da Identity. PUT /auth/change_profile aceita atualizacao parcial de name, phone, photo_url e birth_date ISO 8601, apenas para req.auth.profile_id; le o Profile apos gravar. Email nao e editado.
+
+4. ENTITY
+GET /entity/current e PUT /entity/current usam req.auth.entity_id. Rotas legadas com :id validam tenant. Response inclui timestamps. Status omitido e preservado; administrador comum nao o altera.
+
+5. MEMBERS
+List/detail/create/update retornam profile_id; list/detail incluem identity_id e email quando disponiveis. Detail consome profile_id da list. Create restringe roles de equipe, vincula pessoa existente sem duplicar Identity, e transforma conflito Prisma P2002 em 409. Update aceita profile_id e altera apenas roles/status locais; inativo desativa.
+
+6. CUSTOMERS
+List/detail/create/update retornam customer_id estavel e profile_id quando existente; email vem da Identity. Detail e update usam customer_id. Create cobre Identity nova, Identity/Profile sem Customer e Customer sem vinculo na Entity; duplicidade retorna 409. Update muda so notes/status locais; inativo desativa.
+
+7. CONTRATOS HTTP FINAIS
+Tabela completa de METHOD, PATH, AUTH, ROLES, BODY, QUERY/PARAMS, RESPONSE e STATUS: docs/P1_MANAGEMENT_CONTRACTS.md.
+
+8. DTOs
+Datas ISO 8601; UUIDs de IDs de body; roles por elemento e sem cliente na equipe; status pelos enums existentes; opcionais anotados. Email de Profile/Customer nao e editavel em updates locais.
+
+9. RESPONSE/VIEW-MODEL
+Profile: email real da Identity. Entity: timestamps. Membership: profile_id, identity_id, email, birth_date. EntityCustomer: customer_id, profile_id, email, birth_date.
+
+10. PRISMA/SCHEMA
+Sem alteracao de schema. Repositories P0 preservados. Unique constraint P2002 dos creates e traduzida para 409.
+
+11. MIGRATIONS
+Nenhuma.
+
+12. TESTES
+Criados p1-management.spec.ts (10 testes) e p1-prisma-management.spec.ts (1 teste com PGlite/Prisma isolado). Ajustado mock do teste P0 de customer update para customer_id; a verificacao de que Identity/Profile nao mudam permanece.
+
+13. test:p0: 9 suites / 46 testes / PASSOU.
+14. npm test: 53 suites / 179 testes / PASSOU.
+15. build: PASSOU.
+16. lint P1: check ESLint sem --fix de 41 arquivos tocados: 4 erros e 6 avisos historicos; ZERO erros introduzidos pelo P1. Nao executado lint global com --fix.
+Erros historicos: id nao usado em entity_customer.ts; catch(error) nao usado em entity_update.service.ts, entity_customer_update.service.ts e entity_membership_update.service.ts. Seis avisos no teste P0 entity_customer_update.spec.ts por argumentos any nos mocks.
+17. git diff --check: PASSOU.
+
+18. FINDINGS
+AppError herda Error e nao era traduzido automaticamente para status HTTP. Filtro aplicado somente nas rotas de gestao P1. O estado Git inicial ainda continha diff P0 apesar da informacao de merge. Customer.profile_id nullable nao possui fluxo concreto de criacao sem Profile.
+
+19. A CONFIRMAR
+Politica de aprovacao da Entity pendente; senha inicial obrigatoria para novo membro/cliente criado administrativamente; estrategia de convite/cadastro sem senha. Comportamento existente preservado.
+
+20. CHECKLIST DE ACEITE
+[x] 1 Profile read/update
+[x] 2 Admin consulta/edita sua Entity
+[x] 3 Members list fornece profile_id
+[x] 4 Members detail usa profile_id da lista
+[x] 5 Member create tenant-safe
+[x] 6 Recepcionista nao promove admin
+[x] 7 Member update nao altera Identity global
+[x] 8 Customers list fornece customer_id estavel
+[x] 9 Customer detail funciona por customer_id
+[x] 10 Customer create pessoa nova/existente
+[x] 11 Customer update usa customer_id
+[x] 12 Customer update nao altera Identity global
+[x] 13 Entity A nao opera pessoas da Entity B
+[x] 14 test:p0 verde
+[x] 15 suite completa verde
+[x] 16 build verde
+[x] 17 zero novos erros lint P1
+
+21. ARQUIVOS MODIFICADOS NESTA RODADA
+Profile: view-model, me_profile service/controller, change_profile DTO/service/controller.
+Entity: view-model, get_one controller, update controller/DTO/service.
+Members: model/view-model, get_all e get_one controllers/services, create controller/DTO/service, update controller/DTO/service.
+Customers: model/view-model, get_all e get_one controllers/services, create controller/DTO/service, update controller/DTO/service/test.
+Compartilhados: request-security.ts; management-app-error.filter.ts; p1-unique-conflict.ts; p1-management.spec.ts; p1-prisma-management.spec.ts; docs/P1_MANAGEMENT_CONTRACTS.md; este relatorio.
+
+22. PROXIMA FASE RECOMENDADA
+Integracao do BFF/front com os contratos P1 documentados e decisao de produto sobre Entity pendente e senha inicial. Nenhuma feature P2 foi implementada.
+
+23. RELATORIO TXT
+Este arquivo e o relatorio .txt solicitado. Nenhum commit ou push foi realizado.

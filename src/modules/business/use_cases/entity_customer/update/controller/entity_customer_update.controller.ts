@@ -1,3 +1,6 @@
+import { Req as AuthenticatedRequest } from '@nestjs/common';
+import { AuthRequest } from '@modules/utils/types/types';
+import { tenantId } from '@modules/auth/security/request-security';
 import { Body, Controller, Put, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -14,8 +17,11 @@ import { Roles } from '@modules/auth/decorators/roles.decorator';
 import { EntityCustomerUpdateDTO } from '../dto/entity_customer_updateDTO';
 import { Entity_Customer_View_Model } from '@modules/business/entity_customer/shared/view-models/entity-customer-view-model';
 import { AuthGuardAccess } from '@modules/auth/guards/auth_guard_access';
+import { UseFilters } from '@nestjs/common';
+import { ManagementAppErrorFilter } from '../../../management-app-error.filter';
 
 @ApiTags('Entity Customer')
+@UseFilters(ManagementAppErrorFilter)
 @ApiBearerAuth('access-token')
 @UseGuards(AuthGuardAccess, RolesGuard)
 @TokenTypeRequired(TokenType.ACCESS)
@@ -55,15 +61,13 @@ export class EntityCustomerUpdateController {
   @ApiBody({
     type: EntityCustomerUpdateDTO,
   })
-  public async Members(@Body() data: EntityCustomerUpdateDTO) {
+  public async Members(
+    @AuthenticatedRequest() req: AuthRequest,
+    @Body() data: EntityCustomerUpdateDTO,
+  ) {
     const result = await this.entityCustomerUpdateService.execute({
-      birth_date: data.birth_date,
-      email: data.email,
-      entity_id: data.entity_id,
-      mfa_required: data.mfa_required,
-      name: data.name,
-      phone: data.phone,
-      photo: data.photo,
+      customer_id: data.customer_id,
+      entity_id: tenantId(req.auth, data.entity_id ?? req.auth.entity_id),
       notes: data.notes,
       status: data.status,
     });

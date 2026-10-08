@@ -32,6 +32,7 @@ class SubscriptionRepository implements ISubscriptionRepository {
           entity_id: entity_id,
         },
       });
+    if (!subscription) return null;
     return SubscriptionMapper.toDomain(subscription);
   }
   async update(data: Subscription): Promise<void> {
@@ -49,7 +50,7 @@ class SubscriptionRepository implements ISubscriptionRepository {
     tx?: Prisma.TransactionClient,
   ): Promise<void> {
     const raw = SubscriptionMapper.toPrisma(data);
-    await this.prisma.getPrismaClient().subscription.create({
+    await (tx ?? this.prisma.getPrismaClient()).subscription.create({
       data: raw,
     });
   }

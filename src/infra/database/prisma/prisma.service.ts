@@ -9,7 +9,6 @@ import { PrismaPg } from '@prisma/adapter-pg';
 
 @Injectable()
 export class PrismaService implements OnModuleInit, OnApplicationShutdown {
-  [x: string]: any;
   private prisma: PrismaClient;
 
   constructor() {

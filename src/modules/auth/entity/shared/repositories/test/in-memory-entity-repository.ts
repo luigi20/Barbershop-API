@@ -15,7 +15,7 @@ class InMemoryEntityRepository implements IEntityRepository {
     return this.list_entity;
   }
   async findByIdSelectIdAndName(id: string): Promise<IdAndName | null> {
-    const entity = this.list_entity.find((item) => item._id);
+    const entity = this.list_entity.find((item) => item._id === id);
     if (!entity) return null;
     return {
       id: entity._id,

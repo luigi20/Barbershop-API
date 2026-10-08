@@ -130,6 +130,7 @@ describe('Test in route select entity', () => {
     entity_repository.list_entity.push(
       makeEntity({
         id: '123',
+        props: { status: 'ativo' },
       }),
     );
     const selectEntityService = new SelectEntityService(
@@ -154,6 +155,7 @@ describe('Test in route select entity', () => {
     entity_repository.list_entity.push(
       makeEntity({
         id: '123',
+        props: { status: 'ativo' },
       }),
     );
     identity_repository.list_identity.push(
@@ -194,6 +196,7 @@ describe('Test in route select entity', () => {
     entity_repository.list_entity.push(
       makeEntity({
         id: '123',
+        props: { status: 'ativo' },
       }),
     );
     identity_repository.list_identity.push(
@@ -257,6 +260,7 @@ describe('Test in route select entity', () => {
     entity_repository.list_entity.push(
       makeEntity({
         id: '123',
+        props: { status: 'ativo' },
       }),
     );
     identity_repository.list_identity.push(
@@ -327,6 +331,7 @@ describe('Test in route select entity', () => {
     entity_repository.list_entity.push(
       makeEntity({
         id: '123',
+        props: { status: 'ativo' },
       }),
     );
     identity_repository.list_identity.push(
@@ -395,6 +400,7 @@ describe('Test in route select entity', () => {
     entity_repository.list_entity.push(
       makeEntity({
         id: '123',
+        props: { status: 'ativo' },
       }),
     );
     identity_repository.list_identity.push(
@@ -455,6 +461,7 @@ describe('Test in route select entity', () => {
     entity_repository.list_entity.push(
       makeEntity({
         id: '123',
+        props: { status: 'ativo' },
       }),
     );
     identity_repository.list_identity.push(
@@ -515,6 +522,7 @@ describe('Test in route select entity', () => {
     entity_repository.list_entity.push(
       makeEntity({
         id: '123',
+        props: { status: 'ativo' },
       }),
     );
     identity_repository.list_identity.push(
@@ -592,6 +600,7 @@ describe('Test in route select entity', () => {
     entity_repository.list_entity.push(
       makeEntity({
         id: '123',
+        props: { status: 'ativo' },
       }),
     );
     identity_repository.list_identity.push(

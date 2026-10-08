@@ -16,6 +16,17 @@ export enum CustomerStatus {
   BLOQUEADO = 'bloqueado',
 }
 
+export enum ServiceStatus {
+  ATIVO = 'ativo',
+  INATIVO = 'inativo',
+}
+
+export enum AppointmentStatus {
+  AGENDADO = 'agendado',
+  CANCELADO = 'cancelado',
+  CONCLUIDO = 'concluido',
+}
+
 export enum AuthProvider {
   LOCAL = 'local',
   GOOGLE = 'google',

@@ -98,7 +98,7 @@ export class Profile {
   }
 
   public set phone(phone: string) {
-    this.props.name = phone;
+    this.props.phone = phone;
   }
 
   public get photo(): string {
@@ -110,7 +110,7 @@ export class Profile {
   }
 
   public get created_at(): Date {
-    return this.props.updated_at;
+    return this.props.created_at;
   }
 
   public set created_at(created_at: Date) {

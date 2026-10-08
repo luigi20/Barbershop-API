@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AppError } from '@modules/utils/app_error';
@@ -59,8 +60,12 @@ export class SelectEntityService {
       throw new AppError('Token de login inválido', 401);
     const entity_exists = await this.entity_repository.findById(entity_id);
     if (!entity_exists) throw new AppError('Empresa não encontrada', 404);
+    if (!['ativo', 'pendente'].includes(entity_exists.status?.toLowerCase()))
+      throw new AppError('Empresa indisponivel', 403);
     const identity = await this.identity_repository.find_by_id(payload.sub);
     if (!identity) throw new AppError('Identidade não encontrada', 404);
+    if (identity.status?.toLowerCase() !== 'ativo')
+      throw new AppError('Identidade inativa', 401);
     const profile = await this.profile_repository.find_identity_id(identity.id);
     if (!profile || profile.id !== payload.profile_id)
       throw new AppError('Perfil inválido', 401);
@@ -88,7 +93,7 @@ export class SelectEntityService {
       ...(isCustomer ? ['cliente'] : []),
     ];
     const uniqueRoles = [...new Set(roles)];
-    if (payload.mfa_pending) {
+    if (identity.mfa_required) {
       const mfa_token = this.jwt_service.sign(
         {
           sub: identity.id,
@@ -124,12 +129,15 @@ export class SelectEntityService {
         expiresIn: '15m',
       },
     );
+    const session_id = randomUUID();
     const refresh_token = this.jwt_service.sign(
       {
         sub: identity.id,
         profile_id: profile.id,
         entity_id,
         type: 'refresh',
+        sid: session_id,
+        jti: randomUUID(),
         iss: 'saas-auth',
       },
       {
@@ -137,12 +145,15 @@ export class SelectEntityService {
       },
     );
     const token_hash = generateHash(refresh_token);
-    const refreshToken = new Refresh_Tokens({
-      identity_id: identity.id,
-      token_hash,
-      expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      revoked_at: false,
-    });
+    const refreshToken = new Refresh_Tokens(
+      {
+        identity_id: identity.id,
+        token_hash,
+        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        revoked_at: false,
+      },
+      session_id,
+    );
     await this.refresh_token_repository.create(refreshToken);
     await this.identity_repository.update_last_login_at(
       identity.id,

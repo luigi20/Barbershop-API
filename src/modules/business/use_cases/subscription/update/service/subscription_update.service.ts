@@ -33,6 +33,8 @@ export class SubscriptionUpdateService {
     const subscription_exists = await this.subscription_repository.find_one(id);
     if (!subscription_exists)
       throw new AppError('Plano para está empresa não existe', 404);
+    if (subscription_exists.entity_id !== entity_id)
+      throw new AppError('Assinatura pertence a outra empresa', 403);
     const subscription = new Subscription(
       {
         entity_id: entity_id,
@@ -40,6 +42,7 @@ export class SubscriptionUpdateService {
         plan_name: plan.name,
         entity_name: entity.name,
         started_at: subscription_exists.started_at,
+        created_at: subscription_exists.created_at,
         ended_at: status.toLowerCase() === 'ativo' ? null : new Date(),
         status: status,
       },

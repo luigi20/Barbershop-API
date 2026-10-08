@@ -29,15 +29,22 @@ class ProfileRepository implements IProfileRepository {
 
   async update(data: Profile, tx?: Prisma.TransactionClient): Promise<void> {
     const raw = ProfileMapper.toPrisma(data);
-    const client = tx ?? this.prisma;
-    await client.identity.update({
-      data: raw,
+    const client = tx ?? this.prisma.getPrismaClient();
+    await client.profile.update({
+      where: { id: data.id },
+      data: {
+        name: raw.name,
+        phone: raw.phone,
+        photo: raw.photo,
+        birth_date: raw.birth_date,
+        updated_at: raw.updated_at,
+      },
     });
   }
 
   async create(data: Profile, tx?: Prisma.TransactionClient): Promise<void> {
     const raw = ProfileMapper.toPrisma(data);
-    const client = tx ?? this.prisma;
+    const client = tx ?? this.prisma.getPrismaClient();
     await client.profile.create({
       data: raw,
     });

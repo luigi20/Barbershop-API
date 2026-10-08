@@ -1,3 +1,6 @@
+import { Req as AuthenticatedRequest } from '@nestjs/common';
+import { AuthRequest } from '@modules/utils/types/types';
+import { tenantId } from '@modules/auth/security/request-security';
 import { Body, Controller, Param, Put, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -10,20 +13,31 @@ import { RolesGuard } from '@modules/auth/guards/roles_guards';
 import { TokenTypeRequired } from '@modules/auth/decorators/token-type.decorator';
 import { MemberRole, TokenType } from '@modules/utils/enum';
 import { Roles } from '@modules/auth/decorators/roles.decorator';
-import { SuperUserGuard } from '@modules/auth/guards/super_user_guard';
+
 import { EntityUpdateDTO } from '../dto/entityUpdateDTO';
 import { EntityUpdateService } from '../service/entity_update.service';
 import { EntityViewModel } from '@modules/auth/entity/shared/view-models/entity-view-model';
 import { AuthGuardAccess } from '@modules/auth/guards/auth_guard_access';
+import { UseFilters } from '@nestjs/common';
+import { ManagementAppErrorFilter } from '../../../management-app-error.filter';
 
 @ApiTags('Entity')
+@UseFilters(ManagementAppErrorFilter)
 @ApiBearerAuth('access-token')
-@UseGuards(AuthGuardAccess, RolesGuard, SuperUserGuard)
+@UseGuards(AuthGuardAccess, RolesGuard)
 @TokenTypeRequired(TokenType.ACCESS)
 @Roles(MemberRole.ADMINISTRADOR)
 @Controller('entity')
 export class EntityUpdateController {
   constructor(private readonly entityUpdateService: EntityUpdateService) {}
+
+  @Put('current')
+  public async Current(
+    @AuthenticatedRequest() req: AuthRequest,
+    @Body() data: EntityUpdateDTO,
+  ) {
+    return this.EntityUpdate(req, data, req.auth.entity_id);
+  }
 
   @Put('update/:id')
   @ApiOperation({
@@ -57,6 +71,7 @@ export class EntityUpdateController {
     description: 'Entidade não encontrada.',
   })
   public async EntityUpdate(
+    @AuthenticatedRequest() req: AuthRequest,
     @Body() data: EntityUpdateDTO,
     @Param('id') id: string,
   ) {
@@ -68,7 +83,8 @@ export class EntityUpdateController {
       name: data.name,
       photo: data.photo,
       type: data.type,
-      id: id,
+      id: tenantId(req.auth, id),
+      is_superuser: req.auth.is_superuser,
       city: data.city,
       complement: data.complement,
       country: data.country,

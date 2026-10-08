@@ -1,3 +1,6 @@
+import { Req as AuthenticatedRequest } from '@nestjs/common';
+import { AuthRequest } from '@modules/utils/types/types';
+import { tenantId } from '@modules/auth/security/request-security';
 import { Body, Controller, Param, Put, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -61,11 +64,12 @@ export class SubscriptionUpdateController {
     description: 'Assinatura não encontrada.',
   })
   public async Subscription(
+    @AuthenticatedRequest() req: AuthRequest,
     @Body() data: SubscriptionUpdateDTO,
     @Param('id') id: string,
   ) {
     const result = await this.subscriptionUpdateService.execute({
-      entity_id: data.entity_id,
+      entity_id: tenantId(req.auth, data.entity_id),
       plan_id: data.plan_id,
       status: data.status,
       id,

@@ -1,3 +1,6 @@
+import { Req as AuthenticatedRequest } from '@nestjs/common';
+import { AuthRequest } from '@modules/utils/types/types';
+import { matchingToken } from '@modules/auth/security/request-security';
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -37,9 +40,12 @@ export class SelectEntityController {
     status: 401,
     description: 'Token de desafio inválido, expirado ou ausente.',
   })
-  public async SelectEntity(@Body() data: Select_EntityDTO) {
+  public async SelectEntity(
+    @AuthenticatedRequest() req: AuthRequest,
+    @Body() data: Select_EntityDTO,
+  ) {
     const result = await this.selectEntityService.execute({
-      login_token: data.login_token,
+      login_token: matchingToken(req, data.login_token),
       entity_id: data.entity_id,
     });
     return result;

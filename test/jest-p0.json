@@ -1,0 +1,21 @@
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": "../src",
+  "testMatch": [
+    "**/auth/security/request-security.spec.ts",
+    "**/infra/database/p0-repositories.spec.ts",
+    "**/infra/database/p0-prisma-integration.spec.ts",
+    "**/auth/use_cases/refresh_token/test/refresh-token.service.spec.ts",
+    "**/auth/use_cases/logout/test/logout.service.spec.ts",
+    "**/business/use_cases/entity_membership/create/test/entity_membership_create.spec.ts",
+    "**/business/use_cases/entity_membership/update/test/entity_membership_update.spec.ts",
+    "**/business/use_cases/entity_customer/update/test/entity_customer_update.spec.ts",
+    "**/auth/use_cases/select_entity/test/select_entity.service.spec.ts"
+  ],
+  "transform": { "^.+\\.(t|j)s$": "ts-jest" },
+  "testEnvironment": "node",
+  "moduleNameMapper": {
+    "^@modules/(.*)$": "<rootDir>/modules/$1",
+    "^infra/(.*)$": "<rootDir>/infra/$1"
+  }
+}

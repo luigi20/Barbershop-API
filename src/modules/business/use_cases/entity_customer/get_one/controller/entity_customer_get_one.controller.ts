@@ -1,4 +1,12 @@
-import { Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Controller,
+  Get,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import { isUUID } from 'class-validator';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -14,8 +22,12 @@ import { Roles } from '@modules/auth/decorators/roles.decorator';
 import { EntityCustomerGetOneService } from '../services/entity_customer_get_one.service';
 import { Entity_Customer_View_Model } from '@modules/business/entity_customer/shared/view-models/entity-customer-view-model';
 import { AuthGuardAccess } from '@modules/auth/guards/auth_guard_access';
+import { UseFilters } from '@nestjs/common';
+import { ManagementAppErrorFilter } from '../../../management-app-error.filter';
+import { tenantId } from '@modules/auth/security/request-security';
 
 @ApiTags('Entity Customer')
+@UseFilters(ManagementAppErrorFilter)
 @ApiBearerAuth('access-token')
 @UseGuards(AuthGuardAccess, RolesGuard)
 @TokenTypeRequired(TokenType.ACCESS)
@@ -33,13 +45,18 @@ export class EntityCustomerGetOneController {
   })
   @ApiQuery({
     name: 'entity_id',
-    required: true,
+    required: false,
     description: 'ID da entidade onde o cliente está cadastrado.',
     example: '550e8400-e29b-41d4-a716-446655440000',
   })
   @ApiQuery({
-    name: 'profile_id',
+    name: 'customer_id',
     required: true,
+    description: 'ID estável do cliente.',
+  })
+  @ApiQuery({
+    name: 'profile_id',
+    required: false,
     description: 'ID do perfil do cliente.',
     example: '7c9e6679-7425-40de-944b-e07fc1f90ae7',
   })
@@ -64,12 +81,21 @@ export class EntityCustomerGetOneController {
     @Req() req: AuthRequest,
     @Query('entity_id') entity_id: string,
     @Query('profile_id') profile_id: string,
+    @Query('customer_id') customer_id?: string,
   ) {
+    if (!customer_id && !profile_id)
+      throw new BadRequestException('customer_id obrigatório');
+    if (
+      (customer_id && !isUUID(customer_id)) ||
+      (profile_id && !isUUID(profile_id))
+    )
+      throw new BadRequestException('ID inválido');
     const result = await this.entityCustomerGetOneService.execute({
       entity_id_user: req.auth.entity_id,
-      is_superuser: req.auth.is_superuser,
-      entity_id,
+      is_superuser: false,
+      entity_id: tenantId(req.auth, entity_id ?? req.auth.entity_id),
       profile_id,
+      customer_id,
     });
     return Entity_Customer_View_Model.toHttp(result);
   }

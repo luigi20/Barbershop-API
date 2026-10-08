@@ -1,3 +1,5 @@
+import { assertMemberRoles } from '@modules/auth/security/request-security';
+import { MemberRole } from '@modules/utils/enum';
 import { Injectable } from '@nestjs/common';
 import { IProfileRepository } from '@modules/auth/profile/shared/repositories/abstract_class/iprofile-repository';
 import { IEntityRepository } from '@modules/auth/entity/shared/repositories/abstract_class/ientity-repository';
@@ -12,6 +14,7 @@ import { IEntityMembershipRepository } from '@modules/business/entity_membership
 import { Entity_Membership } from '@modules/business/entity_membership/shared/models/entity_membership';
 import { Identity_Credential } from '@modules/auth/identity_credential/shared/models/identity_credential';
 import { IIdentityCredentialRepository } from '@modules/auth/identity_credential/shared/repositories/abstract_class/iidentitycredential-repository';
+import { isUniqueConflict } from '../../../p1-unique-conflict';
 
 interface IMembersRequest {
   entity_id: string;
@@ -23,6 +26,7 @@ interface IMembersRequest {
   photo: string;
   birth_date: string;
   roles: string[];
+  roles_auth: MemberRole[];
 }
 
 @Injectable()
@@ -45,8 +49,10 @@ export class EntityMembershipCreateService {
     phone,
     photo,
     roles,
+    roles_auth,
     entity_id,
   }: IMembersRequest): Promise<Entity_Membership> {
+    assertMemberRoles(roles_auth, roles);
     const password_validator = userPasswordValidator();
     const errors = password_validator.validate(password, { list: true });
     if (Array.isArray(errors) && errors.length > 0)
@@ -61,7 +67,7 @@ export class EntityMembershipCreateService {
     if (!identity_exists) {
       const password_hash = await argon2.hash(password);
       const identity = new Identity({
-        email: email,
+        email: email.toLowerCase().trim(),
         mfa_required: mfa_required,
         status: 'ativo',
         is_superuser: false,
@@ -90,6 +96,8 @@ export class EntityMembershipCreateService {
         name: name,
         profile_name: profile.name,
         entity_name: info_entity.name,
+        identity_id: identity.id,
+        email: identity.email,
       });
       const prisma = this.prisma.getPrismaClient();
       try {
@@ -103,6 +111,8 @@ export class EntityMembershipCreateService {
           );
         });
       } catch (error) {
+        if (isUniqueConflict(error))
+          throw new AppError('Membro já cadastrado', 409);
         throw new AppError(
           'Não foi possível concluir o cadastro. Tente novamente.',
           500,
@@ -112,41 +122,36 @@ export class EntityMembershipCreateService {
       const profile = await this.profile_repository.find_identity_id(
         identity_exists.id,
       );
-      if (!profile) return;
+      if (!profile) throw new AppError('Perfil nao existe', 404);
       const entity_membership_exists =
         await this.entity_membership_repository.find_one(entity_id, profile.id);
-      if (
-        entity_membership_exists?.roles?.includes('administrador') ||
-        entity_membership_exists?.roles?.includes('recepcionista')
-      )
-        entity_membership = new Entity_Membership({
-          entity_id: entity_id,
-          profile_id: profile.id,
-          roles: [...entity_membership_exists.roles, ...roles],
-          status: 'ativo',
-          birth_date: new Date(birth_date),
-          phone: phone,
-          photo: photo,
-          name: name,
-          profile_name: profile.name,
-          entity_name: info_entity.name,
-        });
-      else
-        entity_membership = new Entity_Membership({
-          entity_id: entity_id,
-          profile_id: profile.id,
-          roles: roles,
-          status: 'ativo',
-          birth_date: new Date(birth_date),
-          phone: phone,
-          photo: photo,
-          name: name,
-          profile_name: profile.name,
-          entity_name: info_entity.name,
-        });
-      if (entity_membership_exists?.roles?.includes('administrador'))
-        await this.entity_membership_repository.update(entity_membership);
-      else await this.entity_membership_repository.create(entity_membership);
+      assertMemberRoles(
+        roles_auth,
+        roles,
+        entity_membership_exists?.roles ?? [],
+      );
+      if (entity_membership_exists)
+        throw new AppError('Membro ja cadastrado', 409);
+      entity_membership = new Entity_Membership({
+        entity_id,
+        profile_id: profile.id,
+        roles: [...new Set(roles)],
+        status: 'ativo',
+        birth_date: profile.birth_date,
+        phone: profile.phone,
+        photo: profile.photo,
+        profile_name: profile.name,
+        entity_name: info_entity.name,
+        identity_id: identity_exists.id,
+        email: identity_exists.email,
+      });
+      try {
+        await this.entity_membership_repository.create(entity_membership);
+      } catch (error) {
+        if (isUniqueConflict(error))
+          throw new AppError('Membro já cadastrado', 409);
+        throw error;
+      }
     }
     return entity_membership;
   }

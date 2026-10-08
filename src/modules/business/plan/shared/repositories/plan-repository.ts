@@ -37,7 +37,7 @@ class PlanRepository implements IPlanRepository {
   }
   async create(data: Plan, tx?: Prisma.TransactionClient): Promise<void> {
     const raw = PlanMapper.toPrisma(data);
-    await this.prisma.getPrismaClient().plan.create({
+    await (tx ?? this.prisma.getPrismaClient()).plan.create({
       data: raw,
     });
   }
@@ -59,7 +59,7 @@ class PlanRepository implements IPlanRepository {
         },
       },
     });
-    if (!name) return null;
+    if (!plan) return null;
     return PlanMapper.toDomain(plan);
   }
 }

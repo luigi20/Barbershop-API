@@ -1,3 +1,12 @@
+import {
+  IsEnum,
+  ArrayNotEmpty,
+  ArrayUnique,
+  IsDateString,
+  IsIn,
+  IsOptional,
+  IsUUID,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsArray, IsBoolean, IsEmail, IsString } from 'class-validator';
 import { MemberRole } from '@modules/utils/enum';
@@ -7,7 +16,7 @@ export class EntityMembershipCreateDTO {
     description: 'Data de nascimento do membro.',
     example: '1995-05-20',
   })
-  @IsString()
+  @IsDateString()
   birth_date: string;
 
   @ApiProperty({
@@ -17,12 +26,13 @@ export class EntityMembershipCreateDTO {
   @IsEmail()
   email: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'ID da entidade.',
     example: '550e8400-e29b-41d4-a716-446655440000',
   })
-  @IsString()
-  entity_id: string;
+  @IsOptional()
+  @IsUUID()
+  entity_id?: string;
 
   @ApiProperty({
     description: 'Define se o membro utilizará MFA.',
@@ -57,6 +67,7 @@ export class EntityMembershipCreateDTO {
     example: 'https://ik.imagekit.io/seu_usuario/profile.jpg',
   })
   @IsString()
+  @IsOptional()
   photo?: string;
 
   @ApiProperty({
@@ -65,6 +76,13 @@ export class EntityMembershipCreateDTO {
     isArray: true,
     example: [MemberRole.BARBEIRO],
   })
+  @IsEnum(MemberRole, { each: true })
+  @IsIn(
+    [MemberRole.ADMINISTRADOR, MemberRole.RECEPCIONISTA, MemberRole.BARBEIRO],
+    { each: true },
+  )
+  @ArrayNotEmpty()
+  @ArrayUnique()
   @IsArray()
   roles: MemberRole[];
 }

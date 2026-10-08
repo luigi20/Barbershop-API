@@ -7,7 +7,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { AuthRequest } from '@modules/utils/types/types';
 import { MemberRole, TokenType } from '@modules/utils/enum';
-import { AppError } from '@modules/utils/app_error';
+import { bearerToken } from '../security/request-security';
 
 interface IMFATokenPayload {
   sub: string;
@@ -20,6 +20,7 @@ interface IMFATokenPayload {
   name: string;
   photo: string;
   roles: MemberRole[];
+  is_superuser?: boolean;
 }
 
 @Injectable()
@@ -28,11 +29,7 @@ export class AuthGuardRefresh implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<AuthRequest>();
-    const authHeader = request.headers.authorization;
-    if (!authHeader) throw new AppError('Internal Server Error', 500);
-    const [type, token] = authHeader.split(' ');
-    if (type !== 'Bearer') throw new AppError('Internal Server Error', 500);
-    if (!token) throw new AppError('Internal Server Error', 500);
+    const token = bearerToken(request);
     try {
       const payload = this.jwtService.verify<IMFATokenPayload>(token);
       if (payload.type !== TokenType.REFRESH) {
@@ -47,6 +44,7 @@ export class AuthGuardRefresh implements CanActivate {
         name: payload?.name,
         photo: payload?.photo,
         roles: payload?.roles,
+        is_superuser: payload.is_superuser === true,
       };
       return true;
     } catch (error) {

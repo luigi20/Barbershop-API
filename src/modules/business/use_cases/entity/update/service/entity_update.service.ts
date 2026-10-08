@@ -2,8 +2,6 @@ import { Address } from '@modules/auth/address/shared/models/address';
 import { IAddressRepository } from '@modules/auth/address/shared/repositories/abstract_class/iaddress-repository';
 import { Entity } from '@modules/auth/entity/shared/models/entity';
 import { IEntityRepository } from '@modules/auth/entity/shared/repositories/abstract_class/ientity-repository';
-import { Plan } from '@modules/business/plan/shared/models/plan';
-import { IPlanRepository } from '@modules/business/plan/shared/repositories/abstract_class/iplan-repository';
 import { AppError } from '@modules/utils/app_error';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'infra/database/prisma/prisma.service';
@@ -11,13 +9,14 @@ import { IGeocodingService } from 'infra/geolocalization/interface/IGeocoding.se
 
 interface IEntityRequest {
   id: string;
+  is_superuser?: boolean;
   name: string;
-  email: string;
+  email?: string | null;
   type: string;
-  document: string;
-  phone: string;
-  photo: string;
-  status: string;
+  document?: string | null;
+  phone?: string | null;
+  photo?: string | null;
+  status?: string;
   zip_code: string;
   street: string;
   number: string;
@@ -46,6 +45,7 @@ export class EntityUpdateService {
     type,
     name,
     id,
+    is_superuser,
     zip_code,
     street,
     number,
@@ -57,15 +57,18 @@ export class EntityUpdateService {
   }: IEntityRequest): Promise<Entity> {
     const entity_exists = await this.entity_repository.findById(id);
     if (!entity_exists) throw new AppError('Empresa não existe', 404);
+    status = status ?? entity_exists.status;
+    if (!is_superuser && status !== entity_exists.status)
+      throw new AppError('Status da empresa ? gerenciado pela plataforma', 403);
     const entity = new Entity(
       {
         name: name,
         status: status,
         type: type,
-        document: document,
-        email: email,
-        phone: phone,
-        photo: photo,
+        document: document === undefined ? entity_exists.document : document,
+        email: email === undefined ? entity_exists.email : email,
+        phone: phone === undefined ? entity_exists.phone : phone,
+        photo: photo === undefined ? entity_exists.photo : photo,
         created_at: entity_exists.created_at,
       },
       entity_exists._id,
@@ -85,6 +88,7 @@ export class EntityUpdateService {
     if (address_exists) {
       address = new Address(
         {
+          created_at: address_exists.created_at,
           city: city,
           country: country,
           entity_id: entity._id,
@@ -118,7 +122,8 @@ export class EntityUpdateService {
     try {
       await prisma.$transaction(async (tx) => {
         await this.entity_repository.update(entity, tx);
-        await this.address_repository.update(address, tx);
+        if (address_exists) await this.address_repository.update(address, tx);
+        else await this.address_repository.create(address, tx);
       });
     } catch (error) {
       throw new AppError(
@@ -126,6 +131,7 @@ export class EntityUpdateService {
         500,
       );
     }
+    entity.address = address;
     return entity;
   }
 }

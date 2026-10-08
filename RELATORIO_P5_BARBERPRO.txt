@@ -1,0 +1,199 @@
+RELATORIO P5 — DASHBOARD & OPERATIONAL METRICS
+BarberPro Backend — 2026-10-07
+Estado: CONCLUIDO nos gates P5 da suite padrao. A suite PostgreSQL de
+concorrencia P4 continua opcional e foi ignorada sem sua flag.
+
+1. ESTADO INICIAL
+P0–P4 estavam implementados. Nao havia modulo, endpoint ou teste especifico
+de Dashboard. O working tree ja continha alteracoes P0–P4 e foi preservado.
+
+2. CHECKPOINT P5
+Appointment possui status agendado, cancelado e concluido; starts_at,
+ends_at, cancelled_at e completed_at sao instantes TIMESTAMPTZ(3).
+price_snapshot e DECIMAL(10,2). Entity.timezone e IANA anulavel. Customer
+e contado pelo vinculo EntityCustomer ativo; profissional pelo vinculo
+EntityMembership ativo com role barbeiro; Service pelo status ativo.
+
+3. ARQUITETURA DASHBOARD
+DashboardController recebe o tenant da sessao. DashboardService define metricas
+e periodos; DashboardRepository executa count, groupBy, aggregate e SQL
+agrupado; DashboardClock isola o instante atual. business.module.ts registra
+controller, service, repository e clock.
+
+4. DEFINICOES DAS METRICAS
+Contagens de agenda pertencem ao dia ou mes local de starts_at. Receita
+operacional pertence ao dia ou mes local de completed_at. Esses conjuntos
+podem diferir quando o atendimento comeca em um dia e e concluido em outro.
+
+5. TIMEZONE
+Os limites civis usam Entity.timezone e os helpers de P4 baseados na
+infraestrutura P3. Cada periodo e [inicio, fim) em UTC. Entity sem timezone
+recebe 400. Um teste confirma dia de 23 horas em America/New_York.
+
+6. TODAY SUMMARY
+today informa appointments_total, scheduled, completed, cancelled, upcoming
+e, no contrato administrativo, revenue. Os status correspondem aos valores
+reais agendado, concluido e cancelado.
+
+7. REVENUE
+Soma no banco somente Appointment.price_snapshot com status concluido e
+completed_at dentro do periodo. O resultado e string decimal de duas casas.
+Service.price atual, cancelados e agendados nao entram. Esta e receita
+operacional dos atendimentos concluidos, nao financeiro ou pagamento.
+
+8. CUSTOMERS
+customers.active usa count de EntityCustomer do tenant com status ativo.
+Vinculos inativos e bloqueados nao entram. new_this_month nao foi inventado.
+
+9. PROFESSIONALS
+professionals.active_barbers usa count de EntityMembership do tenant com
+status ativo e array roles contendo barbeiro. Roles adicionais podem coexistir.
+
+10. SERVICES
+services.active usa count de Service do tenant com status ativo.
+
+11. UPCOMING APPOINTMENTS
+GET /dashboard/upcoming retorna agendados com starts_at >= agora,
+ordenados por starts_at e ID. Padrao de 5, maximo de 20. Nomes de Customer e
+profissional sao carregados em lote. Retorna snapshot de nome e preco do
+Service; nao retorna Identity ou tokens.
+
+12. TIMESERIES
+GET /dashboard/timeseries agrupa contagens pelo dia local de starts_at e
+receita pelo dia local de completed_at. Devolve todos os dias, inclusive os
+sem dados com zero. from/to sao datas locais inclusivas; maximo de 90 dias.
+Os helpers P3/P4 calculam limites UTC por dia; o banco agrupa em duas queries
+com uma tabela VALUES de ate 90 intervalos, sem carregar appointments.
+
+13. TOP SERVICES
+PLANEJADO. Nao ha endpoint. A politica de nome historico apos renomeacao
+de Service permanece A CONFIRMAR.
+
+14. RBAC
+Administrador acessa summary, operations, upcoming e timeseries.
+Recepcionista acessa operations e upcoming, sem somatorios globais de receita.
+Barbeiro e cliente nao acessam Dashboard administrativo. Nao ha bypass
+generico de superuser. Upcoming expõe preco individual, coerente com P4.
+
+15. QUERIES E PERFORMANCE
+Contagens e somas sao feitas no banco; nao carregam todos os appointments.
+Upcoming carrega no maximo 20 linhas e busca nomes em lotes, sem N+1 obvio.
+Nao foi introduzido cache ou fonte de verdade em memoria.
+
+16. INDEXES E MIGRATION
+O indice P4 (entity_id, starts_at) atende a agenda. P5 acrescenta
+(entity_id, completed_at) para consultas por conclusao. A migration nova
+cria somente o indice; ainda nao foi aplicada em banco de desenvolvimento.
+
+17. CONTROLLERS, SERVICES E REPOSITORIES
+src/modules/business/use_cases/dashboard/dashboard.controller.ts
+src/modules/business/use_cases/dashboard/dashboard.service.ts
+src/modules/business/use_cases/dashboard/dashboard.repository.ts
+src/modules/business/use_cases/dashboard/dashboard-time.ts
+
+18. CONTRATOS HTTP
+GET /dashboard/operations — administrador/recepcionista, sem receita.
+GET /dashboard/summary — administrador, resumo com receita.
+GET /dashboard/upcoming?limit=5 — administrador/recepcionista.
+GET /dashboard/timeseries?from=YYYY-MM-DD&to=YYYY-MM-DD — administrador.
+Todos exigem access token. Contratos e formatos: docs/P5_DASHBOARD_CONTRACTS.md.
+
+19. TESTES CRIADOS
+src/infra/database/p5-dashboard.spec.ts: 5 testes com Prisma/PGlite isolado.
+Cobrem DST, limites do dia, contagens, soma decimal por snapshot, alteracao
+posterior de Service.price, tenant A/B ambos com Appointment real,
+customer/membership/service, serie, range, limit, ordenacao e regras de
+roles. Um Appointment em UTC 2026-03-08 pertence ao dia local 2026-03-07
+de America/Belem na serie. O relogio e fixo no teste.
+
+20. RESULTADO P5
+Teste P5 isolado: 1 suite e 5 testes passaram. Todos os 29 gates finais
+da suite padrao foram atendidos.
+
+21. RESULTADO P0/P1/P2/P3/P4
+P0: 9 suites, 46 testes passaram.
+P1 especifico: 2 suites, 11 testes passaram.
+P2 especifico: 1 suite, 15 testes passaram.
+P3 especifico: 1 suite, 6 testes passaram.
+P4 especifico: 1 suite, 11 testes passaram; 1 suite/3 testes PostgreSQL
+opcionais ignorados sem P4_DISPOSABLE_POSTGRES_TEST=1.
+
+22. SUITE COMPLETA
+npm test passou na segunda execucao: 57 suites, 216 testes passaram;
+1 suite/3 testes PostgreSQL opcionais ignorados. A primeira execucao teve
+timeout de 5 segundos no beforeAll de p0-prisma-integration.spec.ts; P0
+isolado havia passado e a suite completa repetida passou sem alteracao P0.
+
+23. BUILD
+npm run build passou apos as alteracoes TypeScript P5.
+
+24. PRISMA VALIDATE
+npx prisma validate passou para o schema P5.
+
+25. LINT P5
+npx eslint sem --fix nos arquivos TypeScript P5: zero erros e zero avisos.
+Prettier foi aplicado apenas a TypeScript/Markdown, nao ao schema.prisma.
+
+26. GIT DIFF --CHECK
+git diff --check passou. Avisos LF/CRLF nao sao erros.
+
+27. FINDINGS
+O teste P5 chama o controller diretamente e verifica RolesGuard, mas nao
+faz request HTTP completo. A inspecao do repository confirmou 1 consulta
+limitada de Appointment e ate 2 consultas em lote para nomes no upcoming;
+nao ha N+1 por Customer, Professional ou Service. O teste agora insere
+Appointments reais nos tenants A e B e confirma isolamento das metricas.
+O timeout inicial da suite completa nao se reproduziu na segunda execucao.
+PGlite nao aplicou corretamente AT TIME ZONE para America/Belem no teste de
+borda. A query da serie foi ajustada para usar os limites UTC dos helpers
+P3/P4, preservando duas agregacoes no banco; a suite completa passou apos
+essa correcao.
+
+28. A CONFIRMAR
+Eventual permissao da recepcionista para somatorios globais de receita;
+politica de exibicao de nomes em top-services historico; configuracao do
+timezone de Entities legadas. Nenhuma dessas decisoes foi presumida.
+
+29. ARQUIVOS MODIFICADOS/CRIADOS NO P5
+Criados: docs/P5_DASHBOARD_CONTRACTS.md; src/infra/database/p5-dashboard.spec.ts;
+src/infra/database/prisma/migrations/20261007000000_p5_dashboard_completed_at_index/
+migration.sql; os quatro arquivos dashboard.controller.ts,
+dashboard.service.ts, dashboard.repository.ts e dashboard-time.ts.
+Modificados: src/modules/business/business.module.ts e
+src/infra/database/prisma/schema.prisma. Ambos ja continham trabalho P0–P4.
+Este arquivo de relatorio tambem foi criado nesta fase.
+
+30. CHECKLIST DOS 26 CRITERIOS DE ACEITE
+01 Tenant-scoped: ATENDIDO com Appointment real em A/B.
+02 Entity.timezone: IMPLEMENTADO; teste DST passou.
+03 Summary real: IMPLEMENTADO; teste isolado passou.
+04 Today counts: IMPLEMENTADO; teste isolado passou.
+05 Upcoming real/ordenado: ATENDIDO, inclusive empate por ID.
+06 Revenue usa snapshot: IMPLEMENTADO; teste passou.
+07 Status/timestamp revenue: IMPLEMENTADO; teste passou.
+08 Decimal preservado: IMPLEMENTADO; teste passou.
+09 Customers tenant-local: IMPLEMENTADO; teste passou.
+10 Barbeiros ativos: IMPLEMENTADO; teste passou.
+11 Services ativos: ATENDIDO com ativo/inativo e outro tenant.
+12 Timeseries: IMPLEMENTADO; teste passou.
+13 Dias locais: IMPLEMENTADO; teste DST passou.
+14 Range limitado: IMPLEMENTADO; teste passou.
+15 RBAC protege receita: IMPLEMENTADO; teste de guard passou.
+16 Sem N+1 obvio: ATENDIDO por inspeção das consultas em lote.
+17 P0 verde: ATENDIDO.
+18 P1 verde: ATENDIDO.
+19 P2 verde: ATENDIDO.
+20 P3 verde: ATENDIDO.
+21 P4 verde: ATENDIDO na suite padrao.
+22 Suite completa: ATENDIDO na segunda execucao.
+23 Build final: ATENDIDO.
+24 Prisma validate: ATENDIDO.
+25 git diff --check: ATENDIDO.
+26 Zero erros/avisos lint P5: ATENDIDO.
+
+31. PROXIMO PASSO RECOMENDADO
+Integrar o frontend/BFF aos contratos P5 e planejar implantacao controlada
+da migration P5 apos P2/P3/P4. Top Services permanece planejado.
+
+Nenhum commit, push, pull, merge, rebase, reset, clean, stash ou troca de
+branch foi realizado para criar este relatorio.

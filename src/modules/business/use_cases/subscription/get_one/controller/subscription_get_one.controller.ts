@@ -1,3 +1,6 @@
+import { Req as AuthenticatedRequest } from '@nestjs/common';
+import { AuthRequest } from '@modules/utils/types/types';
+import { tenantId } from '@modules/auth/security/request-security';
 import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -51,8 +54,13 @@ export class SubscriptionGetOneController {
     status: 404,
     description: 'Assinatura não encontrada.',
   })
-  public async Subscription(@Param('id') id: string) {
-    const result = await this.subscriptionGetOneService.execute(id);
+  public async Subscription(
+    @AuthenticatedRequest() req: AuthRequest,
+    @Param('id') id: string,
+  ) {
+    const result = await this.subscriptionGetOneService.execute(
+      tenantId(req.auth, id),
+    );
     return SubscriptionViewModel.toHttp(result);
   }
 }

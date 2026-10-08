@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
+import { IIdentityRepository } from '@modules/auth/identity/shared/repositories/abstract_class/iidentity-repository';
 import { IProfileRepository } from '@modules/auth/profile/shared/repositories/abstract_class/iprofile-repository';
 import { IEntityRepository } from '@modules/auth/entity/shared/repositories/abstract_class/ientity-repository';
 import { AppError } from '@modules/utils/app_error';
@@ -17,6 +18,7 @@ export class EntityMembershipGetOneService {
     private readonly entity_membership_repository: IEntityMembershipRepository,
     private readonly profile_repository: IProfileRepository,
     private readonly entity_repository: IEntityRepository,
+    @Optional() private readonly identity_repository?: IIdentityRepository,
   ) {}
 
   public async execute({
@@ -25,6 +27,7 @@ export class EntityMembershipGetOneService {
     entity_id_user,
     is_superuser,
   }: IMembersRequest): Promise<Entity_Membership> {
+    if (!profile_id) throw new AppError('profile_id obrigatório', 400);
     if (!is_superuser && entity_id !== entity_id_user)
       throw new AppError(
         'Usuário não tem permissão de acessar dados de usuários de outra empresa',
@@ -41,6 +44,11 @@ export class EntityMembershipGetOneService {
     member.phone = profile.phone;
     member.photo = profile.photo;
     member.birth_date = profile.birth_date;
+    member.identity_id = profile.identity_id;
+    if (this.identity_repository)
+      member.email = (
+        await this.identity_repository.find_by_id(profile.identity_id)
+      )?.email;
     const entity = await this.entity_repository.findByIdSelectIdAndName(
       member.entity_id,
     );

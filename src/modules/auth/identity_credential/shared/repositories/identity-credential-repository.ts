@@ -56,7 +56,7 @@ class IdentityCredentialRepository implements IIdentityCredentialRepository {
     tx?: Prisma.TransactionClient,
   ): Promise<void> {
     const raw = IdentityCredentialMapper.toPrisma(data);
-    const client = tx ?? this.prisma;
+    const client = tx ?? this.prisma.getPrismaClient();
     await client.identityCredential.create({
       data: raw,
     });
@@ -67,8 +67,9 @@ class IdentityCredentialRepository implements IIdentityCredentialRepository {
     tx?: Prisma.TransactionClient,
   ): Promise<void> {
     const raw = IdentityCredentialMapper.toPrisma(data);
-    const client = tx ?? this.prisma;
+    const client = tx ?? this.prisma.getPrismaClient();
     await client.identityCredential.update({
+      where: { id: data.id },
       data: raw,
     });
   }

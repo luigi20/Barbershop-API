@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { IIdentityRepository } from '@modules/auth/identity/shared/repositories/abstract_class/iidentity-repository';
 import { IMFACodeRepository } from '@modules/auth/mfa/shared/repositories/abstract_class/imfa-code-repository';
 import { IProfileRepository } from '@modules/auth/profile/shared/repositories/abstract_class/iprofile-repository';
@@ -111,12 +112,15 @@ export class ValidateMFAService {
       },
     );
     // 10. Gera Refresh Token
+    const session_id = randomUUID();
     const refresh_token = this.jwt_service.sign(
       {
         sub: identity.id,
         profile_id: profile.id,
         entity_id: payload.entity_id,
         type: 'refresh',
+        sid: session_id,
+        jti: randomUUID(),
         iss: 'saas-auth',
       },
       {
@@ -125,12 +129,15 @@ export class ValidateMFAService {
     );
     // 11. Armazena hash do Refresh Token
     const token_hash = generateHash(refresh_token);
-    const refreshToken = new Refresh_Tokens({
-      identity_id: identity.id,
-      token_hash,
-      expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      revoked_at: false,
-    });
+    const refreshToken = new Refresh_Tokens(
+      {
+        identity_id: identity.id,
+        token_hash,
+        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        revoked_at: false,
+      },
+      session_id,
+    );
     await this.refresh_token_repository.create(refreshToken);
     // 12. Atualiza último login
     await this.identity_repository.update_last_login_at(

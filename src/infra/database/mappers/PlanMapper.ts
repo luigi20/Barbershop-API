@@ -18,16 +18,19 @@ export class PlanMapper {
   }
 
   static toDomain(raw: PrismaPlan): Plan {
-    return new Plan({
-      name: raw.name,
-      price: raw.price.toNumber(),
-      description: raw.description ? raw.description : null,
-      max_members: raw.max_members ? raw.max_members : null,
-      max_customers: raw.max_customers ? raw.max_customers : null,
-      max_appointments: raw.max_appointments ? raw.max_appointments : null,
-      active: raw.active,
-      created_at: raw.created_at,
-      updated_at: raw.updated_at,
-    });
+    return new Plan(
+      {
+        name: raw.name,
+        price: raw.price.toNumber(),
+        description: raw.description ? raw.description : null,
+        max_members: raw.max_members ? raw.max_members : null,
+        max_customers: raw.max_customers ? raw.max_customers : null,
+        max_appointments: raw.max_appointments ? raw.max_appointments : null,
+        active: raw.active,
+        created_at: raw.created_at,
+        updated_at: raw.updated_at,
+      },
+      raw.id,
+    );
   }
 }

@@ -1,34 +1,39 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsEmail, IsEnum, IsOptional, IsString } from 'class-validator';
+import { EntityStatus, EntityType } from '@modules/utils/enum';
 
 export class EntityUpdateDTO {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Status atual da entidade.',
     example: 'ACTIVE',
   })
-  @IsString()
-  status: string;
+  @IsOptional()
+  @IsEnum(EntityStatus)
+  status?: EntityStatus;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Documento da entidade.',
     example: '12345678000199',
   })
+  @IsOptional()
   @IsString()
-  document: string;
+  document?: string | null;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'E-mail da entidade.',
     example: 'contato@barbearia.com',
   })
-  @IsString()
-  email: string;
+  @IsOptional()
+  @IsEmail()
+  email?: string | null;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Telefone da entidade.',
     example: '+5579999999999',
   })
+  @IsOptional()
   @IsString()
-  phone: string;
+  phone?: string | null;
 
   @ApiProperty({
     description: 'Nome da entidade.',
@@ -37,19 +42,20 @@ export class EntityUpdateDTO {
   @IsString()
   name: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'URL da foto da entidade.',
     example: 'https://ik.imagekit.io/seu_usuario/barbearia.jpg',
   })
+  @IsOptional()
   @IsString()
-  photo: string;
+  photo?: string | null;
 
   @ApiProperty({
     description: 'Tipo da entidade.',
     example: 'BARBERSHOP',
   })
-  @IsString()
-  type: string;
+  @IsEnum(EntityType)
+  type: EntityType;
 
   @ApiProperty({
     description: 'CEP do endereço da entidade.',

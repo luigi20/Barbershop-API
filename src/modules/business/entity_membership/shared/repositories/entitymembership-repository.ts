@@ -53,9 +53,19 @@ class EntityMembershipRepository implements IEntityMembershipRepository {
     tx?: Prisma.TransactionClient,
   ): Promise<void> {
     const raw = EntityMembershipMapper.toPrisma(data);
-    const client = tx ?? this.prisma;
+    const client = tx ?? this.prisma.getPrismaClient();
     await client.entityMembership.update({
-      data: raw,
+      where: {
+        entity_id_profile_id: {
+          entity_id: data.entity_id,
+          profile_id: data.profile_id,
+        },
+      },
+      data: {
+        roles: raw.roles,
+        status: raw.status,
+        updated_at: raw.updated_at,
+      },
     });
   }
 
@@ -64,7 +74,7 @@ class EntityMembershipRepository implements IEntityMembershipRepository {
     tx?: Prisma.TransactionClient,
   ): Promise<void> {
     const raw = EntityMembershipMapper.toPrisma(data);
-    const client = tx ?? this.prisma;
+    const client = tx ?? this.prisma.getPrismaClient();
     await client.entityMembership.create({
       data: raw,
     });

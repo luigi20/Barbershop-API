@@ -12,6 +12,8 @@ export interface Entity_Membership_Props {
   phone: string;
   photo: string;
   birth_date: Date;
+  identity_id?: string;
+  email?: string;
 }
 
 export class Entity_Membership {
@@ -46,6 +48,22 @@ export class Entity_Membership {
 
   public get birth_date(): Date {
     return this.props.birth_date;
+  }
+
+  public get identity_id(): string | undefined {
+    return this.props.identity_id;
+  }
+
+  public set identity_id(identity_id: string) {
+    this.props.identity_id = identity_id;
+  }
+
+  public get email(): string | undefined {
+    return this.props.email;
+  }
+
+  public set email(email: string) {
+    this.props.email = email;
   }
 
   public set birth_date(birth_date: Date) {
@@ -117,7 +135,7 @@ export class Entity_Membership {
   }
 
   public get created_at(): Date {
-    return this.props.updated_at;
+    return this.props.created_at;
   }
 
   public set created_at(created_at: Date) {

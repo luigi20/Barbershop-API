@@ -1,3 +1,6 @@
+import { Req as AuthenticatedRequest } from '@nestjs/common';
+import { AuthRequest } from '@modules/utils/types/types';
+import { tenantId } from '@modules/auth/security/request-security';
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -13,8 +16,11 @@ import { Roles } from '@modules/auth/decorators/roles.decorator';
 import { EntityCustomerCreateDTO } from '../dto/entity_customer_createDTO';
 import { Entity_Customer_View_Model } from '@modules/business/entity_customer/shared/view-models/entity-customer-view-model';
 import { AuthGuardAccess } from '@modules/auth/guards/auth_guard_access';
+import { UseFilters } from '@nestjs/common';
+import { ManagementAppErrorFilter } from '../../../management-app-error.filter';
 
 @ApiTags('Entity Customer')
+@UseFilters(ManagementAppErrorFilter)
 @ApiBearerAuth('access-token')
 @UseGuards(AuthGuardAccess, RolesGuard)
 @TokenTypeRequired(TokenType.ACCESS)
@@ -51,11 +57,14 @@ export class EntityCustomerCreateController {
     status: 409,
     description: 'Cliente já cadastrado.',
   })
-  public async Members(@Body() data: EntityCustomerCreateDTO) {
+  public async Members(
+    @AuthenticatedRequest() req: AuthRequest,
+    @Body() data: EntityCustomerCreateDTO,
+  ) {
     const result = await this.entityCustomerCreateService.execute({
       birth_date: data.birth_date,
       email: data.email,
-      entity_id: data.entity_id,
+      entity_id: tenantId(req.auth, data.entity_id ?? req.auth.entity_id),
       mfa_required: data.mfa_required,
       name: data.name,
       password: data.password,
